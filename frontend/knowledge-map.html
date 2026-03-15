@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>知识图谱 - 坊知工</title>
+    <style>
+        :root {
+            --bg-1: #f4f7fb;
+            --bg-2: #eaf0ff;
+            --card: #ffffff;
+            --text: #1f2937;
+            --muted: #6b7280;
+            --primary: #1d4ed8;
+            --primary-soft: #dbeafe;
+            --ok: #059669;
+            --warn: #d97706;
+            --line: #e5e7eb;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: "Microsoft YaHei", "PingFang SC", sans-serif;
+            min-height: 100vh;
+            color: var(--text);
+            background:
+                radial-gradient(circle at 10% 10%, #dbeafe 0%, transparent 40%),
+                radial-gradient(circle at 90% 85%, #bfdbfe 0%, transparent 35%),
+                linear-gradient(160deg, var(--bg-1), var(--bg-2));
+        }
+
+        .container {
+            max-width: 1240px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 18px;
+        }
+
+        .title {
+            font-size: 30px;
+            letter-spacing: 0.5px;
+            font-weight: 800;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            margin-top: 4px;
+            font-size: 14px;
+        }
+
+        .links a {
+            text-decoration: none;
+            color: var(--primary);
+            font-weight: 700;
+            margin-left: 16px;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 18px;
+            box-shadow: 0 12px 28px rgba(23, 43, 77, 0.08);
+        }
+
+        .graph-card {
+            padding: 14px;
+        }
+
+        .graph-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 8px 14px;
+        }
+
+        .graph-title {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .graph-meta {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        #graph {
+            width: 100%;
+            height: 620px;
+            border-radius: 14px;
+            background: linear-gradient(180deg, #f8fbff, #f3f8ff);
+        }
+
+        .side {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .panel {
+            padding: 18px;
+        }
+
+        .panel h3 {
+            font-size: 17px;
+            margin-bottom: 10px;
+        }
+
+        .kv {
+            display: grid;
+            grid-template-columns: 92px 1fr;
+            row-gap: 8px;
+            column-gap: 8px;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+
+        .kv .k { color: var(--muted); }
+
+        .tag {
+            display: inline-block;
+            border-radius: 999px;
+            padding: 4px 10px;
+            font-size: 12px;
+            background: var(--primary-soft);
+            color: #1e40af;
+            margin-bottom: 10px;
+        }
+
+        .controls label {
+            font-size: 13px;
+            color: var(--muted);
+            display: block;
+            margin-bottom: 6px;
+        }
+
+        .controls input,
+        .controls select,
+        .controls textarea,
+        .controls button {
+            width: 100%;
+            border-radius: 10px;
+            border: 1px solid var(--line);
+            margin-bottom: 10px;
+            padding: 0 10px;
+            font-size: 14px;
+            background: white;
+        }
+
+        .controls input,
+        .controls select,
+        .controls button {
+            height: 38px;
+        }
+
+        .controls textarea {
+            padding: 10px;
+            min-height: 80px;
+            resize: vertical;
+        }
+
+        .controls button {
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            background: var(--primary);
+            color: white;
+            transition: transform .15s ease, opacity .15s ease;
+        }
+
+        .controls button:hover {
+            transform: translateY(-1px);
+            opacity: 0.95;
+        }
+
+        .controls button.btn-danger {
+            background: #b91c1c;
+        }
+
+        .controls button.btn-danger:hover {
+            opacity: 0.92;
+        }
+
+        .path-list {
+            margin-top: 6px;
+            background: #f8fafc;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 10px;
+            min-height: 40px;
+            font-size: 14px;
+            color: #334155;
+        }
+
+        .stats {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .chip {
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 12px;
+            border: 1px solid var(--line);
+            color: #334155;
+            background: #f8fafc;
+        }
+
+        .footer-note {
+            margin-top: 12px;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        @media (max-width: 980px) {
+            .layout { grid-template-columns: 1fr; }
+            #graph { height: 460px; }
+            .topbar { flex-direction: column; align-items: flex-start; gap: 8px; }
+            .links a { margin-left: 0; margin-right: 12px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="topbar">
+            <div>
+                <div class="title">知识图谱中心</div>
+                <div class="subtitle">查看知识依赖关系，跟踪掌握度，并规划学习路径</div>
+                <div class="subtitle" id="mapUserLabel">当前用户：-</div>
+            </div>
+            <div class="links">
+                <a href="index.html">返回首页</a>
+                <a href="dashboard.html">学习仪表盘</a>
+            </div>
+        </div>
+
+        <div class="layout">
+            <section class="card graph-card">
+                <div class="graph-header">
+                    <div class="graph-title">知识关系图</div>
+                    <div class="graph-meta" id="graphMeta">载入中...</div>
+                </div>
+                <div id="graph"></div>
+            </section>
+
+            <aside class="side">
+                <section class="card panel">
+                    <h3>节点详情</h3>
+                    <span class="tag" id="nodeTag">未选择节点</span>
+                    <div class="kv">
+                        <div class="k">知识点</div><div id="nodeName">-</div>
+                        <div class="k">描述</div><div id="nodeDesc">-</div>
+                        <div class="k">难度</div><div id="nodeDifficulty">-</div>
+                        <div class="k">掌握度</div><div id="nodeMastery">-</div>
+                    </div>
+                    <div class="controls">
+                        <label for="masteryRange">调整掌握度</label>
+                        <input type="range" id="masteryRange" min="0" max="100" value="30">
+                        <button id="saveMasteryBtn">保存掌握度</button>
+                        <button id="deleteNodeBtn" class="btn-danger">删除当前节点</button>
+                    </div>
+                </section>
+
+                <section class="card panel">
+                    <h3>学习路径规划</h3>
+                    <div class="controls">
+                        <label for="targetSelect">目标知识点</label>
+                        <select id="targetSelect"></select>
+                        <button id="fetchPathBtn">生成学习路径</button>
+                    </div>
+                    <div class="path-list" id="pathList">请选择目标知识点后生成路径</div>
+                </section>
+
+                <section class="card panel">
+                    <h3>文本知识抽取</h3>
+                    <div class="controls">
+                        <label for="extractText">输入笔记/问题片段</label>
+                        <textarea id="extractText" placeholder="例如：今天复习了导数和极值，感觉单调性判断还不稳。"></textarea>
+                        <button id="extractBtn">抽取并写入图谱</button>
+                    </div>
+                    <div class="path-list" id="extractResult">提交后会显示识别到的知识点和关系</div>
+                </section>
+
+                <section class="card panel">
+                    <h3>图谱统计</h3>
+                    <div class="stats" id="statsChips"></div>
+                    <div style="margin-top:10px; font-size:13px; color:#475569;">到期复习</div>
+                    <div class="path-list" id="dueReminderList">加载中...</div>
+                    <div class="footer-note">提示：节点颜色越深表示掌握度越高。连线方向表示“前置知识 -> 目标知识”。</div>
+                </section>
+            </aside>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+    <script src="js/user-context.js"></script>
+    <script src="js/knowledge-map.js"></script>
+</body>
+</html>

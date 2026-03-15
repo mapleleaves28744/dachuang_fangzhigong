@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>学习仪表盘 - 智能学习伴侣</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f5f7fa; }
+        
+        .dashboard-container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+        
+        /* 头部 */
+        .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .dashboard-title { font-size: 32px; color: #333; }
+        .back-link { color: #667eea; text-decoration: none; font-weight: bold; }
+        
+        /* 数据卡片网格 */
+        .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin-bottom: 30px; }
+        .card { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
+        .card-title { font-size: 20px; font-weight: bold; margin-bottom: 20px; color: #333; border-bottom: 2px solid #667eea; padding-bottom: 10px; }
+        
+        /* 热力图图表 */
+        .heatmap-chart { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
+        .heatmap-day { aspect-ratio: 1; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; }
+        .heatmap-day:hover { transform: scale(1.1); transition: transform 0.2s; }
+        
+        /* 雷达图 */
+        .radar-container { width: 100%; height: 300px; }
+        
+        /* 进度条 */
+        .progress-item { margin: 15px 0; }
+        .progress-label { display: flex; justify-content: space-between; margin-bottom: 5px; }
+        .progress-bar { height: 10px; background: #e0e0e0; border-radius: 5px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(to right, #667eea, #764ba2); border-radius: 5px; }
+        
+        /* 错误分类 */
+        .error-category { padding: 10px; margin: 8px 0; border-radius: 5px; display: flex; justify-content: space-between; }
+        .knowledge-error { background: #ffeaea; }
+        .skill-error { background: #fff4e6; }
+        .habit-error { background: #e8f5e8; }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- 头部 -->
+        <div class="dashboard-header">
+            <h1 class="dashboard-title">📊 学习仪表盘</h1>
+            <div>
+                <span id="dashboard-user-label" style="margin-right:12px; color:#6b7280; font-size:14px;"></span>
+                <a href="knowledge-map.html" class="back-link" style="margin-right:14px;">🗺️ 知识图谱</a>
+                <a href="index.html" class="back-link">← 返回主界面</a>
+            </div>
+        </div>
+        
+        <!-- 数据卡片 -->
+        <div class="cards-grid">
+            <!-- 学习概况卡片 -->
+            <div class="card">
+                <h2 class="card-title">📈 学习概况</h2>
+                <div style="text-align: center;">
+                    <div id="overall-mastery" style="font-size: 48px; color: #667eea; font-weight: bold;">--</div>
+                    <div style="color: #666; margin-top: 10px;">整体掌握程度</div>
+                </div>
+                <div style="margin-top: 20px;">
+                    <div class="progress-item">
+                        <div class="progress-label">图谱节点 <span id="graph-node-count">0</span></div>
+                        <div class="progress-bar"><div id="graph-node-bar" class="progress-fill" style="width: 0%"></div></div>
+                    </div>
+                    <div class="progress-item">
+                        <div class="progress-label">到期复习项 <span id="due-count">0</span></div>
+                        <div class="progress-bar"><div id="due-bar" class="progress-fill" style="width: 0%"></div></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 认知诊断卡片 -->
+            <div class="card">
+                <h2 class="card-title">🔍 认知诊断报告</h2>
+                <div style="margin-top: 20px;">
+                    <div class="error-category knowledge-error">
+                        <span>知识性错误</span>
+                        <strong id="diag-knowledge">0次</strong>
+                    </div>
+                    <div class="error-category skill-error">
+                        <span>技能性错误</span>
+                        <strong id="diag-skill">0次</strong>
+                    </div>
+                    <div class="error-category habit-error">
+                        <span>习惯性错误</span>
+                        <strong id="diag-habit">0次</strong>
+                    </div>
+                </div>
+                <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
+                    <strong>💡 改进建议：</strong>
+                    <ul id="dashboard-suggestions" style="margin-top: 10px; padding-left: 20px;">
+                        <li>加载中...</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <!-- 学习画像卡片 -->
+            <div class="card">
+                <h2 class="card-title">👤 学习画像</h2>
+                <div style="margin-top: 20px;">
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                        <div style="width: 12px; height: 12px; background: #667eea; border-radius: 50%;"></div>
+                        <span id="dashboard-style">加载中...</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                        <div style="width: 12px; height: 12px; background: #28a745; border-radius: 50%;"></div>
+                        <span id="dashboard-best-time">最佳学习时段: --</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
+                        <div style="width: 12px; height: 12px; background: #ffc107; border-radius: 50%;"></div>
+                        <span id="dashboard-focus">注意力集中时间: --</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 学习计划卡片 -->
+        <div class="card" style="grid-column: span 2;">
+            <h2 class="card-title">📅 个性化学习计划</h2>
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px;">
+                <div style="padding: 20px; background: #e3f2fd; border-radius: 10px;">
+                    <h3 style="margin-bottom: 10px;">🎯 本周目标</h3>
+                    <ul id="dashboard-recommendations" style="padding-left: 20px;">
+                        <li>加载中...</li>
+                    </ul>
+                </div>
+                <div style="padding: 20px; background: #f3e5f5; border-radius: 10px;">
+                    <h3 style="margin-bottom: 10px;">⏰ 今日任务</h3>
+                    <div id="dashboard-today-tasks" style="margin-top: 10px;">
+                        <!-- 动态加载今日任务 -->
+                    </div>
+                </div>
+                <div style="padding: 20px; background: #e8f5e8; border-radius: 10px;">
+                    <h3 style="margin-bottom: 10px;">🔄 复习安排</h3>
+                    <div id="dashboard-review-reminders" style="margin-top: 10px;">
+                        <div style="color:#888;">加载中...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- 动态加载今日任务脚本 -->
+    <script src="js/user-context.js"></script>
+    <script>
+    function getUserId() {
+        return window.UserContext ? window.UserContext.getUserId() : 'default_user';
+    }
+
+    async function loadDashboardSummary() {
+        const userId = getUserId();
+        try {
+            const resp = await fetch(`http://127.0.0.1:5000/api/dashboard/summary?user_id=${userId}`);
+            const data = await resp.json();
+            if (!data.success) return;
+
+            const overall = Math.round((data.overall_mastery || 0) * 100);
+            document.getElementById('overall-mastery').textContent = `${overall}%`;
+
+            const nodeCount = data.graph?.node_count || 0;
+            document.getElementById('graph-node-count').textContent = nodeCount;
+            document.getElementById('graph-node-bar').style.width = `${Math.min(100, nodeCount * 10)}%`;
+
+            const dueCount = data.review?.due_count || 0;
+            document.getElementById('due-count').textContent = dueCount;
+            document.getElementById('due-bar').style.width = `${Math.min(100, dueCount * 20)}%`;
+
+            const diag = data.diagnosis?.category_count || {};
+            document.getElementById('diag-knowledge').textContent = `${diag.knowledge || 0}次`;
+            document.getElementById('diag-skill').textContent = `${diag.skill || 0}次`;
+            document.getElementById('diag-habit').textContent = `${diag.habit || 0}次`;
+
+            const profile = data.profile || {};
+            const styleMap = { visual: '视觉型学习者', auditory: '听觉型学习者', kinesthetic: '动觉型学习者' };
+            document.getElementById('dashboard-style').textContent = styleMap[profile.learning_style] || '综合型学习者';
+            document.getElementById('dashboard-best-time').textContent = `最佳学习时段: ${profile.best_time_range || '--'}`;
+            document.getElementById('dashboard-focus').textContent = `注意力集中时间: ${profile.focus_minutes || 45}分钟`;
+
+            const recBox = document.getElementById('dashboard-recommendations');
+            const recItems = data.recommendations || [];
+            recBox.innerHTML = recItems.length
+                ? recItems.map(item => `<li>${item.title}</li>`).join('')
+                : '<li>本周以巩固已学知识为主</li>';
+
+            const sugBox = document.getElementById('dashboard-suggestions');
+            const suggestions = recItems.slice(0, 3).map(item => item.reason);
+            sugBox.innerHTML = suggestions.length
+                ? suggestions.map(s => `<li>${s}</li>`).join('')
+                : '<li>保持当前节奏，持续复习。</li>';
+        } catch (e) {
+            console.warn('仪表盘汇总加载失败:', e);
+        }
+    }
+
+    // 获取今日任务并渲染
+    async function loadDashboardTodayTasks() {
+        const USER_ID = getUserId();
+        try {
+            const response = await fetch(`http://localhost:5000/api/plans?user_id=${USER_ID}`);
+            const data = await response.json();
+            const tasksDiv = document.getElementById('dashboard-today-tasks');
+            if (!tasksDiv) return;
+            if (!data.success || !data.plans || data.plans.length === 0) {
+                tasksDiv.innerHTML = '<div style="color:#888;">暂无今日任务</div>';
+                return;
+            }
+            tasksDiv.innerHTML = data.plans.map(plan => {
+                return `<div style="padding:8px; background:white; border-radius:5px; margin-bottom:5px;">
+                    ${plan.completed ? '✓' : '⏰'} ${plan.time} ${plan.task}
+                    <button style="float:right; background:#e57373; color:white; border:none; border-radius:3px; padding:2px 8px; cursor:pointer;" onclick="deleteDashboardTask('${plan.id}')">删除</button>
+                </div>`;
+            }).join('');
+        } catch (e) {
+            const tasksDiv = document.getElementById('dashboard-today-tasks');
+            if (tasksDiv) tasksDiv.innerHTML = '<div style="color:#888;">加载失败</div>';
+        }
+    }
+    // 删除任务
+    async function deleteDashboardTask(planId) {
+        const USER_ID = getUserId();
+        if (!confirm('确定要删除这个任务吗？')) return;
+        try {
+            await fetch(`http://localhost:5000/api/plans/${planId}`, {
+                method: 'DELETE',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: USER_ID })
+            });
+            loadDashboardTodayTasks();
+        } catch (e) {
+            alert('删除失败');
+        }
+    }
+
+    async function loadDashboardReviewReminders() {
+        const USER_ID = getUserId();
+        const container = document.getElementById('dashboard-review-reminders');
+        if (!container) return;
+
+        try {
+            const resp = await fetch(`http://127.0.0.1:5000/api/review/reminders?user_id=${USER_ID}`);
+            const data = await resp.json();
+            if (!data.success) {
+                container.innerHTML = '<div style="color:#888;">加载失败</div>';
+                return;
+            }
+
+            if (!data.due_items || data.due_items.length === 0) {
+                container.innerHTML = '<div>暂无到期复习任务</div>';
+                return;
+            }
+
+            container.innerHTML = data.due_items.slice(0, 5).map(item => {
+                const pct = Math.round((item.mastery || 0) * 100);
+                return `<div style="padding:7px; background:white; border-radius:6px; margin-bottom:6px;">
+                    ${item.concept} · 掌握度 ${pct}%
+                </div>`;
+            }).join('');
+        } catch (e) {
+            container.innerHTML = '<div style="color:#888;">加载失败</div>';
+        }
+    }
+
+    function syncDashboardUserLabel() {
+        const label = document.getElementById('dashboard-user-label');
+        if (!label || !window.UserContext) return;
+        label.textContent = `当前用户：${window.UserContext.getUserId()}`;
+    }
+
+    // 页面加载时自动刷新
+    window.addEventListener('DOMContentLoaded', function() {
+        syncDashboardUserLabel();
+        loadDashboardTodayTasks();
+        loadDashboardReviewReminders();
+        loadDashboardSummary();
+
+        window.addEventListener('knowledge:updated', function() {
+            loadDashboardTodayTasks();
+            loadDashboardReviewReminders();
+            loadDashboardSummary();
+        });
+
+        if (window.UserContext) {
+            window.UserContext.onChange(function() {
+                syncDashboardUserLabel();
+                loadDashboardTodayTasks();
+                loadDashboardReviewReminders();
+                loadDashboardSummary();
+            });
+        }
+    });
+    </script>
+</body>
+</html>

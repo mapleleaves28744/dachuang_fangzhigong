@@ -1,0 +1,34 @@
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+
+# Virtual environments
+venv/
+.venv/
+backend/venv/
+
+# Local environment and secrets
+.env
+*.env
+backend/.env
+
+# Editor settings
+.vscode/
+.idea/
+
+# Logs
+*.log
+push.log
+
+# Runtime data and local artifacts
+backend/dump.rdb
+backend/data/default_user_*.json
+backend/data/user_*.json
+backend/data/user_plans.json
+backend/data/users.json
+/data/
+
+# OS files
+.DS_Store
+Thumbs.db

@@ -1,0 +1,261 @@
+/* ========== 今日学习计划 ========== */
+
+/* 计划项容器 */
+.plan-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  margin: 8px 0;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  transition: all 0.3s ease;
+  border-left: 4px solid #667eea;  /* 左侧彩色边框 */
+  position: relative;
+  overflow: hidden;
+}
+
+.plan-item:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  transform: translateY(-2px);
+  border-left-color: #764ba2;  /* 悬停时变色 */
+}
+
+/* 复选框 */
+.plan-check {
+  width: 20px;
+  height: 20px;
+  margin-right: 12px;
+  cursor: pointer;
+  accent-color: #4CAF50;  /* 复选框颜色 */
+  flex-shrink: 0;  /* 防止压缩 */
+}
+
+/* 计划内容区域（点击整个区域可选中） */
+.plan-content {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  min-height: 24px;
+  padding: 4px 0;  /* 增加可点击区域 */
+}
+
+/* 时间 */
+.plan-time {
+  font-weight: 600;
+  color: #333;
+  min-width: 50px;
+  margin-right: 15px;
+  font-size: 14px;
+  flex-shrink: 0;  /* 防止时间被压缩 */
+}
+
+/* 任务内容 */
+.plan-task {
+  flex: 1;
+  color: #333;
+  font-size: 14px;
+  transition: all 0.3s;
+  word-break: break-word;  /* 长单词换行 */
+  line-height: 1.4;  /* 更好的行高 */
+}
+
+/* 删除按钮 */
+.delete-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: #ff6b6b;
+  color: white;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 18px;
+  font-weight: bold;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  margin-left: 10px;
+  padding: 0;
+  opacity: 0.7;
+  flex-shrink: 0;
+}
+
+.delete-btn:hover {
+  background: #ff5252;
+  transform: scale(1.1);
+  opacity: 1;
+}
+
+/* ========== 已完成状态 ========== */
+.plan-item.completed {
+  background: #f8f9fa;
+  border-left-color: #ccc;  /* 完成状态变为灰色 */
+  opacity: 0.8;
+  position: relative;
+}
+
+/* 完成状态的横线效果 */
+.plan-item.completed::after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 10%;
+  right: 10%;
+  height: 1px;
+  background: #666;
+  opacity: 0.3;
+  transform: translateY(-50%);
+}
+
+.plan-item.completed .plan-time {
+  color: #888;
+  text-decoration: line-through;
+}
+
+.plan-item.completed .plan-task {
+  color: #888;
+  text-decoration: line-through;
+}
+
+.plan-item.completed .delete-btn {
+  background: #ccc;
+}
+
+.plan-item.completed .delete-btn:hover {
+  background: #bbb;
+}
+
+/* ========== 添加计划区域 ========== */
+.add-plan {
+  display: flex;
+  gap: 8px;
+  margin-top: 20px;
+  align-items: center;
+}
+
+.add-plan input {
+  padding: 10px 12px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.3s;
+}
+
+.add-plan input:focus {
+  outline: none;
+  border-color: #667eea;
+  box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.2);
+}
+
+.add-plan input[type="time"] {
+  flex: 1;
+  min-width: 100px;
+}
+
+.add-plan input[type="text"] {
+  flex: 2;
+  min-width: 200px;
+}
+
+.add-plan button {
+  padding: 10px 20px;
+  background: linear-gradient(to right, #667eea, #764ba2);
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: bold;
+  transition: all 0.3s;
+  white-space: nowrap;
+}
+
+.add-plan button:hover {
+  background: linear-gradient(to right, #5a6fd8, #6a4090);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.add-plan button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* ========== 清空已完成按钮 ========== */
+.clear-completed-btn {
+  display: block;
+  margin: 15px auto 0;
+  padding: 8px 16px;
+  background: #ff9800;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.3s;
+}
+
+.clear-completed-btn:hover {
+  background: #f57c00;
+}
+
+/* ========== 空状态提示 ========== */
+.empty-state {
+  text-align: center;
+  padding: 30px 20px;
+  color: #999;
+  font-size: 16px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 2px dashed #ddd;
+  margin: 10px 0;
+}
+
+.empty-state small {
+  display: block;
+  margin-top: 5px;
+  color: #ccc;
+  font-size: 12px;
+}
+
+/* ========== 响应式设计 ========== */
+@media (max-width: 768px) {
+  .plan-item {
+    padding: 10px;
+    flex-wrap: wrap;
+  }
+  
+  .plan-content {
+    order: 2;
+    width: 100%;
+    margin-top: 8px;
+  }
+  
+  .plan-check {
+    order: 1;
+  }
+  
+  .delete-btn {
+    order: 3;
+    margin-left: auto;
+  }
+  
+  .add-plan {
+    flex-wrap: wrap;
+  }
+  
+  .add-plan input[type="time"],
+  .add-plan input[type="text"] {
+    flex: 1 0 100%;
+    margin-bottom: 8px;
+  }
+  
+  .add-plan button {
+    flex: 1 0 100%;
+  }
+}

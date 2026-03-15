@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>坊知工</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        :root {
+            --ink: #172033;
+            --muted: #64748b;
+            --line: #dbe4ef;
+            --panel: #ffffff;
+            --brand: #0f5bd8;
+            --brand-2: #1e88e5;
+            --ok: #0f9b6b;
+            --danger: #c2410c;
+            --chip-bg: #edf4ff;
+            --chip-text: #1447a6;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", sans-serif;
+            color: var(--ink);
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at 8% 8%, rgba(14, 165, 233, 0.22), transparent 35%),
+                radial-gradient(circle at 92% 86%, rgba(16, 185, 129, 0.2), transparent 40%),
+                linear-gradient(150deg, #eff6ff 0%, #f8fafc 40%, #ecfeff 100%);
+        }
+
+        .app-container { max-width: 1320px; margin: 0 auto; padding: 24px; }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 6px;
+            margin-bottom: 18px;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 0.4px;
+            color: #0f172a;
+        }
+
+        .nav-links a {
+            color: #0f172a;
+            text-decoration: none;
+            margin-left: 14px;
+            padding: 10px 14px;
+            border-radius: 999px;
+            border: 1px solid transparent;
+            transition: all 0.2s ease;
+            font-weight: 600;
+            background: rgba(255, 255, 255, 0.55);
+            backdrop-filter: blur(5px);
+        }
+
+        .nav-links a:hover { border-color: #bfdbfe; background: #ffffff; }
+        .nav-links a.active { color: #0b4bb8; border-color: #93c5fd; }
+
+        .main-content { display: grid; grid-template-columns: 1.9fr 1fr; gap: 22px; }
+
+        .chat-section {
+            background: var(--panel);
+            border-radius: 22px;
+            border: 1px solid var(--line);
+            box-shadow: 0 18px 45px rgba(15, 35, 75, 0.12);
+            padding: 22px;
+            display: flex;
+            flex-direction: column;
+            min-height: 780px;
+        }
+
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid #e6edf7;
+        }
+
+        .chat-title-wrap h2 {
+            font-size: 26px;
+            line-height: 1.1;
+            margin-bottom: 6px;
+            letter-spacing: 0.3px;
+        }
+
+        .chat-subtitle { color: var(--muted); font-size: 13px; }
+
+        .chat-status {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            border: 1px solid #cfe1ff;
+            background: #f8fbff;
+            border-radius: 999px;
+            padding: 7px 11px;
+            color: #1e3a8a;
+            white-space: nowrap;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: #94a3b8;
+        }
+
+        .status-dot.online { background: var(--ok); }
+        .status-dot.offline { background: var(--danger); }
+
+        .chat-messages {
+            flex: 1;
+            overflow-y: auto;
+            background: linear-gradient(180deg, #f9fbff, #f4f8ff 60%, #f7fcff);
+            border: 1px solid #d9e5f6;
+            border-radius: 16px;
+            padding: 18px;
+        }
+
+        .message-row {
+            display: flex;
+            margin-bottom: 16px;
+            gap: 10px;
+            align-items: flex-start;
+        }
+
+        .message-row.user { justify-content: flex-end; }
+
+        .avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 10px;
+            border: 1px solid #dbeafe;
+            background: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: #1e40af;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .message-bubble {
+            max-width: min(85%, 720px);
+            border-radius: 16px;
+            padding: 12px 14px;
+            line-height: 1.7;
+            font-size: 14px;
+            border: 1px solid #dbeafe;
+            background: #ffffff;
+            box-shadow: 0 4px 14px rgba(59, 130, 246, 0.08);
+        }
+
+        .message-row.user .message-bubble {
+            border-color: #1e40af;
+            background: linear-gradient(155deg, #1d4ed8, #1e3a8a);
+            color: #ffffff;
+            box-shadow: 0 8px 16px rgba(30, 64, 175, 0.35);
+        }
+
+        .message-text p { margin-bottom: 0.55em; }
+        .message-text p:last-child { margin-bottom: 0; }
+        .message-text ul,
+        .message-text ol { margin: 0.45em 0 0.45em 1.2em; }
+        .message-text code {
+            background: #e2e8f0;
+            border-radius: 5px;
+            padding: 2px 5px;
+            font-family: Consolas, Monaco, monospace;
+            font-size: 12px;
+        }
+
+        .message-text pre {
+            background: #0f172a;
+            color: #f8fafc;
+            border-radius: 10px;
+            padding: 10px;
+            overflow: auto;
+            margin: 7px 0;
+            font-size: 12px;
+            line-height: 1.55;
+        }
+
+        .message-meta {
+            margin-top: 8px;
+            display: flex;
+            gap: 7px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .meta-chip {
+            font-size: 11px;
+            border-radius: 999px;
+            padding: 3px 8px;
+            background: var(--chip-bg);
+            color: var(--chip-text);
+            border: 1px solid #bfdbfe;
+        }
+
+        .meta-chip.error {
+            background: #fff7ed;
+            color: #9a3412;
+            border-color: #fed7aa;
+        }
+
+        .typing-dots {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .typing-dots span {
+            width: 6px;
+            height: 6px;
+            border-radius: 99px;
+            background: #94a3b8;
+            animation: pulse 1.2s infinite;
+        }
+
+        .typing-dots span:nth-child(2) { animation-delay: 0.2s; }
+        .typing-dots span:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 0.3; transform: translateY(0); }
+            50% { opacity: 1; transform: translateY(-2px); }
+        }
+
+        .input-area { display: flex; gap: 10px; margin-top: 14px; }
+
+        .input-area textarea {
+            flex: 1;
+            padding: 12px 14px;
+            border: 1px solid #cdd9ea;
+            border-radius: 12px;
+            resize: vertical;
+            min-height: 72px;
+            font-size: 14px;
+            color: #0f172a;
+            background: #ffffff;
+        }
+
+        .input-area textarea:focus { outline: 2px solid #bfdbfe; border-color: #93c5fd; }
+
+        .input-area button {
+            min-width: 104px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            color: #ffffff;
+            background: linear-gradient(145deg, var(--brand-2), var(--brand));
+            box-shadow: 0 6px 16px rgba(30, 88, 216, 0.35);
+            transition: transform 0.15s ease;
+        }
+
+        .input-area button:hover { transform: translateY(-1px); }
+
+        .upload-section {
+            margin-top: 14px;
+            padding: 14px;
+            border-radius: 14px;
+            border: 1px dashed #b6cef0;
+            background: #f7fbff;
+        }
+
+        .upload-title { font-weight: 700; margin-bottom: 10px; font-size: 14px; }
+        .upload-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+        .upload-btn,
+        .upload-analyze-btn {
+            border: 1px solid #bfd5f5;
+            background: #ffffff;
+            color: #1e40af;
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .upload-analyze-btn {
+            background: #0f9b6b;
+            border-color: #0f9b6b;
+            color: #fff;
+        }
+
+        .sidebar { display: flex; flex-direction: column; gap: 16px; }
+
+        .card {
+            background: #ffffff;
+            border-radius: 18px;
+            padding: 18px;
+            border: 1px solid #d8e3f1;
+            box-shadow: 0 8px 20px rgba(15, 35, 75, 0.08);
+        }
+
+        .card-title {
+            font-size: 17px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            color: #0f172a;
+        }
+
+        .dashboard-link {
+            display: block;
+            text-align: center;
+            padding: 14px;
+            color: #ffffff;
+            text-decoration: none;
+            border-radius: 12px;
+            margin-top: 4px;
+            font-weight: 700;
+            background: linear-gradient(130deg, #0f5bd8, #00a3c4);
+        }
+
+        .heatmap { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; }
+
+        .heatmap-cell {
+            aspect-ratio: 1;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            text-align: center;
+            padding: 4px;
+            border: 1px solid rgba(15, 35, 75, 0.08);
+        }
+
+        .level-1 { background: #e2f5f2; }
+        .level-2 { background: #9cded2; }
+        .level-3 { background: #52c5af; color: #083344; }
+        .level-4 { background: #12a37d; color: #ffffff; }
+
+        .profile-item { margin: 9px 0; padding: 10px; background: #f8fbff; border-radius: 9px; border: 1px solid #e4ebf5; }
+        .profile-label { font-weight: 700; color: #475569; font-size: 13px; }
+        .profile-value { margin-top: 5px; font-size: 14px; }
+
+        .mini-input { width: 100%; padding: 10px; border: 1px solid #cfd8e6; border-radius: 9px; margin-top: 8px; }
+        .mini-input:focus { outline: 2px solid #bfdbfe; border-color: #93c5fd; }
+        .mini-btn { margin-top: 8px; width: 100%; padding: 9px 10px; border: none; border-radius: 9px; cursor: pointer; font-weight: 700; }
+        .mini-btn.primary { background: #175cd3; color: #fff; }
+        .mini-btn.green { background: #0f9b6b; color: #fff; }
+        .mini-btn.orange { background: #ea580c; color: #fff; }
+        .mini-list { margin-top: 8px; font-size: 13px; color: #475569; }
+        .mini-item { padding: 6px 0; border-bottom: 1px dashed #dbe5f2; }
+
+        @media (max-width: 1024px) {
+            .main-content { grid-template-columns: 1fr; }
+            .chat-section { min-height: auto; }
+            .chat-messages { min-height: 460px; }
+        }
+
+        @media (max-width: 720px) {
+            .app-container { padding: 14px; }
+            .logo { font-size: 22px; }
+            .navbar { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .nav-links a { margin-left: 0; margin-right: 8px; }
+            .chat-header { flex-direction: column; align-items: flex-start; }
+            .input-area { flex-direction: column; }
+            .input-area button { height: 42px; }
+            .message-bubble { max-width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 顶部导航 -->
+        <nav class="navbar">
+            <div class="logo">坊知工 · 智能学习伴侣</div>
+            <div class="nav-links">
+                <a href="#" class="active">智能问答</a>
+                <a href="dashboard.html">学习仪表盘</a>
+                <a href="knowledge-map.html">知识图谱</a>
+            </div>
+        </nav>
+        
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <!-- 左侧：聊天问答区 -->
+            <div class="chat-section">
+                <div class="chat-header">
+                    <div class="chat-title-wrap">
+                        <h2>AI 学习问答</h2>
+                        <div class="chat-subtitle">更清晰的分段排版、状态标识和对话流体验</div>
+                    </div>
+                    <div class="chat-status" id="chatAiStatus">
+                        <span class="status-dot" id="aiStatusDot"></span>
+                        <span id="aiStatusText">检测中...</span>
+                    </div>
+                </div>
+                
+                <div class="chat-messages" id="chatMessages">
+                </div>
+                
+                <div class="input-area">
+                    <textarea id="questionInput" placeholder="输入你的学习问题（如：什么是导数？）"></textarea>
+                    <button onclick="askQuestion()">发送</button>
+                </div>
+                
+                <!-- 图片上传区域 -->
+                <div class="upload-section">
+                    <div class="upload-title">上传学习图片（作业 / 笔记 / 教材）</div>
+                    <input type="file" id="imageUpload" accept="image/*" style="display: none;">
+                    <div class="upload-actions">
+                        <label for="imageUpload" class="upload-btn">选择图片</label>
+                        <button onclick="uploadImage()" class="upload-analyze-btn">分析图片</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 右侧：信息展示区 -->
+            <div class="sidebar">
+                <!-- 知识热力图 -->
+                <div class="card">
+                    <div class="card-title">知识掌握热力图</div>
+                    <div class="heatmap" id="home-heatmap">
+                        <div class="heatmap-cell level-1">加载中</div>
+                    </div>
+                </div>
+                
+                <!-- 学习画像 -->
+                <div class="card">
+                    <div class="card-title">学习画像</div>
+                    <div class="profile-item">
+                        <div class="profile-label">学习风格</div>
+                        <div class="profile-value" id="profile-style">加载中...</div>
+                    </div>
+                    <div class="profile-item">
+                        <div class="profile-label">兴趣领域</div>
+                        <div class="profile-value" id="profile-interests">加载中...</div>
+                    </div>
+                    <div class="profile-item">
+                        <div class="profile-label">最佳学习时段</div>
+                        <div class="profile-value" id="profile-best-time">加载中...</div>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">学习身份</div>
+                    <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px;">
+                        <input id="user-id-input" type="text" placeholder="输入用户ID（如 student_001）" style="flex:1; padding:10px; border:1px solid #ddd; border-radius:8px;">
+                        <button id="save-user-id-btn" style="padding:10px 12px; border:none; background:#2563eb; color:#fff; border-radius:8px; cursor:pointer;">保存</button>
+                    </div>
+                    <div id="current-user-label" style="font-size:13px; color:#666;">当前用户：-</div>
+                    <div style="margin-top:14px; font-weight:bold; color:#374151;">今日复习提醒</div>
+                    <div id="review-reminder-list" style="margin-top:8px; font-size:13px; color:#4b5563;">加载中...</div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-title">今日学习计划</div>
+                    
+                    <!-- 计划列表容器 -->
+                    <div id="plan-list" class="plan-list">
+                        <!-- 这里会动态加载计划 -->
+                    </div>
+                    
+                    <!-- 添加计划表单 -->
+                    <div class="add-plan">
+                        <input type="time" id="new-plan-time" placeholder="时间">
+                        <input type="text" id="new-plan-task" placeholder="输入学习任务...">
+                        <button id="add-plan-btn">添加计划</button>
+                    </div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">多源内容录入</div>
+                    <input id="link-input" class="mini-input" placeholder="粘贴学习链接（B站/知乎/MOOC）">
+                    <button id="save-link-btn" class="mini-btn primary">保存链接并抽取知识</button>
+
+                    <textarea id="note-input" class="mini-input" style="min-height:72px; resize:vertical;" placeholder="记录学习笔记或总结"></textarea>
+                    <button id="save-note-btn" class="mini-btn green">保存笔记并抽取知识</button>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">错题归因诊断</div>
+                    <input id="diag-question" class="mini-input" placeholder="题目描述">
+                    <input id="diag-correct" class="mini-input" placeholder="正确答案">
+                    <input id="diag-user" class="mini-input" placeholder="你的答案">
+                    <button id="run-diag-btn" class="mini-btn orange">分析错误原因</button>
+                    <div id="diag-result" class="mini-list">提交后显示诊断结果</div>
+                </div>
+
+                <div class="card">
+                    <div class="card-title">个性化推荐</div>
+                    <div id="recommendation-list" class="mini-list">加载中...</div>
+                </div>
+                
+                <a href="dashboard.html" class="dashboard-link">查看完整学习报告</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/user-context.js"></script>
+    <script>
+        const API_BASE = 'http://127.0.0.1:5000';
+
+        function getUserId() {
+            return window.UserContext ? window.UserContext.getUserId() : 'default_user';
+        }
+
+        function escapeHtml(text) {
+            return String(text || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function formatInline(text) {
+            return text
+                .replace(/`([^`]+)`/g, '<code>$1</code>')
+                .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+        }
+
+        function formatSegment(segment) {
+            const trimmed = segment.trim();
+            if (!trimmed) return '';
+
+            const lines = trimmed.split('\n').filter(Boolean);
+            const ul = lines.every(line => /^[-*•]\s+/.test(line));
+            const ol = lines.every(line => /^\d+\.\s+/.test(line));
+
+            if (ul) {
+                return `<ul>${lines.map(line => `<li>${formatInline(line.replace(/^[-*•]\s+/, ''))}</li>`).join('')}</ul>`;
+            }
+
+            if (ol) {
+                return `<ol>${lines.map(line => `<li>${formatInline(line.replace(/^\d+\.\s+/, ''))}</li>`).join('')}</ol>`;
+            }
+
+            return `<p>${formatInline(trimmed.replace(/\n/g, '<br>'))}</p>`;
+        }
+
+        function renderRichText(text) {
+            const safe = escapeHtml(text).replace(/\r\n/g, '\n');
+            const chunks = safe.split(/```/);
+            const html = chunks.map((chunk, idx) => {
+                if (idx % 2 === 1) {
+                    return `<pre><code>${chunk.trim()}</code></pre>`;
+                }
+                return chunk
+                    .split(/\n\s*\n/)
+                    .map(formatSegment)
+                    .join('');
+            }).join('');
+
+            return html || '<p>(空响应)</p>';
+        }
+
+        function normalizeAiAnswerText(text) {
+            const content = String(text || '');
+            const hasGarbledHint = /[?？]{8,}/.test(content) || /�/.test(content);
+            if (!hasGarbledHint) return content;
+            return [
+                '检测到回答可能存在编码异常，我建议你重发一次问题，或改用更短的中文句子提问。',
+                '',
+                '原始返回：',
+                content
+            ].join('\n');
+        }
+
+        function createMessageRow(text, sender, options) {
+            const opts = options || {};
+            const row = document.createElement('div');
+            row.className = `message-row ${sender === 'user' ? 'user' : 'assistant'}`;
+
+            const avatar = document.createElement('div');
+            avatar.className = 'avatar';
+            avatar.textContent = sender === 'user' ? '我' : 'AI';
+
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+
+            const textDiv = document.createElement('div');
+            textDiv.className = 'message-text';
+            if (sender === 'user') {
+                textDiv.innerHTML = `<p>${escapeHtml(text)}</p>`;
+            } else {
+                textDiv.innerHTML = renderRichText(text);
+            }
+            bubble.appendChild(textDiv);
+
+            const metaItems = [];
+            if (sender === 'ai' && opts.source) {
+                metaItems.push(`<span class="meta-chip">来源：${escapeHtml(opts.source)}</span>`);
+            }
+            if (sender === 'ai' && typeof opts.aiUsed === 'boolean') {
+                metaItems.push(`<span class="meta-chip">${opts.aiUsed ? '真实AI回答' : '回退回答'}</span>`);
+            }
+            if (sender === 'ai' && opts.error) {
+                metaItems.push(`<span class="meta-chip error">${escapeHtml(opts.error)}</span>`);
+            }
+
+            if (metaItems.length > 0) {
+                const metaDiv = document.createElement('div');
+                metaDiv.className = 'message-meta';
+                metaDiv.innerHTML = metaItems.join('');
+                bubble.appendChild(metaDiv);
+            }
+
+            if (sender === 'user') {
+                row.appendChild(bubble);
+                row.appendChild(avatar);
+            } else {
+                row.appendChild(avatar);
+                row.appendChild(bubble);
+            }
+
+            return row;
+        }
+
+        function addMessage(text, sender, options) {
+            const chatMessages = document.getElementById('chatMessages');
+            const row = createMessageRow(text, sender, options || {});
+            chatMessages.appendChild(row);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            return row;
+        }
+
+        function addTypingMessage() {
+            const chatMessages = document.getElementById('chatMessages');
+            const row = document.createElement('div');
+            row.className = 'message-row assistant';
+            row.id = 'typingRow';
+            row.innerHTML = `
+                <div class="avatar">AI</div>
+                <div class="message-bubble">
+                    <div class="typing-dots"><span></span><span></span><span></span></div>
+                </div>
+            `;
+            chatMessages.appendChild(row);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+
+        function removeTypingMessage() {
+            const typing = document.getElementById('typingRow');
+            if (typing && typing.parentNode) {
+                typing.parentNode.removeChild(typing);
+            }
+        }
+
+        async function refreshAiStatus() {
+            const dot = document.getElementById('aiStatusDot');
+            const text = document.getElementById('aiStatusText');
+            if (!dot || !text) return;
+
+            try {
+                const resp = await fetch(`${API_BASE}/health`);
+                const data = await resp.json();
+                const online = !!(data.ai_enabled && data.ai_key_configured);
+                dot.className = `status-dot ${online ? 'online' : 'offline'}`;
+                text.textContent = online ? `AI在线 · ${data.provider || 'qwen'}` : 'AI未配置或不可用';
+            } catch (error) {
+                dot.className = 'status-dot offline';
+                text.textContent = '后端离线';
+            }
+        }
+
+        async function autoExtractKnowledge(text, source) {
+            if (!text) return;
+            try {
+                await fetch(`${API_BASE}/api/knowledge_graph/extract`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: getUserId(),
+                        text,
+                        source
+                    })
+                });
+                window.dispatchEvent(new Event('knowledge:updated'));
+            } catch (error) {
+                console.warn('知识抽取触发失败:', error);
+            }
+        }
+
+        async function ingestContent(contentType, content, title) {
+            if (!content) return;
+            try {
+                const resp = await fetch(`${API_BASE}/api/content/ingest_async`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: getUserId(),
+                        content_type: contentType,
+                        content,
+                        title: title || '',
+                        source: 'home'
+                    })
+                });
+                const data = await resp.json();
+
+                if (data.mode === 'async' && data.task_id) {
+                    await pollTaskUntilDone(data.task_id, 12000);
+                }
+
+                window.dispatchEvent(new Event('knowledge:updated'));
+                loadHomeProfileAndGraph();
+                loadRecommendations();
+            } catch (error) {
+                console.warn('内容录入失败:', error);
+            }
+        }
+
+        async function pollTaskUntilDone(taskId, timeoutMs) {
+            const start = Date.now();
+            while (Date.now() - start < timeoutMs) {
+                const resp = await fetch(`${API_BASE}/api/tasks/${taskId}`);
+                const data = await resp.json();
+                if (data.state === 'SUCCESS') return data.result;
+                if (data.state === 'FAILURE') throw new Error(data.error || '任务失败');
+                await new Promise(resolve => setTimeout(resolve, 600));
+            }
+            throw new Error('异步任务超时');
+        }
+
+        function renderHomeHeatmap(nodes) {
+            const box = document.getElementById('home-heatmap');
+            if (!box) return;
+            if (!nodes || nodes.length === 0) {
+                box.innerHTML = '<div class="heatmap-cell level-1">暂无数据</div>';
+                return;
+            }
+            box.innerHTML = nodes.slice(0, 8).map((n) => {
+                const m = Number(n.mastery || 0);
+                let level = 'level-1';
+                if (m >= 0.75) level = 'level-4';
+                else if (m >= 0.55) level = 'level-3';
+                else if (m >= 0.35) level = 'level-2';
+                return `<div class="heatmap-cell ${level}" title="掌握度 ${Math.round(m * 100)}%">${n.name}</div>`;
+            }).join('');
+        }
+
+        async function loadHomeProfileAndGraph() {
+            try {
+                const userId = getUserId();
+                const [profileResp, graphResp] = await Promise.all([
+                    fetch(`${API_BASE}/api/profile?user_id=${userId}`),
+                    fetch(`${API_BASE}/api/knowledge_graph?user_id=${userId}`)
+                ]);
+                const profileData = await profileResp.json();
+                const graphData = await graphResp.json();
+
+                if (profileData.success && profileData.profile) {
+                    const p = profileData.profile;
+                    const styleMap = { visual: '视觉型', auditory: '听觉型', kinesthetic: '动觉型' };
+                    document.getElementById('profile-style').textContent = styleMap[p.learning_style] || p.learning_style || '未知';
+                    document.getElementById('profile-interests').textContent = (p.interests || []).slice(0, 3).join('、') || '综合学习';
+                    document.getElementById('profile-best-time').textContent = p.best_time_range || '15:00-17:00';
+                }
+
+                if (graphData.success) {
+                    renderHomeHeatmap((graphData.graph && graphData.graph.nodes) || []);
+                }
+            } catch (error) {
+                console.warn('首页画像/图谱加载失败:', error);
+            }
+        }
+
+        async function loadRecommendations() {
+            const list = document.getElementById('recommendation-list');
+            if (!list) return;
+            try {
+                const userId = getUserId();
+                const resp = await fetch(`${API_BASE}/api/recommendations?user_id=${userId}&limit=4`);
+                const data = await resp.json();
+                if (!data.success || !data.items || data.items.length === 0) {
+                    list.textContent = '暂无推荐';
+                    return;
+                }
+                list.innerHTML = data.items.map(item => {
+                    const pct = Math.round((item.mastery || 0) * 100);
+                    return `<div class="mini-item">${item.title}<br><span style="color:#6b7280;">${item.reason}（当前${pct}%）</span></div>`;
+                }).join('');
+            } catch (error) {
+                list.textContent = '推荐加载失败';
+            }
+        }
+
+        async function runDiagnosis() {
+            const question = document.getElementById('diag-question').value.trim();
+            const correct = document.getElementById('diag-correct').value.trim();
+            const user = document.getElementById('diag-user').value.trim();
+            const resultBox = document.getElementById('diag-result');
+
+            if (!question || !correct || !user) {
+                resultBox.textContent = '请完整输入题目、正确答案和你的答案';
+                return;
+            }
+
+            resultBox.textContent = '分析中...';
+            try {
+                const resp = await fetch(`${API_BASE}/api/diagnosis/analyze`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: getUserId(),
+                        question,
+                        correct_answer: correct,
+                        user_answer: user
+                    })
+                });
+                const data = await resp.json();
+                if (!data.success) {
+                    resultBox.textContent = data.message || '诊断失败';
+                    return;
+                }
+
+                const d = data.diagnosis || {};
+                resultBox.innerHTML = `<div class="mini-item">错误类型：${d.error_type || '-'}<br>分类：${d.category || '-'}<br>建议：${d.recommendation || '-'}</div>`;
+                window.dispatchEvent(new Event('knowledge:updated'));
+                loadHomeProfileAndGraph();
+                loadRecommendations();
+            } catch (error) {
+                resultBox.textContent = '诊断失败，请稍后重试';
+            }
+        }
+        
+        // 发送问题
+        async function askQuestion() {
+            const question = document.getElementById('questionInput').value.trim();
+            if (!question) return;
+            
+            // 添加用户消息到界面
+            addMessage(question, 'user');
+            document.getElementById('questionInput').value = '';
+            
+            // 显示加载状态
+            addTypingMessage();
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/ask`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ 
+                        question: question,
+                        user_id: getUserId()
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // 移除加载消息
+                removeTypingMessage();
+                
+                // 添加AI回答
+                addMessage(normalizeAiAnswerText(data.answer), 'ai', {
+                    source: data.source,
+                    aiUsed: data.ai_used,
+                    error: data.error
+                });
+                autoExtractKnowledge(question, 'qa');
+                refreshAiStatus();
+                
+            } catch (error) {
+                removeTypingMessage();
+                addMessage('抱歉，网络连接失败。请检查后端服务是否启动。', 'ai', {
+                    source: 'system',
+                    aiUsed: false,
+                    error: 'network_error'
+                });
+                refreshAiStatus();
+            }
+        }
+        
+        // 上传图片
+        async function uploadImage() {
+            const fileInput = document.getElementById('imageUpload');
+            const file = fileInput.files[0];
+            if (!file) {
+                alert('请先选择图片');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('image', file);
+            formData.append('user_id', getUserId());
+            
+            addTypingMessage();
+            
+            try {
+                const response = await fetch(`${API_BASE}/api/upload_image`, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                removeTypingMessage();
+                addMessage(`图片分析完成。识别到知识点：${(data.detected_concepts || []).join('、') || '暂无'}`, 'ai', {
+                    source: 'ocr',
+                    aiUsed: true,
+                    error: ''
+                });
+                autoExtractKnowledge((data.detected_concepts || []).join('，'), 'image');
+                
+            } catch (error) {
+                removeTypingMessage();
+                addMessage('图片上传失败，请重试。', 'ai', {
+                    source: 'ocr',
+                    aiUsed: false,
+                    error: 'upload_failed'
+                });
+            }
+        }
+        
+        // 回车发送
+        document.getElementById('questionInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                askQuestion();
+            }
+        });
+        
+        // 图片选择事件
+        document.getElementById('imageUpload').addEventListener('change', function() {
+            if (this.files.length > 0) {
+                addMessage(`已选择图片：${this.files[0].name}`, 'user');
+            }
+        });
+
+        function initContentIngestUI() {
+            const linkInput = document.getElementById('link-input');
+            const noteInput = document.getElementById('note-input');
+            const saveLinkBtn = document.getElementById('save-link-btn');
+            const saveNoteBtn = document.getElementById('save-note-btn');
+            const runDiagBtn = document.getElementById('run-diag-btn');
+
+            if (saveLinkBtn && linkInput) {
+                saveLinkBtn.addEventListener('click', async function() {
+                    const val = linkInput.value.trim();
+                    if (!val) return;
+                    await ingestContent('link', val, '学习链接');
+                    linkInput.value = '';
+                    addMessage('已保存学习链接并更新知识图谱。', 'ai', {
+                        source: 'content',
+                        aiUsed: true,
+                        error: ''
+                    });
+                });
+            }
+
+            if (saveNoteBtn && noteInput) {
+                saveNoteBtn.addEventListener('click', async function() {
+                    const val = noteInput.value.trim();
+                    if (!val) return;
+                    await ingestContent('note', val, '学习笔记');
+                    noteInput.value = '';
+                    addMessage('已保存学习笔记并更新知识图谱。', 'ai', {
+                        source: 'content',
+                        aiUsed: true,
+                        error: ''
+                    });
+                });
+            }
+
+            if (runDiagBtn) {
+                runDiagBtn.addEventListener('click', runDiagnosis);
+            }
+        }
+
+        function initUserContextUI() {
+            const input = document.getElementById('user-id-input');
+            const saveBtn = document.getElementById('save-user-id-btn');
+            const label = document.getElementById('current-user-label');
+            if (!input || !saveBtn || !label || !window.UserContext) return;
+
+            const refreshUser = () => {
+                const uid = window.UserContext.getUserId();
+                input.value = uid;
+                label.textContent = `当前用户：${uid}`;
+            };
+
+            refreshUser();
+
+            saveBtn.addEventListener('click', function () {
+                const newUserId = window.UserContext.setUserId(input.value || 'default_user');
+                label.textContent = `当前用户：${newUserId}`;
+                window.dispatchEvent(new Event('knowledge:updated'));
+                loadHomeProfileAndGraph();
+                loadRecommendations();
+            });
+
+            window.UserContext.onChange(refreshUser);
+        }
+
+        window.addEventListener('knowledge:updated', function () {
+            loadHomeProfileAndGraph();
+            loadRecommendations();
+        });
+
+        addMessage(
+            '你好，我是坊知工学习助手。你可以直接提问，我会给出结构化、可执行的学习建议。',
+            'ai',
+            { source: 'system', aiUsed: true, error: '' }
+        );
+
+        initContentIngestUI();
+        initUserContextUI();
+        loadHomeProfileAndGraph();
+        loadRecommendations();
+        refreshAiStatus();
+    </script>
+    <!-- 添加学习计划功能脚本 -->
+    <script src="js/main.js"></script>
+</body>
+</html>
