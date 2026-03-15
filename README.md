@@ -2,226 +2,223 @@
 
 面向学习场景的智能学习伴侣，提供问答、知识图谱、诊断、推荐、复习提醒一体化能力。
 
-## 目录
+## 先看结论
 
-- [2 分钟快速开始](#2-分钟快速开始)
-- [常用命令](#常用命令)
-- [首次配置详细步骤](#首次配置详细步骤)
-- [项目功能](#项目功能)
-- [系统架构](#系统架构)
-- [页面与接口](#页面与接口)
-- [项目结构](#项目结构)
-- [常见问题](#常见问题)
+- 仓库不包含必须的大型运行包也可以正常部署和运行核心功能。
+- 首次部署建议使用“手动启动”方式，不依赖本地路径硬编码脚本。
+- Redis、Celery、Neo4j、真实 AI 都是可选增强项，未配置时系统会回退。
 
 ---
 
-## 2 分钟快速开始
+## 目录
 
-1. 安装依赖
+- [1. 运行环境](#1-运行环境)
+- [2. 最小可运行部署（推荐）](#2-最小可运行部署推荐)
+- [3. 健康检查](#3-健康检查)
+- [4. 启用真实 AI（可选）](#4-启用真实-ai可选)
+- [5. 启用 Redis + Celery（可选）](#5-启用-redis--celery可选)
+- [6. 启用 Neo4j（可选）](#6-启用-neo4j可选)
+- [7. 第三方工具下载（按需）](#7-第三方工具下载按需)
+- [8. Windows 启停脚本说明](#8-windows-启停脚本说明)
+- [9. 常见问题](#9-常见问题)
+
+---
+
+## 1. 运行环境
+
+必需：
+
+- Python 3.10+
+- Git
+
+可选：
+
+- Redis（用于异步任务）
+- Neo4j（用于图谱持久化）
+
+说明：
+
+- 没有 Redis/Celery，接口会自动回退同步处理。
+- 没有 Neo4j，图谱会回退本地存储。
+- 没有 AI Key，问答会回退兜底回答。
+
+---
+
+## 2. 最小可运行部署（推荐）
+
+### 2.1 克隆仓库
+
+```powershell
+git clone https://github.com/mapleleaves28744/dachuang_fangzhigong.git
+cd dachuang_fangzhigong
+```
+
+### 2.2 安装后端依赖
 
 ```powershell
 cd backend
 pip install -r requirements.txt
 ```
 
-2. 配置环境变量（复制并修改）
+### 2.3 创建环境变量
 
 ```powershell
 copy .env.example .env
 ```
 
-至少填写 `QWEN_API_KEY`，其余可先保持默认。
+推荐首次先用最稳妥配置（backend/.env）：
 
-3. 一键启动
-
-```powershell
-powershell -ExecutionPolicy Bypass -File backend/start-dev-stack.ps1
+```env
+USE_REAL_AI=false
+OCR_PROVIDER=mock
+USE_NEO4J=false
 ```
 
-4. 打开页面
+### 2.4 启动后端
+
+在项目根目录执行：
+
+```powershell
+python backend/app.py
+```
+
+### 2.5 启动前端静态服务
+
+新开一个终端，在项目根目录执行：
+
+```powershell
+python -m http.server 5501 --directory frontend
+```
+
+### 2.6 打开页面
 
 - 前端首页: http://127.0.0.1:5501/index.html
 - 健康检查: http://127.0.0.1:5000/health
 
-5. 一键停止（用完关闭）
-
-```powershell
-powershell -ExecutionPolicy Bypass -File backend/stop-dev-stack.ps1
-```
-
 ---
 
-## 常用命令
+## 3. 健康检查
 
-启动完整开发栈：
-
-```powershell
-powershell -ExecutionPolicy Bypass -File backend/start-dev-stack.ps1
-```
-
-停止完整开发栈：
-
-```powershell
-powershell -ExecutionPolicy Bypass -File backend/stop-dev-stack.ps1
-```
-
-查看后端健康状态：
+执行：
 
 ```powershell
 Invoke-RestMethod -Uri http://127.0.0.1:5000/health | ConvertTo-Json -Depth 5
 ```
 
+首次最小部署时，下面这些字段是正常的：
+
+- status: ok
+- celery_enabled: false
+- neo4j_enabled: false
+- ai_key_configured: false（若未配置 Key）
+
 ---
 
-## 首次配置详细步骤
+## 4. 启用真实 AI（可选）
 
-### 1. 运行环境
-
-- Windows 10/11
-- Python 3.10+
-- Conda（当前项目默认路径为 `D:/anaconda`）
-- Git
-
-### 2. 安装后端依赖
-
-```powershell
-cd backend
-pip install -r requirements.txt
-```
-
-如果你使用 conda base 环境，也可以执行：
-
-```powershell
-D:/anaconda/Scripts/conda.exe run -p D:\anaconda --no-capture-output pip install -r backend/requirements.txt
-```
-
-### 3. 配置 backend/.env
-
-参考 `backend/.env.example`，一个常用模板如下：
+编辑 backend/.env：
 
 ```env
 AI_PROVIDER=qwen
 USE_REAL_AI=true
-
 QWEN_API_KEY=your-qwen-api-key
 QWEN_API_URL=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
 QWEN_MODEL_NAME=qwen-plus
+```
 
-# OCR
-OCR_PROVIDER=mock
-QWEN_VL_MODEL_NAME=qwen-vl-plus
+启动后再次查看 /health，确认 ai_key_configured 为 true。
 
-# Neo4j（可选）
-USE_NEO4J=auto
-NEO4J_URI=neo4j+s://<your-instance>.databases.neo4j.io
-NEO4J_USERNAME=<your-neo4j-username>
-NEO4J_PASSWORD=<your-neo4j-password>
-NEO4J_DATABASE=<your-neo4j-database>
+---
 
-# Celery + Redis（可选）
+## 5. 启用 Redis + Celery（可选）
+
+### 5.1 安装并启动 Redis
+
+请先在本机安装 Redis，并确保 6379 端口可用。
+
+### 5.2 配置 backend/.env
+
+```env
 CELERY_BROKER_URL=redis://127.0.0.1:6379/0
 CELERY_RESULT_BACKEND=redis://127.0.0.1:6379/1
 ```
 
-安全提醒：
+### 5.3 启动 Celery Worker
 
-- `.env` 只保留在本地，不要提交到仓库。
-- API Key 泄露后请立即轮换。
-
-### 4. 启动方式
-
-推荐一键启动（Redis + Celery + Flask + 前端）：
+在 backend 目录执行：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File backend/start-dev-stack.ps1
-```
-
-### 5. 启动成功判定
-
-访问 `http://127.0.0.1:5000/health`，建议至少满足：
-
-```json
-{
-  "status": "ok",
-  "ai_enabled": true,
-  "ai_key_configured": true,
-  "celery_enabled": true
-}
+celery -A app.celery_client worker -l info -P solo
 ```
 
 说明：
 
-- `neo4j_enabled` 为可选项。配置了 Aura/Neo4j 后应为 `true`。
-- 未配置 Neo4j 时为 `false`，系统会自动回退到 JSON 存储。
+- 不启用 Celery 也可运行，异步接口会自动回退同步模式。
 
-### 6. 停止服务
+---
 
-仓库已提供一键停止脚本：
+## 6. 启用 Neo4j（可选）
+
+编辑 backend/.env：
+
+```env
+USE_NEO4J=true
+NEO4J_URI=neo4j+s://<your-instance>.databases.neo4j.io
+NEO4J_USERNAME=<your-neo4j-username>
+NEO4J_PASSWORD=<your-neo4j-password>
+NEO4J_DATABASE=<your-neo4j-database>
+```
+
+若不需要 Neo4j，请保持 USE_NEO4J=false 或 auto（未配全参数时自动关闭）。
+
+---
+
+## 7. 第三方工具下载（按需）
+
+为了避免仓库体积过大，项目不强制内置下列安装包。需要时请自行下载并安装：
+
+- Redis: https://redis.io/docs/latest/operate/oss_and_stack/install/
+- Neo4j: https://neo4j.com/download/
+
+你也可以使用云服务版本（例如 Neo4j Aura），不需要本地安装包。
+
+---
+
+## 8. Windows 启停脚本说明
+
+仓库提供了：
+
+- backend/start-dev-stack.ps1
+- backend/stop-dev-stack.ps1
+
+这些脚本更适合作者本机环境，可能包含路径或本地工具目录假设。首次部署建议优先按本 README 的手动步骤启动。
+
+---
+
+## 9. 常见问题
+
+### 9.1 PowerShell 中文乱码
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File backend/stop-dev-stack.ps1
+chcp 65001
 ```
 
-这个脚本会尝试停止：
+### 9.2 后端能启动但问答不是大模型回答
 
-- 后端（5000）
-- 前端静态服务（5501）
-- Redis（6379）
-- Celery 相关进程
+检查 backend/.env 中：
 
----
+- USE_REAL_AI=true
+- QWEN_API_KEY 已正确填写
 
-## 项目功能
+并在 /health 确认 ai_key_configured=true。
 
-- 智能问答: 基于大模型的学习问答与引导。
-- 知识图谱: 从问答、笔记、图片内容抽取知识点并构建关系。
-- 掌握度追踪: 支持节点掌握度更新、薄弱点识别、复习提醒。
-- 学习路径规划: 目标知识点的先修路径生成。
-- 错题归因诊断: 分析错误类型并给出改进建议。
-- 个性化推荐: 结合学习画像和薄弱点生成推荐内容。
-- 异步处理: Celery 任务化处理内容录入，提升交互流畅度。
+### 9.3 Celery 未启用
 
----
+确认 Redis 正常监听 6379，并已启动 worker。
 
-## 系统架构
+### 9.4 Neo4j 未启用
 
-```mermaid
-flowchart LR
-  U[User Browser] --> FE[Frontend Pages]
-  FE --> API[Flask API]
-
-  API --> AI[Qwen/DeepSeek]
-  API --> KGJ[JSON Graph]
-  API --> NEO[(Neo4j Optional)]
-  API --> REDIS[(Redis)]
-  API --> CEL[Celery Worker]
-  CEL --> REDIS
-```
-
-回退机制：
-
-- Neo4j 未配置时，图谱回退到本地 JSON。
-- Redis/Celery 不可用时，任务回退为同步处理。
-
----
-
-## 页面与接口
-
-核心页面：
-
-- `frontend/index.html`: 首页问答与学习入口
-- `frontend/dashboard.html`: 学习仪表盘
-- `frontend/knowledge-map.html`: 知识图谱可视化
-
-核心接口：
-
-- `POST /api/ask`: 智能问答
-- `GET /api/knowledge_graph`: 获取图谱
-- `POST /api/knowledge_graph/mastery`: 更新掌握度
-- `DELETE /api/knowledge_graph/node`: 删除节点
-- `POST /api/content/ingest_async`: 异步内容录入
-- `GET /api/tasks/<task_id>`: 查询异步任务状态
-- `GET /health`: 运行状态检查
+确认 NEO4J_URI、NEO4J_USERNAME、NEO4J_PASSWORD、NEO4J_DATABASE 配置完整且可连通。
 
 ---
 
@@ -247,42 +244,3 @@ fzg/
 │  └─ js/
 └─ data/
 ```
-
----
-
-## 常见问题
-
-### 1) PowerShell 拒绝执行脚本
-
-```powershell
-powershell -ExecutionPolicy Bypass -File backend/start-dev-stack.ps1
-```
-
-### 2) 终端中文乱码
-
-```powershell
-chcp 65001
-```
-
-### 3) AI 看起来未生效
-
-检查 `/health` 中 `ai_key_configured` 是否为 `true`。
-
-### 4) Neo4j 未启用
-
-检查 `.env` 中以下字段是否完整：
-
-- `NEO4J_URI`
-- `NEO4J_USERNAME`
-- `NEO4J_PASSWORD`
-- `NEO4J_DATABASE`
-
-### 5) Celery 未启用
-
-检查 Redis 6379 端口是否监听，并确认 worker 进程是否启动。
-
----
-
-## 说明
-
-本项目用于学习与实验场景。提交代码前请清理本地密钥、缓存与运行时数据文件。
