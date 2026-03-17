@@ -95,7 +95,74 @@ powershell -ExecutionPolicy Bypass -File backend/start-dev-stack.ps1
 powershell -ExecutionPolicy Bypass -File backend/stop-dev-stack.ps1
 ```
 
-### 2.3 验证是否“完整功能”启动成功
+### 2.3 手动启动（不使用一键脚本）
+
+如果你的队友不想使用一键脚本，可以按下面步骤手动启动。
+
+步骤 1：进入项目根目录
+
+```powershell
+cd fzg
+```
+
+步骤 2：安装依赖（首次或依赖更新后执行）
+
+```powershell
+cd backend
+python -m pip install -r requirements.txt
+cd ..
+```
+
+步骤 3：准备 `.env`
+
+- 在 `backend` 目录创建 `.env`（可复制 `.env.example` 后修改）。
+- 最低可运行建议：`STORAGE_BACKEND=sql`、`DATABASE_URL=sqlite:///data/fzg.db`。
+- 想启用完整功能时，再补充 Neo4j Aura、AI Key、Redis/Celery 相关配置。
+
+步骤 4（可选）：启动 Redis（完整异步功能需要）
+
+```powershell
+cd backend
+tools\redis\redis-server.exe tools\redis\redis.windows.conf --port 6379
+```
+
+说明：该命令会占用当前终端。建议新开一个终端窗口运行。
+
+步骤 5（可选）：启动 Celery Worker（完整异步功能需要）
+
+```powershell
+cd backend
+$env:CELERY_BROKER_URL='redis://127.0.0.1:6379/0'
+$env:CELERY_RESULT_BACKEND='redis://127.0.0.1:6379/1'
+python -m celery -A app.celery_client worker -l info -P solo
+```
+
+说明：该命令也会占用当前终端，建议在另一个终端窗口运行。
+
+步骤 6：启动后端 API
+
+```powershell
+python backend/app.py
+```
+
+步骤 7：启动前端静态服务（再开一个终端）
+
+```powershell
+python -m http.server 5501 --directory frontend
+```
+
+步骤 8：验证运行状态
+
+```powershell
+Invoke-RestMethod -Uri http://127.0.0.1:5000/health | ConvertTo-Json -Depth 5
+```
+
+健康检查判断：
+
+- 最低可运行：`status=ok`。
+- 完整功能：`status=ok` 且 `celery_enabled=true`、`neo4j_enabled=true`。
+
+### 2.4 验证是否“完整功能”启动成功
 
 ```powershell
 Invoke-RestMethod -Uri http://127.0.0.1:5000/health | ConvertTo-Json -Depth 5
@@ -113,7 +180,7 @@ Invoke-RestMethod -Uri http://127.0.0.1:5000/health | ConvertTo-Json -Depth 5
 
 - 你只要看到 `neo4j_enabled=true`，就说明已成功连接 Aura，不需要本地 Neo4j。
 
-### 2.4 前端访问
+### 2.5 前端访问
 
 - 首页: http://127.0.0.1:5501/index.html
 - 仪表盘: http://127.0.0.1:5501/dashboard.html
