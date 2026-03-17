@@ -47,7 +47,11 @@ def try_delete_concept_with_retry(u_id, concept, attempts=3, base_delay=0.5):
 
 try:
     from celery.result import AsyncResult
+except ImportError:
+    # Celery 5.x+ 或模块不存在时的兼容处理
+    AsyncResult = None
 except Exception:
+    # 其他异常情况也设置为 None
     AsyncResult = None
 
 app = Flask(__name__)
