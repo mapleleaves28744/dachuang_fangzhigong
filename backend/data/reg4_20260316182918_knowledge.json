@@ -1,0 +1,51 @@
+{
+  "concepts": [
+    {
+      "concept": "derivative",
+      "first_seen": "2026-03-16T18:29:33.121508",
+      "last_seen": "2026-03-16T18:29:33.121508",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "limit",
+      "first_seen": "2026-03-16T18:29:33.121508",
+      "last_seen": "2026-03-16T18:29:33.121508",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "integral",
+      "first_seen": "2026-03-16T18:29:33.121508",
+      "last_seen": "2026-03-16T18:29:33.121508",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    }
+  ],
+  "relations": [
+    {
+      "source": "derivative",
+      "target": "limit",
+      "type": "前置",
+      "score": 0.95,
+      "evidence": "derivative depends on limit",
+      "source_text": "derivative depends on limit and integral",
+      "created_at": "2026-03-16T18:29:33.121508",
+      "from": "content_note"
+    },
+    {
+      "source": "derivative",
+      "target": "integral",
+      "type": "相关",
+      "score": 0.85,
+      "evidence": "derivative depends on integral",
+      "source_text": "derivative depends on limit and integral",
+      "created_at": "2026-03-16T18:29:33.121508",
+      "from": "content_note"
+    }
+  ],
+  "deleted_concepts": []
+}

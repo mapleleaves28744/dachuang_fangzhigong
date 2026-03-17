@@ -3,6 +3,7 @@ from flask_cors import CORS
 import requests
 import json
 from datetime import datetime, timedelta
+from collections import deque
 import os
 import uuid
 import re
@@ -11,6 +12,38 @@ from knowledge_graph import KnowledgeGraph
 from cognitive_diagnosis import CognitiveDiagnosis
 from neo4j_store import Neo4jGraphStore
 from celery_app import create_celery
+from learning_profile import (
+    build_learning_profile as build_learning_profile_core,
+    build_recommendations as build_recommendations_core,
+    build_recommendation_context,
+)
+import logging
+import time
+
+# 简单日志配置
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+
+def try_delete_concept_with_retry(u_id, concept, attempts=3, base_delay=0.5):
+    """模块级删除重试函数，供 sync 路径和 Celery 任务复用。"""
+    for attempt in range(1, attempts + 1):
+        try:
+            ok = neo4j_store.delete_concept(user_id=u_id, concept=concept)
+            if ok:
+                logger.info("deleted concept '%s' for user %s (attempt %d)", concept, u_id, attempt)
+                return True
+            else:
+                logger.warning("delete_concept returned False for %s (user=%s) on attempt %d", concept, u_id, attempt)
+        except Exception as e:
+            logger.exception("delete_concept exception for %s (user=%s) on attempt %d: %s", concept, u_id, attempt, e)
+
+        if attempt < attempts:
+            delay = base_delay * (2 ** (attempt - 1))
+            time.sleep(delay)
+
+    logger.error("failed to delete concept '%s' for user %s after %d attempts", concept, u_id, attempts)
+    return False
 
 try:
     from celery.result import AsyncResult
@@ -19,6 +52,68 @@ except Exception:
 
 app = Flask(__name__)
 CORS(app)  # 允许跨域请求
+
+TASK_META = {}
+TASK_META_MAX_SIZE = 500
+
+
+def register_task_meta(task_id, task_type, user_id=None, extra=None):
+    if not task_id:
+        return
+
+    TASK_META[task_id] = {
+        "task_type": task_type,
+        "user_id": user_id,
+        "created_at": datetime.now().isoformat(),
+        "extra": extra or {},
+    }
+
+    # 控制内存大小，保留最新任务。
+    if len(TASK_META) > TASK_META_MAX_SIZE:
+        old_keys = sorted(TASK_META.keys(), key=lambda k: TASK_META[k].get("created_at", ""))[:50]
+        for k in old_keys:
+            TASK_META.pop(k, None)
+
+
+def get_request_id():
+    """获取或生成请求追踪ID。"""
+    req_id = (request.headers.get("X-Request-Id", "") or "").strip()
+    if req_id:
+        return req_id
+
+    req_id = (request.args.get("request_id", "") or "").strip()
+    if req_id:
+        return req_id
+
+    body = request.get_json(silent=True) or {}
+    req_id = str(body.get("request_id", "") or "").strip()
+    if req_id:
+        return req_id
+
+    return str(uuid.uuid4())
+
+
+def success_payload(request_id, message="", **data):
+    payload = {
+        "success": True,
+        "request_id": request_id,
+    }
+    if message:
+        payload["message"] = message
+    payload.update(data)
+    return payload
+
+
+def error_response(request_id, status_code, error_code, error_message, **data):
+    payload = {
+        "success": False,
+        "request_id": request_id,
+        "error_code": error_code,
+        "error_message": error_message,
+        "message": error_message,
+    }
+    payload.update(data)
+    return jsonify(payload), status_code
 
 
 def load_simple_env_files():
@@ -73,6 +168,9 @@ DEEPSEEK_MODEL_NAME = os.getenv("DEEPSEEK_MODEL_NAME", "deepseek-chat")
 # OCR 配置
 OCR_PROVIDER = os.getenv("OCR_PROVIDER", "mock").lower()  # mock|qwen_vl
 QWEN_VL_MODEL_NAME = os.getenv("QWEN_VL_MODEL_NAME", "qwen-vl-plus")
+GRAPH_PRIMARY = os.getenv("GRAPH_PRIMARY", "auto").strip().lower()  # auto|neo4j|json
+GRAPH_SYNC_MODE = os.getenv("GRAPH_SYNC_MODE", "auto").strip().lower()  # auto|sync|async
+RELATION_MIN_SCORE = float(os.getenv("RELATION_MIN_SCORE", "0.45"))
 
 # 异步任务配置
 celery_client = create_celery()
@@ -85,12 +183,17 @@ from database import (
     set_user_knowledge,
     get_user_profile,
     set_user_profile,
+    get_user_event_list as db_get_user_event_list,
+    append_user_event as db_append_user_event,
+    get_storage_info,
+    init_storage,
 )
 
 # 初始化数据目录
 def init_data():
     """初始化数据目录和文件"""
     os.makedirs("data", exist_ok=True)
+    init_storage()
 
 init_data()
 diagnosis_engine = CognitiveDiagnosis()
@@ -137,6 +240,47 @@ DEFAULT_CONCEPTS = [
         "prerequisites": ["导数"]
     }
 ]
+
+DEFAULT_CONCEPT_STOPWORDS = {
+    "学习", "知识", "内容", "问题", "方法", "技巧", "步骤", "建议", "能力", "提升",
+    "练习", "复习", "任务", "课程", "目标", "方向", "理解", "掌握", "应用",
+    "这个", "那个", "我们", "你们", "他们", "如何", "什么", "为什么",
+}
+
+
+def get_configured_concept_stopwords():
+    """获取可配置的概念黑名单（环境变量 + 本地文件）。"""
+    stopwords = set(DEFAULT_CONCEPT_STOPWORDS)
+
+    # 1) 环境变量：支持 JSON 数组或逗号分隔文本
+    env_raw = (os.getenv("CONCEPT_STOPWORDS", "") or "").strip()
+    if env_raw:
+        parsed_words = []
+        try:
+            env_parsed = json.loads(env_raw)
+            if isinstance(env_parsed, list):
+                parsed_words = [str(x).strip() for x in env_parsed if str(x).strip()]
+        except Exception:
+            parsed_words = [w.strip() for w in env_raw.split(",") if w.strip()]
+
+        stopwords.update(parsed_words)
+
+    # 2) 本地文件：backend/data/concept_stopwords.json
+    file_path = os.path.join("data", "concept_stopwords.json")
+    if os.path.exists(file_path):
+        try:
+            with open(file_path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            if isinstance(data, list):
+                stopwords.update(str(x).strip() for x in data if str(x).strip())
+            elif isinstance(data, dict):
+                words = data.get("words", [])
+                if isinstance(words, list):
+                    stopwords.update(str(x).strip() for x in words if str(x).strip())
+        except Exception:
+            pass
+
+    return {w for w in stopwords if w}
 
 
 def build_knowledge_graph():
@@ -205,7 +349,8 @@ def to_graph_payload(kg, user_id):
         links.append({
             "source": source,
             "target": target,
-            "label": "前置"
+            "label": "前置",
+            "score": 0.8,
         })
 
     return {
@@ -235,11 +380,36 @@ def normalize_user_knowledge(knowledge):
         if isinstance(item, dict):
             item["concept"] = normalize_concept_name(item.get("concept"))
 
+    normalized_relations = []
+    for rel in relations:
+        if not isinstance(rel, dict):
+            continue
+        source = normalize_concept_name(rel.get("source") or "")
+        target = normalize_concept_name(rel.get("target") or "")
+        if not source or not target or source == target:
+            continue
+        rel_type = (rel.get("type") or "相关").strip() or "相关"
+        try:
+            score = float(rel.get("score", 0.6))
+        except Exception:
+            score = 0.6
+        score = round(max(0.0, min(1.0, score)), 3)
+        normalized_relations.append({
+            "source": source,
+            "target": target,
+            "type": rel_type,
+            "score": score,
+            "evidence": (rel.get("evidence") or "").strip(),
+            "source_text": rel.get("source_text", ""),
+            "created_at": rel.get("created_at"),
+            "from": rel.get("from"),
+        })
+
     deleted_concepts = [normalize_concept_name(c) for c in deleted_concepts if c]
     deleted_concepts = list(dict.fromkeys(deleted_concepts))
 
     knowledge["concepts"] = concepts
-    knowledge["relations"] = relations
+    knowledge["relations"] = normalized_relations
     knowledge["deleted_concepts"] = deleted_concepts
     return knowledge
 
@@ -286,7 +456,7 @@ def upsert_user_concept(concept_list, concept, mastery=0.35):
 
 
 def detect_concepts_from_text(text):
-    """从文本中抽取知识点（规则版，可后续替换为NLP模型）。"""
+    """从文本中抽取知识点（规则兜底）。"""
     detected = []
 
     for item in DEFAULT_CONCEPTS:
@@ -299,7 +469,7 @@ def detect_concepts_from_text(text):
 
     # 回退策略：从中文短语中提取候选词
     candidates = re.findall(r"[\u4e00-\u9fff]{2,8}", text)
-    stopwords = {"这个", "那个", "我们", "你们", "他们", "学习", "知识", "内容", "问题", "方法", "如何", "什么", "为什么"}
+    stopwords = get_configured_concept_stopwords()
     for word in candidates:
         if word not in stopwords and word not in detected:
             detected.append(word)
@@ -320,7 +490,7 @@ def infer_relations_from_concepts(concepts):
             continue
         for prereq in item.get("prerequisites", []):
             if prereq in concept_set:
-                relation_set.add((prereq, target, "前置"))
+                relation_set.add((prereq, target, "前置", 0.85, "命中默认先修关系"))
 
     # 若没有命中默认关系，按文本顺序建立弱关联
     if not relation_set and len(concepts) > 1:
@@ -328,11 +498,11 @@ def infer_relations_from_concepts(concepts):
             source = concepts[i]
             target = concepts[i + 1]
             if source != target:
-                relation_set.add((source, target, "相关"))
+                relation_set.add((source, target, "相关", 0.52, "文本顺序弱关联"))
 
     return [
-        {"source": s, "target": t, "type": r}
-        for s, t, r in sorted(relation_set)
+        {"source": s, "target": t, "type": r, "score": sc, "evidence": ev}
+        for s, t, r, sc, ev in sorted(relation_set)
     ]
 
 
@@ -343,6 +513,120 @@ def parse_datetime_safe(value):
         return datetime.fromisoformat(value)
     except Exception:
         return None
+
+
+def _build_learning_path_adjacency(user_knowledge):
+    """构建学习路径有向图：先修 -> 目标。"""
+    adjacency = {}
+
+    for item in DEFAULT_CONCEPTS:
+        target = (item.get("concept") or "").strip()
+        if not target:
+            continue
+        adjacency.setdefault(target, set())
+        for prereq in item.get("prerequisites", []) or []:
+            source = (prereq or "").strip()
+            if not source or source == target:
+                continue
+            adjacency.setdefault(source, set()).add(target)
+
+    relations = (user_knowledge or {}).get("relations", []) if isinstance(user_knowledge, dict) else []
+    for rel in relations:
+        if not isinstance(rel, dict):
+            continue
+        source = (rel.get("source") or "").strip()
+        target = (rel.get("target") or "").strip()
+        if not source or not target or source == target:
+            continue
+        adjacency.setdefault(source, set()).add(target)
+        adjacency.setdefault(target, set())
+
+    return adjacency
+
+
+def _find_learning_path_bfs(starts, target, adjacency, max_depth=8):
+    """从多个起点到目标做 BFS，返回最短路径。"""
+    target_text = (target or "").strip()
+    if not target_text:
+        return []
+
+    valid_starts = [s for s in (starts or []) if s and s != target_text]
+    if not valid_starts:
+        return []
+
+    queue = deque()
+    seen = set()
+    for s in valid_starts:
+        queue.append((s, [s], 0))
+        seen.add(s)
+
+    while queue:
+        node, path, depth = queue.popleft()
+        if depth >= max_depth:
+            continue
+        for nxt in adjacency.get(node, set()):
+            if not nxt:
+                continue
+            next_path = path + [nxt]
+            if nxt == target_text:
+                return next_path
+            if nxt in seen:
+                continue
+            seen.add(nxt)
+            queue.append((nxt, next_path, depth + 1))
+
+    return []
+
+
+def _infer_default_target_chain(target, max_depth=8):
+    """无可达起点时，按默认先修关系生成到目标的兜底链路。"""
+    target_text = (target or "").strip()
+    if not target_text:
+        return []
+
+    chain = []
+    cur = target_text
+    depth = 0
+    while cur and depth < max_depth:
+        chain.append(cur)
+        prereqs = DEFAULT_PREREQ_MAP.get(cur, [])
+        if not prereqs:
+            break
+        cur = (prereqs[0] or "").strip()
+        if not cur or cur in chain:
+            break
+        depth += 1
+
+    chain.reverse()
+    return chain if chain and chain[-1] == target_text else []
+
+
+def infer_learning_path_with_fallback(user_id, target):
+    """学习路径兜底：掌握点可达优先，其次默认先修链。"""
+    user_knowledge = normalize_user_knowledge(get_user_knowledge(user_id))
+    concepts = user_knowledge.get("concepts", []) if isinstance(user_knowledge, dict) else []
+
+    mastered = []
+    for item in concepts:
+        if not isinstance(item, dict):
+            continue
+        concept = (item.get("concept") or "").strip()
+        if not concept:
+            continue
+        mastery = float(item.get("mastery", 0.0) or 0.0)
+        if mastery >= 0.7:
+            mastered.append(concept)
+
+    adjacency = _build_learning_path_adjacency(user_knowledge)
+    bfs_path = _find_learning_path_bfs(mastered, target, adjacency, max_depth=8)
+    if bfs_path:
+        return bfs_path
+
+    default_chain = _infer_default_target_chain(target, max_depth=8)
+    if default_chain:
+        return default_chain
+
+    return []
 
 
 def calc_review_interval_days(mastery, review_count):
@@ -358,151 +642,92 @@ def calc_review_interval_days(mastery, review_count):
 
 
 def load_user_event_list(user_id, suffix):
-    """读取用户事件列表文件。"""
-    file_path = f"data/{user_id}_{suffix}.json"
-    try:
-        with open(file_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-            return data if isinstance(data, list) else []
-    except Exception:
-        return []
+    """读取用户事件列表。"""
+    data = db_get_user_event_list(user_id, suffix)
+    return data if isinstance(data, list) else []
 
 
 def save_user_event_list(user_id, suffix, event_list):
-    """保存用户事件列表文件。"""
-    file_path = f"data/{user_id}_{suffix}.json"
-    with open(file_path, 'w', encoding='utf-8') as f:
-        json.dump(event_list, f, ensure_ascii=False, indent=2)
+    """兼容旧调用：批量覆盖事件列表。"""
+    existing = load_user_event_list(user_id, suffix)
+    target = event_list if isinstance(event_list, list) else []
+
+    # 仅追加差集，避免破坏 SQL 后端的事件流水语义。
+    for item in target[len(existing):]:
+        db_append_user_event(user_id, suffix, item)
 
 
 def append_user_event(user_id, suffix, item):
     """向用户事件日志追加一条记录。"""
-    events = load_user_event_list(user_id, suffix)
-    events.append(item)
-    save_user_event_list(user_id, suffix, events)
+    db_append_user_event(user_id, suffix, item)
 
 
 def extract_topics_from_text(text):
     """从文本提取主题标签。"""
-    return detect_concepts_from_text(text or "")
+    source_text = (text or "").strip()
+    if not source_text:
+        return []
+
+    ai_extract = extract_knowledge_with_ai(source_text)
+    ai_concepts = ai_extract.get("concepts", []) if isinstance(ai_extract, dict) else []
+    if ai_concepts:
+        return ai_concepts[:6]
+
+    return detect_concepts_from_text(source_text)
 
 
 def build_learning_profile(user_id):
-    """基于用户行为日志构建学习画像。"""
-    profile = get_user_profile(user_id) or {}
-    content_logs = load_user_event_list(user_id, "content")
-    qa_logs = load_user_event_list(user_id, "qa")
-    knowledge = normalize_user_knowledge(get_user_knowledge(user_id))
-
-    content_type_counter = {"note": 0, "link": 0, "image": 0, "qa": 0, "other": 0}
-    hour_counter = {}
-    interest_counter = {}
-
-    for item in content_logs:
-        content_type = item.get("content_type", "other")
-        if content_type not in content_type_counter:
-            content_type = "other"
-        content_type_counter[content_type] += 1
-
-        ts = parse_datetime_safe(item.get("timestamp"))
-        if ts:
-            hour_counter[ts.hour] = hour_counter.get(ts.hour, 0) + 1
-
-        for topic in item.get("topics", []):
-            interest_counter[topic] = interest_counter.get(topic, 0) + 1
-
-    for item in knowledge.get("concepts", []):
-        concept = item.get("concept")
-        if concept:
-            interest_counter[concept] = interest_counter.get(concept, 0) + 1
-
-    visual_score = content_type_counter.get("image", 0) + content_type_counter.get("link", 0)
-    auditory_score = max(0, len(qa_logs) // 3)
-    kinesthetic_score = content_type_counter.get("qa", 0) + content_type_counter.get("note", 0)
-    style_scores = {
-        "visual": visual_score,
-        "auditory": auditory_score,
-        "kinesthetic": kinesthetic_score,
-    }
-    learning_style = max(style_scores, key=style_scores.get) if sum(style_scores.values()) > 0 else "visual"
-
-    best_hour = max(hour_counter, key=hour_counter.get) if hour_counter else 15
-    best_time_range = f"{best_hour:02d}:00-{(best_hour + 2) % 24:02d}:00"
-
-    top_interests = sorted(interest_counter.items(), key=lambda x: x[1], reverse=True)[:5]
-    interests = [k for k, _ in top_interests] if top_interests else ["综合学习"]
-
-    profile.update({
-        "user_id": user_id,
-        "updated_at": datetime.now().isoformat(),
-        "learning_style": learning_style,
-        "style_scores": style_scores,
-        "interests": interests,
-        "best_time_range": best_time_range,
-        "focus_minutes": 45 if learning_style == "visual" else (35 if learning_style == "auditory" else 50),
-        "content_type_counter": content_type_counter,
-    })
-    set_user_profile(user_id, profile)
-    return profile
+    """画像构建入口：统一委托给 learning_profile.py 实现。"""
+    return build_learning_profile_core(
+        user_id=user_id,
+        get_user_profile=get_user_profile,
+        set_user_profile=set_user_profile,
+        load_user_event_list=load_user_event_list,
+        get_user_knowledge=get_user_knowledge,
+        normalize_user_knowledge=normalize_user_knowledge,
+    )
 
 
 def build_recommendations(user_id, limit=6):
-    """根据画像和薄弱点生成个性化推荐。"""
-    profile = build_learning_profile(user_id)
-    knowledge = normalize_user_knowledge(get_user_knowledge(user_id))
-
-    weak_concepts = sorted(
-        [c for c in knowledge.get("concepts", []) if float(c.get("mastery", 0)) < 0.6],
-        key=lambda x: float(x.get("mastery", 0))
+    """推荐构建入口：统一委托给 learning_profile.py 实现。"""
+    return build_recommendations_core(
+        user_id=user_id,
+        limit=limit,
+        build_learning_profile_fn=build_learning_profile,
+        get_user_knowledge=get_user_knowledge,
+        normalize_user_knowledge=normalize_user_knowledge,
+        load_user_event_list=load_user_event_list,
     )
 
-    style = profile.get("learning_style", "visual")
-    style_resource = {
-        "visual": "图解微课",
-        "auditory": "音频讲解",
-        "kinesthetic": "互动练习",
-    }
 
-    items = []
-    for concept in weak_concepts[:limit]:
-        mastery = float(concept.get("mastery", 0.0))
-        items.append({
-            "concept": concept.get("concept", "未知知识点"),
-            "mastery": mastery,
-            "resource_type": style_resource.get(style, "图解微课"),
-            "title": f"{concept.get('concept', '该知识点')} - {style_resource.get(style, '图解微课')}",
-            "reason": f"掌握度仅 {int(mastery * 100)}%，建议优先巩固",
-            "priority": round((1.0 - mastery) * 100, 2)
-        })
-
-    if not items:
-        interests = profile.get("interests", ["综合学习"])
-        for topic in interests[:limit]:
-            items.append({
-                "concept": topic,
-                "mastery": 0.75,
-                "resource_type": style_resource.get(style, "图解微课"),
-                "title": f"{topic} - 进阶学习包",
-                "reason": "保持优势，进行拓展学习",
-                "priority": 20
-            })
-
-    return items[:limit]
-
-
-def build_graph_response(user_id):
+def build_graph_response(user_id, min_relation_score=None):
     """内部构建图谱响应对象。"""
-    # 优先尝试从 Neo4j 读取
-    neo4j_payload = neo4j_store.fetch_graph(user_id)
-    if neo4j_payload and neo4j_payload.get("nodes"):
-        return {
-            "success": True,
-            "user_id": user_id,
-            "graph": neo4j_payload,
-            "node_count": len(neo4j_payload.get("nodes", [])),
-            "edge_count": len(neo4j_payload.get("links", [])),
-            "storage": "neo4j",
-        }
+    threshold = RELATION_MIN_SCORE if min_relation_score is None else float(min_relation_score)
+    threshold = max(0.0, min(1.0, threshold))
+
+    prefer_neo4j = GRAPH_PRIMARY in {"auto", "neo4j"}
+    if prefer_neo4j and neo4j_store.enabled:
+        neo4j_payload = neo4j_store.fetch_graph(user_id)
+        if neo4j_payload is not None:
+            for link in neo4j_payload.get("links", []) or []:
+                if isinstance(link, dict) and "score" not in link:
+                    link["score"] = 0.7
+            neo4j_payload["links"] = [
+                l for l in (neo4j_payload.get("links", []) or [])
+                if float((l or {}).get("score", 0.0) or 0.0) >= threshold
+            ]
+            # auto 模式仅在 Neo4j 有用户图数据时返回；neo4j 模式直接返回。
+            if GRAPH_PRIMARY == "neo4j" or neo4j_payload.get("nodes"):
+                return {
+                    "success": True,
+                    "user_id": user_id,
+                    "graph": neo4j_payload,
+                    "node_count": len(neo4j_payload.get("nodes", [])),
+                    "edge_count": len(neo4j_payload.get("links", [])),
+                    "storage": "neo4j",
+                    "graph_primary": GRAPH_PRIMARY,
+                    "min_relation_score": threshold,
+                }
 
     kg = build_knowledge_graph()
     sync_user_mastery_to_graph(kg, user_id)
@@ -513,14 +738,18 @@ def build_graph_response(user_id):
     for rel in user_knowledge.get("relations", []):
         source = rel.get("source")
         target = rel.get("target")
+        score = float(rel.get("score", 0.6) or 0.6)
         if not source or not target:
+            continue
+        if score < threshold:
             continue
         if (source, target) in existing_links:
             continue
         payload["links"].append({
             "source": source,
             "target": target,
-            "label": rel.get("type", "相关")
+            "label": rel.get("type", "相关"),
+            "score": round(score, 3),
         })
         existing_links.add((source, target))
 
@@ -531,6 +760,8 @@ def build_graph_response(user_id):
         "node_count": len(payload["nodes"]),
         "edge_count": len(payload["links"]),
         "storage": "json",
+        "graph_primary": GRAPH_PRIMARY,
+        "min_relation_score": threshold,
     }
 
 
@@ -696,7 +927,14 @@ def analyze_with_ai(question):
     try:
         cfg = get_ai_runtime_config()
         if not cfg["api_key"]:
-            raise ValueError(f"未配置 {cfg['provider']} API Key")
+            return {
+                "success": False,
+                "analysis": {},
+                "ai_used": False,
+                "provider": cfg["provider"],
+                "error_code": "AI_KEY_MISSING",
+                "error_message": f"未配置 {cfg['provider']} API Key",
+            }
 
         prompt = f"""
         你是一个智能学习伴侣，请分析用户的学习问题，提取以下信息：
@@ -743,13 +981,361 @@ def analyze_with_ai(question):
             if json_match:
                 analysis = json.loads(json_match.group())
             else:
-                analysis = generate_mock_analysis(question)
+                return {
+                    "success": False,
+                    "analysis": {},
+                    "ai_used": False,
+                    "provider": cfg["provider"],
+                    "error_code": "AI_BAD_RESPONSE",
+                    "error_message": "模型返回内容不是合法JSON",
+                }
         
-        return analysis
+        return {
+            "success": True,
+            "analysis": analysis,
+            "ai_used": True,
+            "provider": cfg["provider"],
+            "error_code": "",
+            "error_message": "",
+        }
         
     except Exception as e:
         print(f"AI分析调用失败: {e}")
-        return generate_mock_analysis(question)
+        cfg = get_ai_runtime_config()
+        return {
+            "success": False,
+            "analysis": {},
+            "ai_used": False,
+            "provider": cfg["provider"],
+            "error_code": "AI_UPSTREAM_ERROR",
+            "error_message": str(e),
+        }
+
+
+def parse_json_from_ai_text(content):
+    """从模型文本中提取 JSON 对象。"""
+    text = (content or "").strip()
+    if not text:
+        return None
+
+    try:
+        return json.loads(text)
+    except Exception:
+        pass
+
+    # 兼容 ```json ... ``` 包裹或额外解释文本。
+    code_block_match = re.search(r"```(?:json)?\s*(\{[\s\S]*?\})\s*```", text, re.IGNORECASE)
+    if code_block_match:
+        try:
+            return json.loads(code_block_match.group(1))
+        except Exception:
+            pass
+
+    json_match = re.search(r"\{[\s\S]*\}", text)
+    if json_match:
+        try:
+            return json.loads(json_match.group(0))
+        except Exception:
+            return None
+    return None
+
+
+def normalize_ai_concepts(raw_concepts, max_count=8):
+    """规范化 AI 返回的概念列表。"""
+    generic_words = get_configured_concept_stopwords()
+    generic_words_lower = {w.lower() for w in generic_words}
+
+    def is_valid_concept(name):
+        n = (name or "").strip()
+        if not n:
+            return False
+
+        # 过滤过于泛化的词和动词短语
+        if n in generic_words or n.lower() in generic_words_lower:
+            return False
+        if n.startswith("学习") or n.endswith("学习"):
+            return False
+        if n.startswith("我要") or n.startswith("想"):
+            return False
+
+        # 中文概念长度控制
+        has_cn = bool(re.search(r"[\u4e00-\u9fff]", n))
+        if has_cn and len(n) < 2:
+            return False
+
+        # 英文概念长度与字符过滤（如 Python / NumPy）
+        has_en = bool(re.search(r"[A-Za-z]", n))
+        if has_en and not re.match(r"^[A-Za-z][A-Za-z0-9_\-\+\.]{1,30}$", n):
+            return False
+
+        return True
+
+    concepts = []
+    if not isinstance(raw_concepts, list):
+        return concepts
+
+    for item in raw_concepts:
+        if isinstance(item, str):
+            name = normalize_concept_name(item)
+        elif isinstance(item, dict):
+            name = normalize_concept_name(item.get("concept") or item.get("name") or "")
+        else:
+            name = ""
+
+        if not name:
+            continue
+        if len(name) > 20:
+            name = name[:20].strip()
+        if not is_valid_concept(name):
+            continue
+        if name and name not in concepts:
+            concepts.append(name)
+        if len(concepts) >= max_count:
+            break
+
+    return concepts
+
+
+def normalize_ai_relations(raw_relations, allowed_concepts, extracted_concepts=None):
+    """规范化 AI 返回的关系列表，并过滤非法引用。"""
+    if not isinstance(raw_relations, list):
+        return []
+
+    valid_types = {"前置", "相关", "并列", "因果"}
+    default_type_score = {"前置": 0.78, "因果": 0.72, "并列": 0.66, "相关": 0.58}
+    allowed_set = set(allowed_concepts or [])
+    extracted_set = set(extracted_concepts or [])
+    seen = set()
+    result = []
+
+    for rel in raw_relations:
+        if not isinstance(rel, dict):
+            continue
+        source = normalize_concept_name(rel.get("source") or "")
+        target = normalize_concept_name(rel.get("target") or "")
+        relation_type = (rel.get("type") or "相关").strip()
+
+        if relation_type not in valid_types:
+            relation_type = "相关"
+        if not source or not target or source == target:
+            continue
+        if source not in allowed_set or target not in allowed_set:
+            continue
+        # 至少一个端点应为本次抽取知识点，避免“已有节点之间”被无依据重连。
+        if extracted_set and (source not in extracted_set and target not in extracted_set):
+            continue
+
+        raw_score = rel.get("score", rel.get("confidence", default_type_score.get(relation_type, 0.58)))
+        try:
+            score = float(raw_score)
+        except Exception:
+            score = default_type_score.get(relation_type, 0.58)
+        score = round(max(0.0, min(1.0, score)), 3)
+        evidence = (rel.get("evidence") or rel.get("reason") or "").strip()
+
+        key = (source, target, relation_type)
+        if key in seen:
+            continue
+        seen.add(key)
+        result.append({
+            "source": source,
+            "target": target,
+            "type": relation_type,
+            "score": score,
+            "evidence": evidence,
+        })
+
+    return result
+
+
+def build_default_prereq_map():
+    prereq_map = {}
+    for item in DEFAULT_CONCEPTS:
+        c = item.get("concept")
+        if not c:
+            continue
+        prereq_map[c] = list(item.get("prerequisites", []) or [])
+    return prereq_map
+
+
+DEFAULT_PREREQ_MAP = build_default_prereq_map()
+
+
+def select_context_concepts_for_relation(user_knowledge, text, detected_hints=None, limit=24):
+    """为关系推理挑选“当前图谱”中最相关的候选概念。"""
+    source_text = (text or "").strip()
+    text_lower = source_text.lower()
+    detected_hints = [normalize_concept_name(x) for x in (detected_hints or []) if x]
+
+    pool = set()
+    for item in (user_knowledge or {}).get("concepts", []):
+        c = normalize_concept_name(item.get("concept") if isinstance(item, dict) else "")
+        if c:
+            pool.add(c)
+    for item in DEFAULT_CONCEPTS:
+        c = normalize_concept_name(item.get("concept"))
+        if c:
+            pool.add(c)
+
+    scored = []
+    for concept in pool:
+        score = 0.0
+        c_lower = concept.lower()
+        if concept in source_text or c_lower in text_lower:
+            score += 5.0
+
+        # 简单字符重叠度，辅助中文短句匹配。
+        cn_chars = set(re.findall(r"[\u4e00-\u9fff]", concept))
+        text_chars = set(re.findall(r"[\u4e00-\u9fff]", source_text))
+        overlap = len(cn_chars & text_chars)
+        if overlap >= 1:
+            score += min(2.5, overlap * 0.7)
+
+        # 与已检测概念有先修关联时加分。
+        for d in detected_hints:
+            if concept in DEFAULT_PREREQ_MAP.get(d, []):
+                score += 2.0
+            if d in DEFAULT_PREREQ_MAP.get(concept, []):
+                score += 2.0
+
+        if score > 0:
+            scored.append((concept, score))
+
+    scored.sort(key=lambda x: x[1], reverse=True)
+    picked = [c for c, _ in scored[:limit]]
+
+    # 若文本命中较少，保留少量用户已有概念作为上下文兜底。
+    if len(picked) < min(6, limit):
+        for item in (user_knowledge or {}).get("concepts", [])[:limit]:
+            c = normalize_concept_name(item.get("concept") if isinstance(item, dict) else "")
+            if c and c not in picked:
+                picked.append(c)
+            if len(picked) >= limit:
+                break
+
+    return picked[:limit]
+
+
+def infer_relations_with_existing_context(detected_concepts, context_concepts):
+    """规则兜底：推断新概念与现有图谱概念关系（非无脑串联）。"""
+    detected = [normalize_concept_name(x) for x in (detected_concepts or []) if x]
+    context = [normalize_concept_name(x) for x in (context_concepts or []) if x]
+    context_set = set(context)
+    relations = set()
+
+    for d in detected:
+        for p in DEFAULT_PREREQ_MAP.get(d, []):
+            if p in context_set:
+                relations.add((p, d, "前置", 0.8, "命中默认先修关系"))
+        for c in context:
+            if d in DEFAULT_PREREQ_MAP.get(c, []):
+                relations.add((d, c, "前置", 0.8, "命中默认先修关系"))
+
+    return [
+        {"source": s, "target": t, "type": r, "score": sc, "evidence": ev}
+        for s, t, r, sc, ev in sorted(relations)
+    ]
+
+
+def extract_knowledge_with_ai(text, context_concepts=None, max_concepts=8):
+    """AI 主导知识抽取：输出结构化 concepts/relations。"""
+    source_text = (text or "").strip()
+    if not source_text:
+        return {"concepts": [], "relations": [], "ai_used": False, "provider": "none", "error": "empty_text"}
+
+    if not USE_REAL_AI:
+        return {"concepts": [], "relations": [], "ai_used": False, "provider": "mock", "error": "ai_disabled"}
+
+    cfg = get_ai_runtime_config()
+    api_key = (cfg.get("api_key") or "").strip()
+    if not api_key:
+        return {"concepts": [], "relations": [], "ai_used": False, "provider": cfg.get("provider", "unknown"), "error": "missing_api_key"}
+
+    try:
+        context_concepts = [normalize_concept_name(x) for x in (context_concepts or []) if x]
+        context_concepts = list(dict.fromkeys([x for x in context_concepts if x]))[:24]
+        context_text = "、".join(context_concepts) if context_concepts else "无"
+
+        prompt = f"""
+你是学习内容知识抽取器。请结合当前知识图谱候选节点，从文本中抽取“学习相关知识点”和“知识关系”，并只返回 JSON。
+
+要求：
+1) concepts: 只保留学习相关概念，2-12个字，去重，最多{max_concepts}个。
+    禁止把“学习/知识/问题/方法/建议”等泛词当作概念。
+2) relations: 关系允许来自以下节点集合：
+   A. 本次抽取 concepts
+   B. 当前图谱候选节点（见下方 context_concepts）
+   但每条关系至少有一个端点必须来自本次抽取 concepts。
+3) type 仅可为 前置/相关/并列/因果；没有证据时不要强行连边。
+4) 每条 relation 增加 score（0~1）与 evidence（不超过20字）。
+5) 若文本信息不足，relations 可为空数组。
+6) 严禁输出解释文字，只输出一个 JSON 对象。
+
+输出格式：
+{{
+  "concepts": ["概念1", "概念2"],
+    "relations": [{{"source": "概念1", "target": "概念2", "type": "前置", "score": 0.82, "evidence": "定义依赖"}}]
+}}
+
+待抽取文本：
+{source_text}
+
+当前图谱候选节点（可用于跨图谱关系推理）：
+{context_text}
+"""
+
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {api_key}",
+        }
+        payload = {
+            "model": cfg.get("model", "qwen-plus"),
+            "messages": [
+                {"role": "system", "content": "你是结构化信息抽取助手，必须输出合法JSON。"},
+                {"role": "user", "content": prompt},
+            ],
+            "temperature": 0.1,
+            "max_tokens": 900,
+        }
+
+        resp = requests.post(cfg.get("api_url"), headers=headers, json=payload, timeout=35)
+        resp.raise_for_status()
+        data = resp.json()
+        content = data.get("choices", [{}])[0].get("message", {}).get("content", "")
+
+        parsed = parse_json_from_ai_text(content)
+        if not isinstance(parsed, dict):
+            return {
+                "concepts": [],
+                "relations": [],
+                "ai_used": False,
+                "provider": cfg.get("provider", "unknown"),
+                "error": "invalid_ai_json",
+            }
+
+        concepts = normalize_ai_concepts(parsed.get("concepts", []), max_count=max_concepts)
+        allowed_concepts = list(dict.fromkeys(concepts + context_concepts))
+        relations = normalize_ai_relations(
+            parsed.get("relations", []),
+            allowed_concepts=allowed_concepts,
+            extracted_concepts=concepts,
+        )
+
+        return {
+            "concepts": concepts,
+            "relations": relations,
+            "ai_used": True,
+            "provider": cfg.get("provider", "unknown"),
+            "error": "",
+        }
+    except Exception as e:
+        return {
+            "concepts": [],
+            "relations": [],
+            "ai_used": False,
+            "provider": cfg.get("provider", "unknown"),
+            "error": str(e),
+        }
 
 def generate_mock_analysis(question):
     """生成模拟分析"""
@@ -783,7 +1369,14 @@ def ask_ai_question(question, user_id):
     try:
         cfg = get_ai_runtime_config()
         if not cfg["api_key"]:
-            raise ValueError(f"未配置 {cfg['provider']} API Key")
+            return {
+                "success": False,
+                "answer": "",
+                "ai_used": False,
+                "provider": cfg["provider"],
+                "error_code": "AI_KEY_MISSING",
+                "error_message": f"未配置 {cfg['provider']} API Key",
+            }
 
         headers = {
             "Content-Type": "application/json",
@@ -815,110 +1408,174 @@ def ask_ai_question(question, user_id):
         answer = result.get("choices", [{}])[0].get("message", {}).get("content", "")
         
         if not answer:
-            answer = "抱歉，我暂时无法回答这个问题。"
+            return {
+                "success": False,
+                "answer": "",
+                "ai_used": False,
+                "provider": cfg["provider"],
+                "error_code": "AI_EMPTY_RESPONSE",
+                "error_message": "模型返回内容为空",
+            }
         
         return {
+            "success": True,
             "answer": answer,
             "ai_used": True,
             "provider": cfg["provider"],
-            "error": ""
+            "error_code": "",
+            "error_message": "",
         }
         
     except Exception as e:
         print(f"AI问答失败: {e}")
+        cfg = get_ai_runtime_config()
         return {
-            "answer": "这个问题涉及到多个知识点。根据我的分析，建议你从基础概念开始复习。如果你有更具体的问题，我可以更好地帮助你。",
+            "success": False,
+            "answer": "",
             "ai_used": False,
-            "provider": "fallback",
-            "error": str(e)
+            "provider": cfg["provider"],
+            "error_code": "AI_UPSTREAM_ERROR",
+            "error_message": str(e),
         }
 
 
 def extract_text_from_image(file_storage):
     """OCR：从图片中提取文本。支持 mock 与 qwen_vl。"""
     if not file_storage:
-        return ""
+        return {
+            "success": False,
+            "text": "",
+            "ai_used": False,
+            "provider": OCR_PROVIDER,
+            "error_code": "OCR_EMPTY_FILE",
+            "error_message": "未提供图片文件",
+        }
+
+    if OCR_PROVIDER != "qwen_vl":
+        return {
+            "success": False,
+            "text": "",
+            "ai_used": False,
+            "provider": OCR_PROVIDER,
+            "error_code": "OCR_PROVIDER_DISABLED",
+            "error_message": "OCR_PROVIDER 不是 qwen_vl，已禁用真实OCR",
+        }
+
+    if not QWEN_API_KEY:
+        return {
+            "success": False,
+            "text": "",
+            "ai_used": False,
+            "provider": "qwen_vl",
+            "error_code": "OCR_KEY_MISSING",
+            "error_message": "未配置 QWEN_API_KEY",
+        }
 
     file_storage.stream.seek(0)
     raw = file_storage.read()
     file_storage.stream.seek(0)
 
-    if OCR_PROVIDER == "qwen_vl" and QWEN_API_KEY:
-        try:
-            ext = os.path.splitext(file_storage.filename or "")[1].lower()
-            mime = "image/png" if ext == ".png" else "image/jpeg"
-            b64 = base64.b64encode(raw).decode("utf-8")
-            data_url = f"data:{mime};base64,{b64}"
+    try:
+        ext = os.path.splitext(file_storage.filename or "")[1].lower()
+        mime = "image/png" if ext == ".png" else "image/jpeg"
+        b64 = base64.b64encode(raw).decode("utf-8")
+        data_url = f"data:{mime};base64,{b64}"
 
-            headers = {
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {QWEN_API_KEY}",
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {QWEN_API_KEY}",
+        }
+        payload = {
+            "model": QWEN_VL_MODEL_NAME,
+            "messages": [
+                {
+                    "role": "user",
+                    "content": [
+                        {"type": "text", "text": "请提取图片中的学习相关文字，只返回纯文本。"},
+                        {"type": "image_url", "image_url": {"url": data_url}},
+                    ],
+                }
+            ],
+            "temperature": 0.2,
+            "max_tokens": 800,
+        }
+        resp = requests.post(QWEN_API_URL, headers=headers, json=payload, timeout=45)
+        resp.raise_for_status()
+        data = resp.json()
+        text = (data.get("choices", [{}])[0].get("message", {}).get("content", "") or "").strip()
+        if not text:
+            return {
+                "success": False,
+                "text": "",
+                "ai_used": False,
+                "provider": "qwen_vl",
+                "error_code": "OCR_EMPTY_RESPONSE",
+                "error_message": "OCR返回内容为空",
             }
-            payload = {
-                "model": QWEN_VL_MODEL_NAME,
-                "messages": [
-                    {
-                        "role": "user",
-                        "content": [
-                            {"type": "text", "text": "请提取图片中的学习相关文字，只返回纯文本。"},
-                            {"type": "image_url", "image_url": {"url": data_url}},
-                        ],
-                    }
-                ],
-                "temperature": 0.2,
-                "max_tokens": 800,
-            }
-            resp = requests.post(QWEN_API_URL, headers=headers, json=payload, timeout=45)
-            resp.raise_for_status()
-            data = resp.json()
-            text = data.get("choices", [{}])[0].get("message", {}).get("content", "")
-            return (text or "").strip()
-        except Exception as e:
-            print(f"Qwen OCR失败: {e}")
 
-    # mock 回退：保证功能可用
-    return f"图片内容识别（模拟）：{file_storage.filename or '未命名图片'}，包含函数、导数、极值相关内容。"
+        return {
+            "success": True,
+            "text": text,
+            "ai_used": True,
+            "provider": "qwen_vl",
+            "error_code": "",
+            "error_message": "",
+        }
+    except Exception as e:
+        print(f"Qwen OCR失败: {e}")
+        return {
+            "success": False,
+            "text": "",
+            "ai_used": False,
+            "provider": "qwen_vl",
+            "error_code": "OCR_UPSTREAM_ERROR",
+            "error_message": str(e),
+        }
 
 # ===== 学习计划 API 接口 =====
 
 @app.route('/api/plans', methods=['GET'])
 def get_plans():
     """获取用户学习计划"""
+    request_id = get_request_id()
     user_id = request.args.get('user_id', 'default_user')
     plans = get_user_plans(user_id)
     
-    return jsonify({
-        "success": True,
-        "plans": plans,
-        "count": len(plans)
-    })
+    return jsonify(success_payload(
+        request_id,
+        plans=plans,
+        count=len(plans),
+        error_code="",
+        error_message="",
+    ))
 
 @app.route('/api/plans', methods=['POST'])
 def add_plan():
     """添加新学习计划"""
-    data = request.json
+    request_id = get_request_id()
+    data = request.json or {}
     user_id = data.get('user_id', 'default_user')
     time = data.get('time')
     task = data.get('task')
     
     if not time or not task:
-        return jsonify({
-            "success": False,
-            "message": "时间和任务内容不能为空"
-        }), 400
+        return error_response(request_id, 400, "INVALID_INPUT", "时间和任务内容不能为空")
     
     new_plan = add_user_plan(user_id, time, task)
     
-    return jsonify({
-        "success": True,
-        "message": "学习计划添加成功",
-        "plan": new_plan
-    })
+    return jsonify(success_payload(
+        request_id,
+        message="学习计划添加成功",
+        plan=new_plan,
+        error_code="",
+        error_message="",
+    ))
 
 @app.route('/api/plans/<plan_id>', methods=['PUT'])
 def update_plan(plan_id):
     """更新学习计划（如打勾完成）"""
-    data = request.json
+    request_id = get_request_id()
+    data = request.json or {}
     user_id = data.get('user_id', 'default_user')
     
     # 允许更新的字段
@@ -931,47 +1588,44 @@ def update_plan(plan_id):
         updates['task'] = data['task']
     
     if not updates:
-        return jsonify({
-            "success": False,
-            "message": "没有要更新的内容"
-        }), 400
+        return error_response(request_id, 400, "INVALID_INPUT", "没有要更新的内容")
     
     success = update_user_plan(user_id, plan_id, updates)
     
     if success:
-        return jsonify({
-            "success": True,
-            "message": "学习计划更新成功"
-        })
+        return jsonify(success_payload(
+            request_id,
+            message="学习计划更新成功",
+            error_code="",
+            error_message="",
+        ))
     else:
-        return jsonify({
-            "success": False,
-            "message": "计划不存在或更新失败"
-        }), 404
+        return error_response(request_id, 404, "PLAN_NOT_FOUND", "计划不存在或更新失败")
 
 @app.route('/api/plans/<plan_id>', methods=['DELETE'])
 def delete_plan(plan_id):
     """删除学习计划"""
-    data = request.json
+    request_id = get_request_id()
+    data = request.json or {}
     user_id = data.get('user_id', 'default_user')
     
     success = delete_user_plan(user_id, plan_id)
     
     if success:
-        return jsonify({
-            "success": True,
-            "message": "学习计划删除成功"
-        })
+        return jsonify(success_payload(
+            request_id,
+            message="学习计划删除成功",
+            error_code="",
+            error_message="",
+        ))
     else:
-        return jsonify({
-            "success": False,
-            "message": "计划不存在或删除失败"
-        }), 404
+        return error_response(request_id, 404, "PLAN_NOT_FOUND", "计划不存在或删除失败")
 
 @app.route('/api/plans/clear', methods=['POST'])
 def clear_completed_plans():
     """清空已完成的学习计划"""
-    data = request.json
+    request_id = get_request_id()
+    data = request.json or {}
     user_id = data.get('user_id', 'default_user')
     
     plans = get_user_plans(user_id)
@@ -980,79 +1634,120 @@ def clear_completed_plans():
     incomplete_plans = [p for p in plans if not p.get('completed', False)]
     set_user_plans(user_id, incomplete_plans)
     
-    return jsonify({
-        "success": True,
-        "message": "已完成计划已清空",
-        "remaining_count": len(incomplete_plans)
-    })
+    return jsonify(success_payload(
+        request_id,
+        message="已完成计划已清空",
+        remaining_count=len(incomplete_plans),
+        error_code="",
+        error_message="",
+    ))
 
 # ===== 原有 AI 问答接口 =====
 
 @app.route('/api/analyze', methods=['POST'])
 def analyze():
     """分析学习问题"""
-    data = request.json
+    request_id = get_request_id()
+    data = request.json or {}
     question = data.get('question', '').strip()
     user_id = data.get('user_id', 'default_user')
     
     if not question:
-        return jsonify({"error": "问题不能为空"}), 400
-    
-    if USE_REAL_AI:
-        analysis = analyze_with_ai(question)
-    else:
-        analysis = generate_mock_analysis(question)
+        return error_response(request_id, 400, "INVALID_INPUT", "问题不能为空")
+
+    if not USE_REAL_AI:
+        return error_response(request_id, 503, "AI_DISABLED", "USE_REAL_AI=false，当前仅允许真实AI分析")
+
+    ai_result = analyze_with_ai(question)
+    if not ai_result.get("success"):
+        return error_response(
+            request_id,
+            502,
+            ai_result.get("error_code", "AI_UPSTREAM_ERROR"),
+            ai_result.get("error_message", "AI分析失败"),
+            ai_used=False,
+            provider=ai_result.get("provider", "unknown"),
+        )
+
+    analysis = ai_result.get("analysis", {})
     
     # 记录学习行为
     record_learning_behavior(user_id, question, analysis)
     
-    return jsonify(analysis)
+    return jsonify(success_payload(
+        request_id,
+        message="分析成功",
+        analysis=analysis,
+        ai_used=True,
+        provider=ai_result.get("provider", "unknown"),
+        error_code="",
+        error_message="",
+    ))
 
 @app.route('/api/ask', methods=['POST'])
 def ask_question():
     """智能问答"""
-    data = request.json
+    request_id = get_request_id()
+    data = request.json or {}
     question = data.get('question', '').strip()
     user_id = data.get('user_id', 'default_user')
     
     if not question:
-        return jsonify({"error": "问题不能为空"}), 400
-    
-    ai_used = False
-    error_msg = ""
-    source = "mock"
-    if USE_REAL_AI:
-        result = ask_ai_question(question, user_id)
-        answer = result.get("answer", "")
-        ai_used = bool(result.get("ai_used", False))
-        source = result.get("provider", "fallback")
-        if not ai_used:
-            error_msg = result.get("error", "")
-    else:
-        answer = f"这个问题涉及到多个知识点。根据我的分析，{question} 的核心是理解基本概念。建议你查阅相关资料，多做练习。"
+        return error_response(request_id, 400, "INVALID_INPUT", "问题不能为空")
+
+    if not USE_REAL_AI:
+        return error_response(request_id, 503, "AI_DISABLED", "USE_REAL_AI=false，当前仅允许真实AI问答")
+
+    result = ask_ai_question(question, user_id)
+    if not result.get("success"):
+        return error_response(
+            request_id,
+            502,
+            result.get("error_code", "AI_UPSTREAM_ERROR"),
+            result.get("error_message", "AI问答失败"),
+            source=result.get("provider", "unknown"),
+            ai_used=False,
+        )
+    answer = result.get("answer", "")
+    source = result.get("provider", "unknown")
     
     # 记录问答行为
     record_qa_behavior(user_id, question, answer)
     
-    return jsonify({
-        "answer": answer,
-        "source": source,
-        "ai_used": ai_used,
-        "error": error_msg
-    })
+    return jsonify(success_payload(
+        request_id,
+        message="问答成功",
+        answer=answer,
+        source=source,
+        ai_used=True,
+        error_code="",
+        error_message="",
+    ))
 
 @app.route('/api/upload_image', methods=['POST'])
 def upload_image():
     """上传学习图片并进行OCR解析。"""
+    request_id = get_request_id()
     if 'image' not in request.files:
-        return jsonify({"error": "没有上传图片"}), 400
+        return error_response(request_id, 400, "INVALID_INPUT", "没有上传图片")
     
     file = request.files['image']
     user_id = request.form.get('user_id', 'default_user')
 
-    extracted_text = extract_text_from_image(file)
+    ocr_result = extract_text_from_image(file)
+    if not ocr_result.get("success"):
+        return error_response(
+            request_id,
+            502,
+            ocr_result.get("error_code", "OCR_UPSTREAM_ERROR"),
+            ocr_result.get("error_message", "OCR识别失败"),
+            provider=ocr_result.get("provider", OCR_PROVIDER),
+            ai_used=False,
+        )
+
+    extracted_text = ocr_result.get("text", "")
     extract_result = extract_knowledge_from_text_api_inner(user_id, extracted_text, "image_ocr")
-    concepts = extract_result.get("detected_concepts", []) or ["函数图像", "数学公式", "几何图形"]
+    concepts = extract_result.get("detected_concepts", []) or []
 
     append_user_event(user_id, "content", {
         "id": str(uuid.uuid4()),
@@ -1066,12 +1761,18 @@ def upload_image():
 
     build_learning_profile(user_id)
     
-    return jsonify({
-        "message": "图片上传成功",
-        "detected_concepts": concepts,
-        "ocr_text": extracted_text,
-        "analysis": "已完成OCR并更新知识图谱"
-    })
+    return jsonify(success_payload(
+        request_id,
+        message="图片上传成功",
+        detected_concepts=concepts,
+        ocr_text=extracted_text,
+        analysis="已完成OCR并更新知识图谱",
+        graph_sync=extract_result.get("graph_sync", {}),
+        ai_used=True,
+        provider=ocr_result.get("provider", "qwen_vl"),
+        error_code="",
+        error_message="",
+    ))
 
 
 # ===== 知识图谱 API 接口 =====
@@ -1079,29 +1780,37 @@ def upload_image():
 @app.route('/api/knowledge_graph', methods=['GET'])
 def get_knowledge_graph_api():
     """获取用户知识图谱（节点/关系/掌握度）"""
+    request_id = get_request_id()
     user_id = request.args.get('user_id', 'default_user')
-    return jsonify(build_graph_response(user_id))
+    min_relation_score_raw = request.args.get('min_relation_score', '')
+    min_relation_score = None
+    if str(min_relation_score_raw).strip() != '':
+        try:
+            min_relation_score = float(min_relation_score_raw)
+        except Exception:
+            return error_response(request_id, 400, "INVALID_INPUT", "min_relation_score 必须是 0~1 之间的数字")
+
+    result = build_graph_response(user_id, min_relation_score=min_relation_score)
+    if not isinstance(result, dict):
+        return error_response(request_id, 500, "INTERNAL_ERROR", "图谱构建失败")
+    result["request_id"] = request_id
+    return jsonify(result)
 
 
 @app.route('/api/knowledge_graph/mastery', methods=['POST'])
 def update_knowledge_mastery_api():
     """更新某个知识点掌握度"""
+    request_id = get_request_id()
     data = request.json or {}
     user_id = data.get('user_id', 'default_user')
     concept = normalize_concept_name(data.get('concept'))
     mastery = data.get('mastery', None)
 
     if not concept or mastery is None:
-        return jsonify({
-            "success": False,
-            "message": "concept 和 mastery 不能为空"
-        }), 400
+        return error_response(request_id, 400, "INVALID_INPUT", "concept 和 mastery 不能为空")
 
     if concept == "??":
-        return jsonify({
-            "success": False,
-            "message": "concept 编码异常，请使用页面操作或 UTF-8 请求"
-        }), 400
+        return error_response(request_id, 400, "INVALID_INPUT", "concept 编码异常，请使用页面操作或 UTF-8 请求")
 
     mastery = max(0.0, min(1.0, float(mastery)))
 
@@ -1140,7 +1849,7 @@ def update_knowledge_mastery_api():
             review_count = int(item.get("review_count", 1))
             last_reviewed = item.get("last_reviewed") or last_reviewed
             break
-    neo4j_store.update_mastery(
+    graph_sync = sync_mastery_update(
         user_id=user_id,
         concept=concept,
         mastery=mastery,
@@ -1148,26 +1857,28 @@ def update_knowledge_mastery_api():
         last_reviewed=last_reviewed,
     )
 
-    return jsonify({
-        "success": True,
-        "message": "掌握度更新成功",
-        "concept": concept,
-        "mastery": mastery
-    })
+    return jsonify(success_payload(
+        request_id,
+        message="掌握度更新成功",
+        concept=concept,
+        mastery=mastery,
+        graph_sync=graph_sync,
+        neo4j_synced=bool(graph_sync.get("synced", False)) if neo4j_store.enabled else False,
+        error_code="",
+        error_message="",
+    ))
 
 
 @app.route('/api/knowledge_graph/node', methods=['DELETE'])
 def delete_knowledge_node_api():
     """删除某个知识点节点（同时移除关联关系）。"""
+    request_id = get_request_id()
     data = request.json or {}
     user_id = data.get('user_id', 'default_user')
     concept = normalize_concept_name(data.get('concept'))
 
     if not concept:
-        return jsonify({
-            "success": False,
-            "message": "concept 不能为空"
-        }), 400
+        return error_response(request_id, 400, "INVALID_INPUT", "concept 不能为空")
 
     user_knowledge = normalize_user_knowledge(get_user_knowledge(user_id))
     concept_list = user_knowledge.get("concepts", [])
@@ -1191,90 +1902,141 @@ def delete_knowledge_node_api():
     user_knowledge["deleted_concepts"] = deleted_concepts
     set_user_knowledge(user_id, user_knowledge)
 
-    neo4j_ok = neo4j_store.delete_concept(user_id=user_id, concept=concept)
+    graph_sync = sync_delete_concept(user_id=user_id, concept=concept)
 
-    return jsonify({
-        "success": True,
-        "message": "节点删除成功",
-        "concept": concept,
-        "removed_concepts": before_concepts - len(concept_list),
-        "removed_relations": before_relations - len(relation_list),
-        "neo4j_synced": bool(neo4j_ok) if neo4j_store.enabled else False,
-    })
+    return jsonify(success_payload(
+        request_id,
+        message="节点删除成功",
+        concept=concept,
+        removed_concepts=before_concepts - len(concept_list),
+        removed_relations=before_relations - len(relation_list),
+        graph_sync=graph_sync,
+        neo4j_synced=bool(graph_sync.get("synced", False)) if neo4j_store.enabled else False,
+        error_code="",
+        error_message="",
+    ))
 
 
 @app.route('/api/knowledge_graph/path', methods=['GET'])
 def get_learning_path_api():
     """获取从已掌握知识到目标知识点的学习路径"""
+    request_id = get_request_id()
     user_id = request.args.get('user_id', 'default_user')
     target = request.args.get('target', '').strip()
 
     if not target:
-        return jsonify({
-            "success": False,
-            "message": "target 参数不能为空"
-        }), 400
+        return error_response(request_id, 400, "INVALID_INPUT", "target 参数不能为空")
+
+    if GRAPH_PRIMARY in {"auto", "neo4j"} and neo4j_store.enabled:
+        exists_in_neo4j = neo4j_store.concept_exists(target)
+        if not exists_in_neo4j and GRAPH_PRIMARY == "neo4j":
+            return error_response(
+                request_id,
+                404,
+                "TARGET_NOT_FOUND",
+                f"目标知识点不存在: {target}",
+                path=[],
+                storage="neo4j",
+            )
+
+        neo4j_path = neo4j_store.fetch_learning_path(user_id=user_id, target=target, max_depth=8)
+        if neo4j_path:
+            return jsonify(success_payload(
+                request_id,
+                user_id=user_id,
+                target=target,
+                path=neo4j_path,
+                length=len(neo4j_path),
+                storage="neo4j",
+                error_code="",
+                error_message="",
+            ))
 
     kg = build_knowledge_graph()
     sync_user_mastery_to_graph(kg, user_id)
 
     if target not in kg.graph.nodes:
-        return jsonify({
-            "success": False,
-            "message": f"目标知识点不存在: {target}",
-            "path": []
-        }), 404
+        return error_response(
+            request_id,
+            404,
+            "TARGET_NOT_FOUND",
+            f"目标知识点不存在: {target}",
+            path=[],
+            storage="json",
+        )
 
     path = kg.get_learning_path(user_id, target)
-    return jsonify({
-        "success": True,
-        "user_id": user_id,
-        "target": target,
-        "path": path,
-        "length": len(path)
-    })
+    path_source = "json"
+    if not path:
+        fallback_path = infer_learning_path_with_fallback(user_id, target)
+        if fallback_path:
+            path = fallback_path
+            path_source = "json_fallback"
+
+    return jsonify(success_payload(
+        request_id,
+        user_id=user_id,
+        target=target,
+        path=path,
+        length=len(path),
+        storage="json",
+        path_source=path_source,
+        error_code="",
+        error_message="",
+    ))
 
 
 @app.route('/api/knowledge_graph/extract', methods=['POST'])
 def extract_knowledge_from_text_api():
     """从文本抽取知识点并写入用户知识图谱。"""
+    request_id = get_request_id()
     data = request.json or {}
     user_id = data.get('user_id', 'default_user')
     text = (data.get('text') or '').strip()
     source = (data.get('source') or 'manual').strip()
 
     if not text:
-        return jsonify({
-            "success": False,
-            "message": "text 不能为空"
-        }), 400
+        return error_response(request_id, 400, "INVALID_INPUT", "text 不能为空")
 
     extract_result = extract_knowledge_from_text_api_inner(user_id, text, source)
     detected_concepts = extract_result.get("detected_concepts", [])
     relations = extract_result.get("relations", [])
     new_count = extract_result.get("new_concept_count", 0)
+    graph_sync = extract_result.get("graph_sync", {})
+    extraction_method = extract_result.get("extraction_method", "rule")
+    ai_extract = extract_result.get("ai_extract", {})
 
-    return jsonify({
-        "success": True,
-        "message": "知识抽取成功",
-        "user_id": user_id,
-        "source": source,
-        "detected_concepts": detected_concepts,
-        "new_concept_count": new_count,
-        "relations": relations
-    })
+    return jsonify(success_payload(
+        request_id,
+        message="知识抽取成功",
+        user_id=user_id,
+        source=source,
+        detected_concepts=detected_concepts,
+        new_concept_count=new_count,
+        relations=relations,
+        extraction_method=extraction_method,
+        ai_extract=ai_extract,
+        graph_sync=graph_sync,
+        error_code="",
+        error_message="",
+    ))
 
 
 @app.route('/api/review/reminders', methods=['GET'])
 def get_review_reminders_api():
     """根据掌握度和复习记录返回复习提醒。"""
+    request_id = get_request_id()
     user_id = request.args.get('user_id', 'default_user')
-    return jsonify(build_review_reminders_response(user_id))
+    result = build_review_reminders_response(user_id)
+    if isinstance(result, dict):
+        result["request_id"] = request_id
+    return jsonify(result)
 
 
 @app.route('/api/content/ingest', methods=['POST'])
 def ingest_learning_content_api():
     """多源学习内容录入（笔记/链接/答题记录等）。"""
+    request_id = get_request_id()
     data = request.json or {}
     user_id = data.get('user_id', 'default_user')
     content_type = (data.get('content_type') or 'note').strip().lower()
@@ -1283,17 +2045,48 @@ def ingest_learning_content_api():
     source = (data.get('source') or 'manual').strip()
 
     if not content:
-        return jsonify({"success": False, "message": "content 不能为空"}), 400
+        return error_response(request_id, 400, "INVALID_INPUT", "content 不能为空")
 
-    return jsonify(process_content_ingest_sync(user_id, content_type, content, title, source))
+    result = process_content_ingest_sync(user_id, content_type, content, title, source)
+    return jsonify(success_payload(request_id, **result, mode="sync"))
 
 
 def extract_knowledge_from_text_api_inner(user_id, text, source):
     """内部复用：执行一次知识抽取并返回结果对象。"""
-    detected_concepts = detect_concepts_from_text(text)
-    relations = infer_relations_from_concepts(detected_concepts) if detected_concepts else []
-
     user_knowledge = normalize_user_knowledge(get_user_knowledge(user_id))
+    context_concepts = select_context_concepts_for_relation(user_knowledge, text, detected_hints=[])
+
+    ai_extract = extract_knowledge_with_ai(text, context_concepts=context_concepts)
+    detected_concepts = ai_extract.get("concepts", []) if isinstance(ai_extract, dict) else []
+    relations = ai_extract.get("relations", []) if isinstance(ai_extract, dict) else []
+
+    extraction_method = "ai"
+    if not detected_concepts:
+        detected_concepts = detect_concepts_from_text(text)
+        extraction_method = "rule"
+
+    if not relations:
+        inner_rel = infer_relations_from_concepts(detected_concepts) if detected_concepts else []
+        # 规则兜底：补充“新概念与现有图谱概念”的关系。
+        context_concepts = select_context_concepts_for_relation(user_knowledge, text, detected_hints=detected_concepts)
+        cross_rel = infer_relations_with_existing_context(detected_concepts, context_concepts)
+        all_rel_map = {}
+        for rel in inner_rel + cross_rel:
+            key = (rel.get("source"), rel.get("target"), rel.get("type"))
+            if key[0] and key[1] and key[0] != key[1]:
+                prev = all_rel_map.get(key)
+                cur_score = float(rel.get("score", 0.6) or 0.6)
+                cur_rel = {
+                    "source": key[0],
+                    "target": key[1],
+                    "type": key[2],
+                    "score": round(cur_score, 3),
+                    "evidence": rel.get("evidence", ""),
+                }
+                if not prev or cur_score > float(prev.get("score", 0.0) or 0.0):
+                    all_rel_map[key] = cur_rel
+        relations = [r for r in all_rel_map.values() if float(r.get("score", 0.0) or 0.0) >= RELATION_MIN_SCORE]
+
     concept_list = user_knowledge["concepts"]
     relation_list = user_knowledge["relations"]
     deleted_concepts = user_knowledge.get("deleted_concepts", [])
@@ -1309,12 +2102,17 @@ def extract_knowledge_from_text_api_inner(user_id, text, source):
         for r in relation_list
     }
     for rel in relations:
+        rel_score = float(rel.get("score", 0.6) or 0.6)
+        if rel_score < RELATION_MIN_SCORE:
+            continue
         rel_key = (rel["source"], rel["target"], rel["type"])
         if rel_key not in existing_relation_keys:
             relation_list.append({
                 "source": rel["source"],
                 "target": rel["target"],
                 "type": rel["type"],
+                "score": round(rel_score, 3),
+                "evidence": (rel.get("evidence") or "")[:60],
                 "source_text": text[:120],
                 "created_at": datetime.now().isoformat(),
                 "from": source
@@ -1325,19 +2123,31 @@ def extract_knowledge_from_text_api_inner(user_id, text, source):
     user_knowledge["deleted_concepts"] = deleted_concepts
     set_user_knowledge(user_id, user_knowledge)
 
-    # 同步到 Neo4j（可选）
-    neo4j_store.upsert_user_graph(user_id, concept_list, relation_list)
+    # 同步到 Neo4j（支持异步任务 + 同步回退），传递已删除节点以避免被重建
+    graph_sync = sync_user_graph(user_id, concept_list, relation_list, deleted_concepts=deleted_concepts)
 
     return {
         "detected_concepts": detected_concepts,
         "relations": relations,
         "new_concept_count": new_count,
+        "extraction_method": extraction_method,
+        "ai_extract": {
+            "ai_used": bool(ai_extract.get("ai_used", False)) if isinstance(ai_extract, dict) else False,
+            "provider": ai_extract.get("provider", "unknown") if isinstance(ai_extract, dict) else "unknown",
+            "error": ai_extract.get("error", "") if isinstance(ai_extract, dict) else "",
+        },
+        "neo4j_synced": bool(graph_sync.get("synced", False)) if neo4j_store.enabled else False,
+        "graph_sync": graph_sync,
     }
 
 
 def process_content_ingest_sync(user_id, content_type, content, title, source):
     """同步处理内容录入，返回统一结果。"""
-    topics = extract_topics_from_text(content)
+    extract_resp = extract_knowledge_from_text_api_inner(user_id, content, f"content_{content_type}")
+    topics = (extract_resp.get("detected_concepts") or [])[:6]
+    if not topics:
+        topics = extract_topics_from_text(content)
+
     event = {
         "id": str(uuid.uuid4()),
         "timestamp": datetime.now().isoformat(),
@@ -1348,8 +2158,6 @@ def process_content_ingest_sync(user_id, content_type, content, title, source):
         "topics": topics,
     }
     append_user_event(user_id, "content", event)
-
-    extract_resp = extract_knowledge_from_text_api_inner(user_id, content, f"content_{content_type}")
     profile = build_learning_profile(user_id)
 
     return {
@@ -1362,6 +2170,31 @@ def process_content_ingest_sync(user_id, content_type, content, title, source):
 
 
 if celery_client:
+    @celery_client.task(name="tasks.sync_user_graph")
+    def sync_user_graph_task(payload):
+        user_id = payload.get("user_id", "default_user")
+        concept_list = payload.get("concepts", []) or []
+        relation_list = payload.get("relations", []) or []
+        deleted = payload.get("deleted", []) or []
+
+        # 先行删除云端已标记为删除的概念，避免被后续 upsert 重建（带重试与日志）
+        for d in deleted:
+            try_delete_concept_with_retry(user_id, d)
+
+        # 过滤上报数据，避免重建已删除节点或连接
+        if deleted:
+            deleted_set = set(deleted)
+            concept_list = [c for c in concept_list if (c.get("concept") if isinstance(c, dict) else c) not in deleted_set]
+            relation_list = [r for r in relation_list if r.get("source") not in deleted_set and r.get("target") not in deleted_set]
+
+        ok = neo4j_store.upsert_user_graph(user_id, concept_list, relation_list)
+        return {
+            "success": bool(ok),
+            "user_id": user_id,
+            "synced": bool(ok),
+            "mode": "async",
+        }
+
     @celery_client.task(name="tasks.process_content_ingest")
     def process_content_ingest_task(payload):
         user_id = payload.get("user_id", "default_user")
@@ -1371,10 +2204,221 @@ if celery_client:
         source = payload.get("source", "manual_async")
         return process_content_ingest_sync(user_id, content_type, content, title, source)
 
+    @celery_client.task(name="tasks.sync_mastery_update")
+    def sync_mastery_update_task(payload):
+        ok = neo4j_store.update_mastery(
+            user_id=payload.get("user_id", "default_user"),
+            concept=payload.get("concept", ""),
+            mastery=float(payload.get("mastery", 0.0)),
+            review_count=int(payload.get("review_count", 0)),
+            last_reviewed=payload.get("last_reviewed"),
+        )
+        return {
+            "success": bool(ok),
+            "synced": bool(ok),
+            "mode": "async",
+        }
+
+    @celery_client.task(name="tasks.sync_delete_concept")
+    def sync_delete_concept_task(payload):
+        ok = neo4j_store.delete_concept(
+            user_id=payload.get("user_id", "default_user"),
+            concept=payload.get("concept", ""),
+        )
+        return {
+            "success": bool(ok),
+            "synced": bool(ok),
+            "mode": "async",
+        }
+
+
+def sync_user_graph(user_id, concept_list, relation_list, deleted_concepts=None):
+    """统一图谱同步入口：支持 async/sync/auto 三种模式。
+    支持传入 `deleted_concepts`，在向 Neo4j 上 upsert 之前先删除这些节点，
+    避免因本地仍存在而在启动或同步时被重建。"""
+    if not neo4j_store.enabled:
+        return {
+            "enabled": False,
+            "mode": "disabled",
+            "synced": False,
+            "task_id": None,
+        }
+
+    mode = GRAPH_SYNC_MODE if GRAPH_SYNC_MODE in {"auto", "sync", "async"} else "auto"
+
+    # async 明确启用，或 auto 且 Celery 可用时，优先异步。
+    use_async = mode == "async" or (mode == "auto" and celery_client and AsyncResult)
+    if use_async and celery_client:
+        try:
+            payload = {
+                "user_id": user_id,
+                "concepts": concept_list,
+                "relations": relation_list,
+                "deleted": deleted_concepts or []
+            }
+            result = sync_user_graph_task.delay(payload)
+            register_task_meta(
+                task_id=result.id,
+                task_type="sync_user_graph",
+                user_id=user_id,
+                extra={"concept_count": len(concept_list), "relation_count": len(relation_list)},
+            )
+            return {
+                "enabled": True,
+                "mode": "async",
+                "synced": True,
+                "task_id": result.id,
+                "task_type": "sync_user_graph",
+                "status_url": f"/api/tasks/{result.id}",
+            }
+        except Exception:
+            # 提交任务失败则回退同步，避免丢写。
+            pass
+    # 同步路径：先删除再 upsert，保证已删除节点不会被重建
+    if deleted_concepts:
+        deleted_set = set(deleted_concepts or [])
+
+        def try_delete_concept_with_retry(u_id, concept, attempts=3, base_delay=0.5):
+            """尝试删除 Neo4j 概念，失败时重试并记录日志。"""
+            for attempt in range(1, attempts + 1):
+                try:
+                    ok = neo4j_store.delete_concept(user_id=u_id, concept=concept)
+                    if ok:
+                        logger.info(f"deleted concept '%s' for user %s (attempt %d)", concept, u_id, attempt)
+                        return True
+                    else:
+                        logger.warning("delete_concept returned False for %s (user=%s) on attempt %d", concept, u_id, attempt)
+                except Exception as e:
+                    logger.exception("delete_concept exception for %s (user=%s) on attempt %d: %s", concept, u_id, attempt, e)
+
+                if attempt < attempts:
+                    delay = base_delay * (2 ** (attempt - 1))
+                    time.sleep(delay)
+
+            logger.error("failed to delete concept '%s' for user %s after %d attempts", concept, u_id, attempts)
+            return False
+
+        for d in (deleted_concepts or []):
+            try_delete_concept_with_retry(user_id, d)
+
+        concept_list = [c for c in concept_list if (c.get("concept") if isinstance(c, dict) else c) not in deleted_set]
+        relation_list = [r for r in relation_list if r.get("source") not in deleted_set and r.get("target") not in deleted_set]
+
+    ok = neo4j_store.upsert_user_graph(user_id, concept_list, relation_list)
+    return {
+        "enabled": True,
+        "mode": "sync",
+        "synced": bool(ok),
+        "task_id": None,
+        "task_type": "sync_user_graph",
+        "status_url": None,
+    }
+
+
+def sync_mastery_update(user_id, concept, mastery, review_count=0, last_reviewed=None):
+    """统一掌握度同步入口：支持 async/sync/auto。"""
+    if not neo4j_store.enabled:
+        return {
+            "enabled": False,
+            "mode": "disabled",
+            "synced": False,
+            "task_id": None,
+        }
+
+    mode = GRAPH_SYNC_MODE if GRAPH_SYNC_MODE in {"auto", "sync", "async"} else "auto"
+    use_async = mode == "async" or (mode == "auto" and celery_client and AsyncResult)
+    if use_async and celery_client and "sync_mastery_update_task" in globals():
+        try:
+            payload = {
+                "user_id": user_id,
+                "concept": concept,
+                "mastery": mastery,
+                "review_count": review_count,
+                "last_reviewed": last_reviewed,
+            }
+            result = sync_mastery_update_task.delay(payload)
+            register_task_meta(
+                task_id=result.id,
+                task_type="sync_mastery_update",
+                user_id=user_id,
+                extra={"concept": concept},
+            )
+            return {
+                "enabled": True,
+                "mode": "async",
+                "synced": True,
+                "task_id": result.id,
+                "task_type": "sync_mastery_update",
+                "status_url": f"/api/tasks/{result.id}",
+            }
+        except Exception:
+            pass
+
+    ok = neo4j_store.update_mastery(
+        user_id=user_id,
+        concept=concept,
+        mastery=mastery,
+        review_count=review_count,
+        last_reviewed=last_reviewed,
+    )
+    return {
+        "enabled": True,
+        "mode": "sync",
+        "synced": bool(ok),
+        "task_id": None,
+        "task_type": "sync_mastery_update",
+        "status_url": None,
+    }
+
+
+def sync_delete_concept(user_id, concept):
+    """统一删除节点同步入口：支持 async/sync/auto。"""
+    if not neo4j_store.enabled:
+        return {
+            "enabled": False,
+            "mode": "disabled",
+            "synced": False,
+            "task_id": None,
+        }
+
+    mode = GRAPH_SYNC_MODE if GRAPH_SYNC_MODE in {"auto", "sync", "async"} else "auto"
+    use_async = mode == "async" or (mode == "auto" and celery_client and AsyncResult)
+    if use_async and celery_client and "sync_delete_concept_task" in globals():
+        try:
+            payload = {"user_id": user_id, "concept": concept}
+            result = sync_delete_concept_task.delay(payload)
+            register_task_meta(
+                task_id=result.id,
+                task_type="sync_delete_concept",
+                user_id=user_id,
+                extra={"concept": concept},
+            )
+            return {
+                "enabled": True,
+                "mode": "async",
+                "synced": True,
+                "task_id": result.id,
+                "task_type": "sync_delete_concept",
+                "status_url": f"/api/tasks/{result.id}",
+            }
+        except Exception:
+            pass
+
+    ok = neo4j_store.delete_concept(user_id=user_id, concept=concept)
+    return {
+        "enabled": True,
+        "mode": "sync",
+        "synced": bool(ok),
+        "task_id": None,
+        "task_type": "sync_delete_concept",
+        "status_url": None,
+    }
+
 
 @app.route('/api/diagnosis/analyze', methods=['POST'])
 def cognitive_diagnosis_api():
     """错题归因分析接口。"""
+    request_id = get_request_id()
     data = request.json or {}
     user_id = data.get('user_id', 'default_user')
     question = (data.get('question') or '').strip()
@@ -1382,10 +2426,7 @@ def cognitive_diagnosis_api():
     user_answer = (data.get('user_answer') or '').strip()
 
     if not question or not correct_answer or not user_answer:
-        return jsonify({
-            "success": False,
-            "message": "question、correct_answer、user_answer 不能为空"
-        }), 400
+        return error_response(request_id, 400, "INVALID_INPUT", "question、correct_answer、user_answer 不能为空")
 
     diagnosis = diagnosis_engine.analyze_error(question, correct_answer, user_answer)
     record = {
@@ -1408,19 +2449,23 @@ def cognitive_diagnosis_api():
         "source": "diagnosis",
         "topics": extract_topics_from_text(question)
     })
-    extract_knowledge_from_text_api_inner(user_id, question, "diagnosis")
+    extract_result = extract_knowledge_from_text_api_inner(user_id, question, "diagnosis")
     profile = build_learning_profile(user_id)
 
-    return jsonify({
-        "success": True,
-        "diagnosis": diagnosis,
-        "profile": profile
-    })
+    return jsonify(success_payload(
+        request_id,
+        diagnosis=diagnosis,
+        profile=profile,
+        graph_sync=extract_result.get("graph_sync", {}),
+        error_code="",
+        error_message="",
+    ))
 
 
 @app.route('/api/content/ingest_async', methods=['POST'])
 def ingest_learning_content_async_api():
     """异步内容录入接口（Celery）。"""
+    request_id = get_request_id()
     data = request.json or {}
     user_id = data.get('user_id', 'default_user')
     content_type = (data.get('content_type') or 'note').strip().lower()
@@ -1429,7 +2474,7 @@ def ingest_learning_content_async_api():
     source = (data.get('source') or 'manual').strip()
 
     if not content:
-        return jsonify({"success": False, "message": "content 不能为空"}), 400
+        return error_response(request_id, 400, "INVALID_INPUT", "content 不能为空")
 
     payload = {
         "user_id": user_id,
@@ -1441,34 +2486,50 @@ def ingest_learning_content_async_api():
 
     if celery_client and AsyncResult:
         async_result = process_content_ingest_task.delay(payload)
-        return jsonify({
-            "success": True,
-            "mode": "async",
-            "task_id": async_result.id,
-            "status_url": f"/api/tasks/{async_result.id}",
-        })
+        register_task_meta(
+            task_id=async_result.id,
+            task_type="process_content_ingest",
+            user_id=user_id,
+            extra={"content_type": content_type, "source": source},
+        )
+        return jsonify(success_payload(
+            request_id,
+            mode="async",
+            task_id=async_result.id,
+            task_type="process_content_ingest",
+            status_url=f"/api/tasks/{async_result.id}",
+            error_code="",
+            error_message="",
+        ))
 
     # 无 Celery 时回退为同步
     result = process_content_ingest_sync(user_id, content_type, content, title, source)
-    result["mode"] = "sync_fallback"
-    return jsonify(result)
+    return jsonify(success_payload(request_id, **result, mode="sync_fallback"))
 
 
 @app.route('/api/tasks/<task_id>', methods=['GET'])
 def get_task_status_api(task_id):
     """查询异步任务状态。"""
+    request_id = get_request_id()
     if not (celery_client and AsyncResult):
-        return jsonify({
-            "success": False,
-            "message": "Celery 未启用",
-            "state": "UNAVAILABLE"
-        }), 503
+        return error_response(
+            request_id,
+            503,
+            "CELERY_DISABLED",
+            "Celery 未启用",
+            state="UNAVAILABLE",
+            task_id=task_id,
+        )
 
     result = AsyncResult(task_id, app=celery_client)
     payload = {
         "success": True,
+        "request_id": request_id,
         "task_id": task_id,
         "state": result.state,
+        "task_meta": TASK_META.get(task_id, {}),
+        "error_code": "",
+        "error_message": "",
     }
 
     if result.state == "SUCCESS":
@@ -1482,38 +2543,54 @@ def get_task_status_api(task_id):
 @app.route('/api/diagnosis/report', methods=['GET'])
 def cognitive_diagnosis_report_api():
     """获取用户诊断统计报告。"""
+    request_id = get_request_id()
     user_id = request.args.get('user_id', 'default_user')
-    return jsonify(build_diagnosis_report_response(user_id))
+    result = build_diagnosis_report_response(user_id)
+    if isinstance(result, dict):
+        result["request_id"] = request_id
+    return jsonify(result)
 
 
 @app.route('/api/profile', methods=['GET'])
 def profile_api():
     """获取用户学习画像。"""
+    request_id = get_request_id()
     user_id = request.args.get('user_id', 'default_user')
     profile = build_learning_profile(user_id)
-    return jsonify({
-        "success": True,
-        "profile": profile
-    })
+    return jsonify(success_payload(
+        request_id,
+        profile=profile,
+        error_code="",
+        error_message="",
+    ))
 
 
 @app.route('/api/recommendations', methods=['GET'])
 def recommendations_api():
     """获取个性化学习资源推荐。"""
+    request_id = get_request_id()
     user_id = request.args.get('user_id', 'default_user')
     limit = int(request.args.get('limit', 6))
     items = build_recommendations(user_id, limit=max(1, min(limit, 12)))
-    return jsonify({
-        "success": True,
-        "user_id": user_id,
-        "count": len(items),
-        "items": items
-    })
+    profile = get_user_profile(user_id) or {}
+    diagnosis_logs = load_user_event_list(user_id, "diagnosis")
+    recent_diagnosis = diagnosis_logs[-10:] if isinstance(diagnosis_logs, list) else []
+    diagnosis_count = len(recent_diagnosis)
+    return jsonify(success_payload(
+        request_id,
+        user_id=user_id,
+        count=len(items),
+        items=items,
+        recommendation_context=build_recommendation_context(profile, diagnosis_count),
+        error_code="",
+        error_message="",
+    ))
 
 
 @app.route('/api/dashboard/summary', methods=['GET'])
 def dashboard_summary_api():
     """仪表盘聚合数据接口。"""
+    request_id = get_request_id()
     user_id = request.args.get('user_id', 'default_user')
 
     graph = build_graph_response(user_id)
@@ -1521,28 +2598,42 @@ def dashboard_summary_api():
     profile = build_learning_profile(user_id)
     diagnosis_report = build_diagnosis_report_response(user_id)
     recommendations = build_recommendations(user_id, limit=4)
+    storage_info = get_storage_info()
+    cfg = get_ai_runtime_config()
 
     nodes = graph.get("graph", {}).get("nodes", [])
     overall_mastery = 0
     if nodes:
         overall_mastery = round(sum(float(n.get("mastery", 0)) for n in nodes) / len(nodes), 3)
 
-    return jsonify({
-        "success": True,
-        "user_id": user_id,
-        "overall_mastery": overall_mastery,
-        "graph": {
+    return jsonify(success_payload(
+        request_id,
+        user_id=user_id,
+        overall_mastery=overall_mastery,
+        graph={
             "node_count": graph.get("node_count", 0),
             "edge_count": graph.get("edge_count", 0)
         },
-        "review": {
+        review={
             "due_count": reminders.get("due_count", 0),
             "upcoming_count": reminders.get("upcoming_count", 0)
         },
-        "profile": profile,
-        "diagnosis": diagnosis_report,
-        "recommendations": recommendations
-    })
+        profile=profile,
+        diagnosis=diagnosis_report,
+        recommendations=recommendations,
+        system={
+            "storage_backend": storage_info.get("storage_backend", "json"),
+            "database_scheme": storage_info.get("database_scheme", ""),
+            "graph_primary": GRAPH_PRIMARY,
+            "graph_sync_mode": GRAPH_SYNC_MODE,
+            "neo4j_enabled": neo4j_store.enabled,
+            "celery_enabled": celery_client is not None,
+            "ai_enabled": USE_REAL_AI,
+            "ai_provider": cfg.get("provider", "mock") if USE_REAL_AI else "mock",
+        },
+        error_code="",
+        error_message="",
+    ))
 
 # ===== 辅助函数 =====
 
@@ -1556,18 +2647,7 @@ def record_learning_behavior(user_id, question, analysis):
         "type": "question_analysis"
     }
     
-    data_file = f"data/{user_id}_behavior.json"
-    
-    try:
-        with open(data_file, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-    except:
-        data = []
-    
-    data.append(behavior)
-    
-    with open(data_file, 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+    db_append_user_event(user_id, "behavior", behavior)
 
 def record_qa_behavior(user_id, question, answer):
     """记录问答行为"""
@@ -1579,46 +2659,31 @@ def record_qa_behavior(user_id, question, answer):
         "type": "qa_interaction"
     }
     
-    data_file = f"data/{user_id}_qa.json"
-    
-    try:
-        with open(data_file, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-    except:
-        data = []
-    
-    data.append(behavior)
-    
-    with open(data_file, 'w', encoding='utf-8') as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+    db_append_user_event(user_id, "qa", behavior)
 
 def update_user_knowledge(user_id, concepts):
     """更新用户知识图谱"""
-    knowledge_file = f"data/{user_id}_knowledge.json"
-    
-    try:
-        with open(knowledge_file, 'r', encoding='utf-8') as f:
-            knowledge = json.load(f)
-    except:
-        knowledge = {"concepts": []}
-    
+    knowledge = get_user_knowledge(user_id)
+    concept_list = knowledge.get("concepts", [])
+
     for concept in concepts:
-        if concept not in [c["concept"] for c in knowledge["concepts"]]:
-            knowledge["concepts"].append({
+        if concept not in [c.get("concept") for c in concept_list if isinstance(c, dict)]:
+            concept_list.append({
                 "concept": concept,
                 "first_seen": datetime.now().isoformat(),
                 "mastery": 0.3,
                 "review_count": 0
             })
-    
-    with open(knowledge_file, 'w', encoding='utf-8') as f:
-        json.dump(knowledge, f, ensure_ascii=False, indent=2)
+
+    knowledge["concepts"] = concept_list
+    set_user_knowledge(user_id, knowledge)
 
 @app.route('/health', methods=['GET'])
 def health():
     """健康检查接口"""
     cfg = get_ai_runtime_config()
     neo4j_error = getattr(neo4j_store, "last_error", "")
+    storage_info = get_storage_info()
     return jsonify({
         "status": "ok",
         "provider": cfg["provider"] if USE_REAL_AI else "mock",
@@ -1628,7 +2693,11 @@ def health():
         "ocr_provider": OCR_PROVIDER,
         "neo4j_enabled": neo4j_store.enabled,
         "neo4j_error": neo4j_error,
+        "graph_primary": GRAPH_PRIMARY,
+        "graph_sync_mode": GRAPH_SYNC_MODE,
         "celery_enabled": celery_client is not None,
+        "storage_backend": storage_info.get("storage_backend", "json"),
+        "database_scheme": storage_info.get("database_scheme", ""),
         "message": "智能学习伴侣服务运行正常"
     })
 

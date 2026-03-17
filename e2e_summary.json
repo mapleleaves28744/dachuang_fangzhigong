@@ -1,0 +1,104 @@
+﻿{
+    "user_id":  "reg4_20260316182918",
+    "total":  19,
+    "passed":  19,
+    "failed":  0,
+    "pass_rate":  100,
+    "items":  [
+                  {
+                      "name":  "health",
+                      "ok":  true,
+                      "detail":  "ok"
+                  },
+                  {
+                      "name":  "plans.get",
+                      "ok":  true,
+                      "detail":  "count=0"
+                  },
+                  {
+                      "name":  "plans.post",
+                      "ok":  true,
+                      "detail":  "id=b25efcce-00f3-4d96-b3c1-d661334236e5"
+                  },
+                  {
+                      "name":  "plans.put",
+                      "ok":  true,
+                      "detail":  "ok"
+                  },
+                  {
+                      "name":  "plans.delete",
+                      "ok":  true,
+                      "detail":  "ok"
+                  },
+                  {
+                      "name":  "ask.invalid",
+                      "ok":  true,
+                      "detail":  "code=INVALID_INPUT"
+                  },
+                  {
+                      "name":  "ask.valid",
+                      "ok":  true,
+                      "detail":  "source=qwen"
+                  },
+                  {
+                      "name":  "ingest.async",
+                      "ok":  true,
+                      "detail":  "task=28f01c1b-d482-4c69-84b6-4dab760f325d"
+                  },
+                  {
+                      "name":  "tasks.poll",
+                      "ok":  true,
+                      "detail":  "SUCCESS"
+                  },
+                  {
+                      "name":  "graph.get",
+                      "ok":  true,
+                      "detail":  "nodes=3"
+                  },
+                  {
+                      "name":  "graph.extract",
+                      "ok":  true,
+                      "detail":  "new=2"
+                  },
+                  {
+                      "name":  "graph.mastery",
+                      "ok":  true,
+                      "detail":  "ok"
+                  },
+                  {
+                      "name":  "graph.path",
+                      "ok":  true,
+                      "detail":  "len=0"
+                  },
+                  {
+                      "name":  "diagnosis.analyze",
+                      "ok":  true,
+                      "detail":  "ok"
+                  },
+                  {
+                      "name":  "diagnosis.report",
+                      "ok":  true,
+                      "detail":  "ok"
+                  },
+                  {
+                      "name":  "profile.get",
+                      "ok":  true,
+                      "detail":  "ok"
+                  },
+                  {
+                      "name":  "recommendations.get",
+                      "ok":  true,
+                      "detail":  "count=3"
+                  },
+                  {
+                      "name":  "dashboard.summary",
+                      "ok":  true,
+                      "detail":  "ok"
+                  },
+                  {
+                      "name":  "upload.invalid",
+                      "ok":  true,
+                      "detail":  "code=INVALID_INPUT"
+                  }
+              ]
+}

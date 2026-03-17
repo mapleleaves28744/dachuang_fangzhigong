@@ -1,0 +1,34 @@
+{
+  "user_id": "reg4_20260316182918",
+  "updated_at": "2026-03-16T18:29:33.394895",
+  "learning_style": "visual",
+  "style_scores": {
+    "visual": 0.362,
+    "auditory": 0.372,
+    "kinesthetic": 0.372
+  },
+  "style_method": "kmeans",
+  "style_features": {
+    "image_count": 0,
+    "link_count": 0,
+    "qa_content_count": 0,
+    "note_count": 1,
+    "other_count": 0,
+    "qa_log_count": 0,
+    "concept_count": 3
+  },
+  "interests": [
+    "derivative",
+    "limit",
+    "integral"
+  ],
+  "best_time_range": "18:00-20:00",
+  "focus_minutes": 45,
+  "content_type_counter": {
+    "note": 1,
+    "link": 0,
+    "image": 0,
+    "qa": 0,
+    "other": 0
+  }
+}

@@ -1,5 +1,8 @@
 (function () {
   const API_BASE = 'http://127.0.0.1:5000';
+  const parseApiResponse = window.ApiUtils.parseApiResponse;
+  const withSuggestion = window.ApiUtils.withSuggestion;
+
   function getUserId() {
     return window.UserContext ? window.UserContext.getUserId() : 'default_user';
   }
@@ -23,14 +26,23 @@
     extractText: document.getElementById('extractText'),
     extractBtn: document.getElementById('extractBtn'),
     extractResult: document.getElementById('extractResult'),
-    dueReminderList: document.getElementById('dueReminderList')
+    dueReminderList: document.getElementById('dueReminderList'),
+    relationScoreRange: document.getElementById('relationScoreRange'),
+    relationScoreText: document.getElementById('relationScoreText')
   };
 
   const state = {
     chart: null,
     graph: { nodes: [], links: [] },
-    selectedNode: null
+    selectedNode: null,
+    relationScoreThreshold: 0.45
   };
+
+  function refreshRelationScoreText() {
+    if (dom.relationScoreText) {
+      dom.relationScoreText.textContent = `当前阈值：${Math.round(state.relationScoreThreshold * 100)}%`;
+    }
+  }
 
   function masteryToColor(mastery) {
     if (mastery >= 0.8) return '#15803d';
@@ -168,9 +180,9 @@
   async function loadGraph() {
     dom.graphMeta.textContent = '载入中...';
     try {
-      const resp = await fetch(`${API_BASE}/api/knowledge_graph?user_id=${getUserId()}`);
-      const data = await resp.json();
-      if (!data.success) throw new Error(data.message || '获取图谱失败');
+      const threshold = Number.isFinite(state.relationScoreThreshold) ? state.relationScoreThreshold : 0.45;
+      const resp = await fetch(`${API_BASE}/api/knowledge_graph?user_id=${getUserId()}&min_relation_score=${encodeURIComponent(threshold.toFixed(2))}`);
+      const data = await parseApiResponse(resp);
 
       state.graph = data.graph;
       renderGraph(state.graph.nodes, state.graph.links);
@@ -183,10 +195,10 @@
         clearSelectedNode();
       }
 
-      dom.graphMeta.textContent = `节点 ${data.node_count} · 关系 ${data.edge_count} · 已更新`;
+      dom.graphMeta.textContent = `节点 ${data.node_count} · 关系 ${data.edge_count} · 阈值 ${Math.round((data.min_relation_score ?? threshold) * 100)}% · 已更新`;
     } catch (err) {
       dom.graphMeta.textContent = '加载失败';
-      dom.pathList.textContent = '图谱数据加载失败，请确认后端服务已启动。';
+      dom.pathList.textContent = withSuggestion('图谱数据加载失败', err, '确认后端已启动并刷新页面');
       console.error(err);
     }
   }
@@ -211,13 +223,12 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      const data = await resp.json();
-      if (!data.success) throw new Error(data.message || '保存失败');
+      await parseApiResponse(resp);
       await loadGraph();
       await loadDueReminders();
       window.dispatchEvent(new Event('knowledge:updated'));
     } catch (err) {
-      alert('掌握度保存失败，请稍后重试。');
+      alert(withSuggestion('掌握度保存失败', err, '稍后重试或检查后端服务'));
       console.error(err);
     }
   }
@@ -241,14 +252,13 @@
           concept
         })
       });
-      const data = await resp.json();
-      if (!data.success) throw new Error(data.message || '删除失败');
+      await parseApiResponse(resp);
 
       await loadGraph();
       await loadDueReminders();
       window.dispatchEvent(new Event('knowledge:updated'));
     } catch (err) {
-      alert('删除节点失败，请稍后重试。');
+      alert(withSuggestion('删除节点失败', err, '稍后重试或检查节点状态'));
       console.error(err);
     }
   }
@@ -264,8 +274,7 @@
 
     try {
       const resp = await fetch(`${API_BASE}/api/knowledge_graph/path?user_id=${getUserId()}&target=${encodeURIComponent(target)}`);
-      const data = await resp.json();
-      if (!data.success) throw new Error(data.message || '路径获取失败');
+      const data = await parseApiResponse(resp);
 
       if (!Array.isArray(data.path) || data.path.length === 0) {
         dom.pathList.textContent = `未找到到达 ${target} 的可行路径，请先补齐前置知识。`;
@@ -276,7 +285,7 @@
         .map((step, idx) => `${idx + 1}. ${step}`)
         .join('<br>');
     } catch (err) {
-      dom.pathList.textContent = '路径获取失败，请确认后端服务状态。';
+      dom.pathList.textContent = withSuggestion('路径获取失败', err, '确认目标知识点存在后重试');
       console.error(err);
     }
   }
@@ -300,8 +309,7 @@
         })
       });
 
-      const data = await resp.json();
-      if (!data.success) throw new Error(data.message || '抽取失败');
+      const data = await parseApiResponse(resp);
 
       const concepts = (data.detected_concepts || []).join('、') || '无';
       const rels = (data.relations || []).map(r => `${r.source} -> ${r.target}`).join('；') || '无';
@@ -311,7 +319,7 @@
       await loadDueReminders();
       window.dispatchEvent(new Event('knowledge:updated'));
     } catch (err) {
-      dom.extractResult.textContent = '抽取失败，请稍后重试。';
+      dom.extractResult.textContent = withSuggestion('抽取失败', err, '缩短文本或稍后重试');
       console.error(err);
     }
   }
@@ -322,9 +330,7 @@
 
     try {
       const resp = await fetch(`${API_BASE}/api/review/reminders?user_id=${getUserId()}`);
-      const data = await resp.json();
-
-      if (!data.success) throw new Error(data.message || '加载失败');
+      const data = await parseApiResponse(resp);
 
       if (!data.due_items || data.due_items.length === 0) {
         dom.dueReminderList.innerHTML = '<span style="color:#10b981;">暂无到期复习项</span>';
@@ -336,7 +342,7 @@
         return `<div style="padding:4px 0; border-bottom:1px dashed #e2e8f0;">${item.concept} · 掌握度 ${pct}%</div>`;
       }).join('');
     } catch (err) {
-      dom.dueReminderList.textContent = '加载失败';
+      dom.dueReminderList.textContent = withSuggestion('复习提醒加载失败', err, '刷新页面或稍后重试');
       console.error(err);
     }
   }
@@ -361,7 +367,20 @@
     dom.nodeMastery.textContent = masteryToLabel(value);
   });
 
+  if (dom.relationScoreRange) {
+    dom.relationScoreRange.addEventListener('input', function () {
+      const v = Number(this.value) / 100;
+      state.relationScoreThreshold = Math.max(0, Math.min(1, v));
+      refreshRelationScoreText();
+    });
+
+    dom.relationScoreRange.addEventListener('change', function () {
+      loadGraph();
+    });
+  }
+
   refreshUserLabel();
+  refreshRelationScoreText();
   loadGraph();
   loadDueReminders();
 

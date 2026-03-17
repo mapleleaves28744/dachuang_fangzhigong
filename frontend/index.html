@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>坊知工</title>
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
     <style>
         :root {
             --ink: #172033;
@@ -64,7 +67,11 @@
         .nav-links a:hover { border-color: #bfdbfe; background: #ffffff; }
         .nav-links a.active { color: #0b4bb8; border-color: #93c5fd; }
 
-        .main-content { display: grid; grid-template-columns: 1.9fr 1fr; gap: 22px; }
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
 
         .chat-section {
             background: var(--panel);
@@ -74,7 +81,8 @@
             padding: 22px;
             display: flex;
             flex-direction: column;
-            min-height: 780px;
+            height: min(82vh, 900px);
+            min-height: 660px;
         }
 
         .chat-header {
@@ -109,6 +117,127 @@
             white-space: nowrap;
         }
 
+        .chat-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+        }
+
+        .new-chat-btn {
+            border: 1px solid #bfdbfe;
+            background: #eff6ff;
+            color: #1d4ed8;
+            border-radius: 10px;
+            padding: 7px 11px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .rename-chat-btn,
+        .clear-chat-btn {
+            border: 1px solid #dbeafe;
+            background: #ffffff;
+            color: #1f2937;
+            border-radius: 10px;
+            padding: 7px 10px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
+        .clear-chat-btn {
+            border-color: #fecaca;
+            color: #991b1b;
+            background: #fff7f7;
+        }
+
+        .chat-layout {
+            display: grid;
+            grid-template-columns: 240px minmax(0, 1fr);
+            gap: 12px;
+            flex: 1;
+            min-height: 0;
+        }
+
+        .conversation-panel {
+            border: 1px solid #d9e5f6;
+            border-radius: 14px;
+            background: #f8fbff;
+            padding: 10px;
+            overflow-y: auto;
+        }
+
+        .conversation-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .conversation-item {
+            border: 1px solid #dbeafe;
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .conversation-item.active {
+            border-color: #1d4ed8;
+            background: #eef4ff;
+        }
+
+        .conversation-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1f2937;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .conversation-time {
+            margin-top: 2px;
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        .conversation-main-btn {
+            flex: 1;
+            border: none;
+            background: transparent;
+            text-align: left;
+            cursor: pointer;
+            min-width: 0;
+            padding: 0;
+        }
+
+        .conversation-delete-btn {
+            width: 24px;
+            height: 24px;
+            border: 1px solid #fecaca;
+            color: #b91c1c;
+            border-radius: 8px;
+            background: #fff1f2;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            flex-shrink: 0;
+            line-height: 1;
+        }
+
+        .chat-main {
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
         .status-dot {
             width: 8px;
             height: 8px;
@@ -126,6 +255,7 @@
             border: 1px solid #d9e5f6;
             border-radius: 16px;
             padding: 18px;
+            min-height: 0;
         }
 
         .message-row {
@@ -216,6 +346,100 @@
             border-color: #fed7aa;
         }
 
+        .meta-chip.link {
+            text-decoration: none;
+            background: #eef2ff;
+            color: #3730a3;
+            border-color: #c7d2fe;
+        }
+
+        .meta-chip.button {
+            background: #eef6ff;
+            color: #1e40af;
+            border-color: #bfdbfe;
+            cursor: pointer;
+        }
+
+        .task-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.45);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            z-index: 9999;
+        }
+
+        .task-modal.show { display: flex; }
+
+        .task-modal-card {
+            width: min(560px, 100%);
+            background: #ffffff;
+            border-radius: 14px;
+            border: 1px solid #dbeafe;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.2);
+            padding: 16px;
+        }
+
+        .task-modal-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .task-modal-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .task-modal-title {
+            font-size: 16px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .task-modal-close {
+            border: 1px solid #dbeafe;
+            background: #f8fafc;
+            color: #334155;
+            border-radius: 8px;
+            padding: 4px 10px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .task-modal-refresh {
+            border: 1px solid #bfdbfe;
+            background: #eff6ff;
+            color: #1d4ed8;
+            border-radius: 8px;
+            padding: 4px 10px;
+            cursor: pointer;
+            font-weight: 700;
+        }
+
+        .task-modal-body {
+            font-size: 13px;
+            color: #334155;
+            line-height: 1.6;
+            word-break: break-word;
+        }
+
+        .task-status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            border-radius: 999px;
+            padding: 2px 8px;
+            border: 1px solid #cbd5e1;
+            background: #f8fafc;
+            font-size: 12px;
+            margin-left: 8px;
+        }
+
         .typing-dots {
             display: inline-flex;
             align-items: center;
@@ -246,7 +470,7 @@
             border: 1px solid #cdd9ea;
             border-radius: 12px;
             resize: vertical;
-            min-height: 72px;
+            min-height: 84px;
             font-size: 14px;
             color: #0f172a;
             background: #ffffff;
@@ -256,6 +480,7 @@
 
         .input-area button {
             min-width: 104px;
+            min-height: 48px;
             border: none;
             border-radius: 12px;
             cursor: pointer;
@@ -297,7 +522,16 @@
             color: #fff;
         }
 
-        .sidebar { display: flex; flex-direction: column; gap: 16px; }
+        .sidebar {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            align-items: start;
+        }
+
+        .sidebar .dashboard-link {
+            grid-column: 1 / -1;
+        }
 
         .card {
             background: #ffffff;
@@ -358,10 +592,23 @@
         .mini-list { margin-top: 8px; font-size: 13px; color: #475569; }
         .mini-item { padding: 6px 0; border-bottom: 1px dashed #dbe5f2; }
 
+        @media (max-width: 1200px) {
+            .sidebar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        }
+
         @media (max-width: 1024px) {
-            .main-content { grid-template-columns: 1fr; }
-            .chat-section { min-height: auto; }
-            .chat-messages { min-height: 460px; }
+            .chat-section { min-height: auto; height: auto; }
+            .chat-layout { grid-template-columns: 1fr; }
+            .conversation-panel {
+                max-height: 120px;
+                overflow-y: auto;
+            }
+            .conversation-list {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 6px;
+            }
+            .chat-messages { min-height: 520px; }
         }
 
         @media (max-width: 720px) {
@@ -370,9 +617,12 @@
             .navbar { flex-direction: column; align-items: flex-start; gap: 10px; }
             .nav-links a { margin-left: 0; margin-right: 8px; }
             .chat-header { flex-direction: column; align-items: flex-start; }
+            .chat-header-actions { width: 100%; justify-content: space-between; }
             .input-area { flex-direction: column; }
-            .input-area button { height: 42px; }
+            .input-area button { height: 46px; }
             .message-bubble { max-width: 100%; }
+            .sidebar { grid-template-columns: 1fr; }
+            .conversation-list { grid-template-columns: 1fr; }
         }
     </style>
 </head>
@@ -397,18 +647,31 @@
                         <h2>AI 学习问答</h2>
                         <div class="chat-subtitle">更清晰的分段排版、状态标识和对话流体验</div>
                     </div>
-                    <div class="chat-status" id="chatAiStatus">
-                        <span class="status-dot" id="aiStatusDot"></span>
-                        <span id="aiStatusText">检测中...</span>
+                    <div class="chat-header-actions">
+                        <button class="new-chat-btn" id="newChatBtn" type="button">+ 新对话</button>
+                        <button class="rename-chat-btn" id="renameChatBtn" type="button">重命名</button>
+                        <button class="clear-chat-btn" id="clearChatBtn" type="button">清空当前</button>
+                        <div class="chat-status" id="chatAiStatus">
+                            <span class="status-dot" id="aiStatusDot"></span>
+                            <span id="aiStatusText">检测中...</span>
+                        </div>
                     </div>
                 </div>
-                
-                <div class="chat-messages" id="chatMessages">
-                </div>
-                
-                <div class="input-area">
-                    <textarea id="questionInput" placeholder="输入你的学习问题（如：什么是导数？）"></textarea>
-                    <button onclick="askQuestion()">发送</button>
+
+                <div class="chat-layout">
+                    <aside class="conversation-panel">
+                        <div class="conversation-list" id="conversationList"></div>
+                    </aside>
+
+                    <div class="chat-main">
+                        <div class="chat-messages" id="chatMessages">
+                        </div>
+
+                        <div class="input-area">
+                            <textarea id="questionInput" placeholder="输入你的学习问题（如：什么是导数？）"></textarea>
+                            <button onclick="askQuestion()">发送</button>
+                        </div>
+                    </div>
                 </div>
                 
                 <!-- 图片上传区域 -->
@@ -438,6 +701,10 @@
                     <div class="profile-item">
                         <div class="profile-label">学习风格</div>
                         <div class="profile-value" id="profile-style">加载中...</div>
+                    </div>
+                    <div class="profile-item">
+                        <div class="profile-label">画像推断方式</div>
+                        <div class="profile-value" id="profile-style-method">加载中...</div>
                     </div>
                     <div class="profile-item">
                         <div class="profile-label">兴趣领域</div>
@@ -496,6 +763,15 @@
 
                 <div class="card">
                     <div class="card-title">个性化推荐</div>
+                    <div style="margin-bottom:8px; display:flex; align-items:center; gap:8px; font-size:12px; color:#64748b;">
+                        <span>推荐视图</span>
+                        <select id="recommendation-style-filter" style="padding:4px 6px; border:1px solid #dbe5f2; border-radius:6px; font-size:12px; color:#334155;">
+                            <option value="all">全部</option>
+                            <option value="visual">视觉型</option>
+                            <option value="auditory">听觉型</option>
+                            <option value="kinesthetic">动觉型</option>
+                        </select>
+                    </div>
                     <div id="recommendation-list" class="mini-list">加载中...</div>
                 </div>
                 
@@ -504,9 +780,297 @@
         </div>
     </div>
 
+    <div class="task-modal" id="taskStatusModal">
+        <div class="task-modal-card">
+            <div class="task-modal-head">
+                <div class="task-modal-title">任务状态详情</div>
+                <div class="task-modal-actions">
+                    <button type="button" class="task-modal-refresh" id="taskModalRefreshBtn">刷新</button>
+                    <button type="button" class="task-modal-refresh" id="taskModalAutoBtn">自动刷新：关</button>
+                    <button type="button" class="task-modal-close" id="taskModalCloseBtn">关闭</button>
+                </div>
+            </div>
+            <div class="task-modal-body" id="taskModalBody">加载中...</div>
+        </div>
+    </div>
+
     <script src="js/user-context.js"></script>
+    <script src="js/api-utils.js"></script>
     <script>
         const API_BASE = 'http://127.0.0.1:5000';
+        const CHAT_STORE_KEY = 'fangzhigong_chat_sessions_v1';
+        const MAX_CHAT_SESSIONS = 20;
+        const { parseApiResponse, withSuggestion } = window.ApiUtils;
+
+        let chatSessions = [];
+        let activeSessionId = null;
+        let taskModalTaskId = null;
+        let taskModalAutoTimer = null;
+        let taskModalAutoEnabled = false;
+
+        function nowLabel(date) {
+            const d = date instanceof Date ? date : new Date(date || Date.now());
+            const hh = String(d.getHours()).padStart(2, '0');
+            const mm = String(d.getMinutes()).padStart(2, '0');
+            return `${hh}:${mm}`;
+        }
+
+        function createEmptySession() {
+            const ts = Date.now();
+            return {
+                id: `session_${ts}_${Math.random().toString(36).slice(2, 7)}`,
+                title: '新对话',
+                updatedAt: ts,
+                messages: []
+            };
+        }
+
+        function saveSessionsToLocal() {
+            try {
+                localStorage.setItem(CHAT_STORE_KEY, JSON.stringify({
+                    activeSessionId,
+                    sessions: chatSessions.slice(0, MAX_CHAT_SESSIONS)
+                }));
+            } catch (error) {
+                console.warn('保存会话失败:', error);
+            }
+        }
+
+        function loadSessionsFromLocal() {
+            try {
+                const raw = localStorage.getItem(CHAT_STORE_KEY);
+                if (!raw) return;
+                const parsed = JSON.parse(raw);
+                if (parsed && Array.isArray(parsed.sessions)) {
+                    chatSessions = parsed.sessions
+                        .map(s => ({
+                            id: s.id,
+                            title: s.title || '新对话',
+                            updatedAt: Number(s.updatedAt || Date.now()),
+                            messages: Array.isArray(s.messages) ? s.messages : []
+                        }))
+                        .filter(s => s.id)
+                        .slice(0, MAX_CHAT_SESSIONS);
+                }
+                if (parsed && parsed.activeSessionId) {
+                    activeSessionId = parsed.activeSessionId;
+                }
+            } catch (error) {
+                console.warn('读取会话失败:', error);
+                chatSessions = [];
+                activeSessionId = null;
+            }
+        }
+
+        function getActiveSession() {
+            return chatSessions.find(s => s.id === activeSessionId) || null;
+        }
+
+        function ensureActiveSession() {
+            if (chatSessions.length === 0) {
+                const s = createEmptySession();
+                chatSessions = [s];
+                activeSessionId = s.id;
+                return s;
+            }
+            if (!getActiveSession()) {
+                activeSessionId = chatSessions[0].id;
+            }
+            return getActiveSession();
+        }
+
+        function updateSessionTitle(session, messageText, sender) {
+            if (!session || sender !== 'user') return;
+            if (session.title && session.title !== '新对话') return;
+            const base = String(messageText || '').trim();
+            if (!base) return;
+            session.title = base.length > 18 ? `${base.slice(0, 18)}...` : base;
+        }
+
+        function renderSessionList() {
+            const list = document.getElementById('conversationList');
+            if (!list) return;
+
+            if (!chatSessions.length) {
+                list.innerHTML = '<div class="conversation-item">暂无对话</div>';
+                return;
+            }
+
+            chatSessions.sort((a, b) => Number(b.updatedAt || 0) - Number(a.updatedAt || 0));
+            list.innerHTML = chatSessions.map(s => `
+                <div class="conversation-item ${s.id === activeSessionId ? 'active' : ''}" data-session-id="${escapeHtml(s.id)}">
+                    <button type="button" class="conversation-main-btn" data-session-switch="${escapeHtml(s.id)}">
+                        <div class="conversation-title">${escapeHtml(s.title || '新对话')}</div>
+                        <div class="conversation-time">${nowLabel(s.updatedAt)}</div>
+                    </button>
+                    <button type="button" class="conversation-delete-btn" data-session-delete="${escapeHtml(s.id)}" title="删除此对话">x</button>
+                </div>
+            `).join('');
+
+            list.querySelectorAll('[data-session-switch]').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    switchSession(this.getAttribute('data-session-switch'));
+                });
+            });
+
+            list.querySelectorAll('[data-session-delete]').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    deleteSession(this.getAttribute('data-session-delete'));
+                });
+            });
+        }
+
+        function clearChatDom() {
+            const chatMessages = document.getElementById('chatMessages');
+            if (chatMessages) {
+                chatMessages.innerHTML = '';
+            }
+        }
+
+        function renderActiveSessionMessages() {
+            const session = ensureActiveSession();
+            clearChatDom();
+            (session.messages || []).forEach(m => {
+                addMessage(m.text, m.sender, m.options || {}, false);
+            });
+            renderSessionList();
+        }
+
+        function switchSession(sessionId) {
+            if (!sessionId || !chatSessions.find(s => s.id === sessionId)) return;
+            activeSessionId = sessionId;
+            renderActiveSessionMessages();
+            saveSessionsToLocal();
+        }
+
+        function deleteSession(sessionId) {
+            if (!sessionId) return;
+            const target = chatSessions.find(s => s.id === sessionId);
+            if (!target) return;
+
+            const ok = window.confirm(`确认删除对话「${target.title || '新对话'}」吗？`);
+            if (!ok) return;
+
+            chatSessions = chatSessions.filter(s => s.id !== sessionId);
+            if (chatSessions.length === 0) {
+                const s = createEmptySession();
+                chatSessions = [s];
+                activeSessionId = s.id;
+                clearChatDom();
+                addMessage(
+                    '你好，我是坊知工学习助手。你可以直接提问，我会给出结构化、可执行的学习建议。',
+                    'ai',
+                    { source: 'system', aiUsed: true, error: '' }
+                );
+                return;
+            }
+
+            if (activeSessionId === sessionId) {
+                activeSessionId = chatSessions[0].id;
+            }
+            renderActiveSessionMessages();
+            saveSessionsToLocal();
+        }
+
+        function renameActiveSession() {
+            const session = getActiveSession();
+            if (!session) return;
+            const nextTitle = window.prompt('请输入新的会话名称：', session.title || '新对话');
+            if (nextTitle === null) return;
+            const trimmed = nextTitle.trim();
+            if (!trimmed) return;
+
+            session.title = trimmed.slice(0, 40);
+            session.updatedAt = Date.now();
+            chatSessions = [session, ...chatSessions.filter(s => s.id !== session.id)].slice(0, MAX_CHAT_SESSIONS);
+            activeSessionId = session.id;
+            renderSessionList();
+            saveSessionsToLocal();
+        }
+
+        function clearActiveSessionMessages() {
+            const session = getActiveSession();
+            if (!session) return;
+
+            const ok = window.confirm('确认清空当前对话的所有消息吗？');
+            if (!ok) return;
+
+            session.messages = [];
+            session.updatedAt = Date.now();
+            clearChatDom();
+            addMessage(
+                '已清空当前对话。你可以继续提新问题。',
+                'ai',
+                { source: 'system', aiUsed: true, error: '' }
+            );
+        }
+
+        function createNewSession() {
+            const s = createEmptySession();
+            chatSessions.unshift(s);
+            chatSessions = chatSessions.slice(0, MAX_CHAT_SESSIONS);
+            activeSessionId = s.id;
+            clearChatDom();
+            const welcome = '你好，我是坊知工学习助手。你可以直接提问，我会给出结构化、可执行的学习建议。';
+            addMessage(welcome, 'ai', { source: 'system', aiUsed: true, error: '' });
+            renderSessionList();
+            saveSessionsToLocal();
+        }
+
+        function appendMessageToSession(text, sender, options) {
+            const session = ensureActiveSession();
+            const msg = {
+                text: String(text || ''),
+                sender,
+                options: options || {},
+                time: Date.now()
+            };
+            session.messages = session.messages || [];
+            session.messages.push(msg);
+            session.updatedAt = msg.time;
+            updateSessionTitle(session, text, sender);
+
+            chatSessions = [session, ...chatSessions.filter(s => s.id !== session.id)].slice(0, MAX_CHAT_SESSIONS);
+            activeSessionId = session.id;
+            renderSessionList();
+            saveSessionsToLocal();
+        }
+
+        function initConversationUI() {
+            loadSessionsFromLocal();
+            ensureActiveSession();
+
+            const active = getActiveSession();
+            if (active && (!active.messages || active.messages.length === 0)) {
+                active.messages = [];
+                active.updatedAt = Date.now();
+                activeSessionId = active.id;
+                saveSessionsToLocal();
+                clearChatDom();
+                addMessage(
+                    '你好，我是坊知工学习助手。你可以直接提问，我会给出结构化、可执行的学习建议。',
+                    'ai',
+                    { source: 'system', aiUsed: true, error: '' }
+                );
+            } else {
+                renderActiveSessionMessages();
+            }
+
+            const btn = document.getElementById('newChatBtn');
+            if (btn) {
+                btn.addEventListener('click', createNewSession);
+            }
+
+            const renameBtn = document.getElementById('renameChatBtn');
+            if (renameBtn) {
+                renameBtn.addEventListener('click', renameActiveSession);
+            }
+
+            const clearBtn = document.getElementById('clearChatBtn');
+            if (clearBtn) {
+                clearBtn.addEventListener('click', clearActiveSessionMessages);
+            }
+        }
 
         function getUserId() {
             return window.UserContext ? window.UserContext.getUserId() : 'default_user';
@@ -553,17 +1117,30 @@
                 if (idx % 2 === 1) {
                     return `<pre><code>${chunk.trim()}</code></pre>`;
                 }
-                return chunk
+                const mathBlocks = [];
+                const withPlaceholders = chunk.replace(/\$\$([\s\S]*?)\$\$/g, (_, body) => {
+                    const token = `@@MATH_BLOCK_${mathBlocks.length}@@`;
+                    mathBlocks.push(`<div class="math-block">$$${body.trim()}$$</div>`);
+                    return token;
+                });
+
+                let bodyHtml = withPlaceholders
                     .split(/\n\s*\n/)
                     .map(formatSegment)
                     .join('');
+
+                mathBlocks.forEach((blockHtml, i) => {
+                    bodyHtml = bodyHtml.replace(`@@MATH_BLOCK_${i}@@`, blockHtml);
+                });
+
+                return bodyHtml;
             }).join('');
 
             return html || '<p>(空响应)</p>';
         }
 
         function normalizeAiAnswerText(text) {
-            const content = String(text || '');
+            const content = normalizeMathText(String(text || ''));
             const hasGarbledHint = /[?？]{8,}/.test(content) || /�/.test(content);
             if (!hasGarbledHint) return content;
             return [
@@ -572,6 +1149,52 @@
                 '原始返回：',
                 content
             ].join('\n');
+        }
+
+        function normalizeMathText(text) {
+            return String(text || '')
+                // 支持 markdown 的 ```math / ```latex / ```tex 代码块
+                .replace(/```(?:math|latex|tex)\s*([\s\S]*?)```/gi, (_, body) => `$$\n${body.trim()}\n$$`)
+                // 将 \[ ... \] 多行块公式提前转成 $$...$$，避免后续 <br> 打断分隔符
+                .replace(/\\\[\s*([\s\S]*?)\s*\\\]/g, (_, body) => `$$\n${body.trim()}\n$$`)
+                // 将 \( ... \) 行内公式转成 $...$
+                .replace(/\\\(\s*([\s\S]*?)\s*\\\)/g, (_, body) => `$${body.trim()}$`)
+                // 修复模型常见的双反斜杠分隔符输出
+                .replace(/\\\\\(/g, '\\(')
+                .replace(/\\\\\)/g, '\\)')
+                .replace(/\\\\\[/g, '\\[')
+                .replace(/\\\\\]/g, '\\]')
+                // 修复双反斜杠 LaTeX 命令，如 \\frac -> \frac
+                .replace(/\\\\([a-zA-Z]+)/g, '\\$1')
+                // 修复被转义的美元分隔符
+                .replace(/\\\$\\\$/g, '$$')
+                .replace(/\\\$/g, '$')
+                // 兼容全角美元符号
+                .replace(/＄/g, '$')
+                // 兼容中文输入法下的全角括号公式分隔符
+                .replace(/（\\/g, '(\\')
+                .replace(/\\）/g, '\\)');
+        }
+
+        function renderMathInContainer(container) {
+            if (!container || typeof renderMathInElement !== 'function') return;
+            try {
+                renderMathInElement(container, {
+                    delimiters: [
+                        { left: '$$', right: '$$', display: true },
+                        { left: '$', right: '$', display: false },
+                        { left: '\\(', right: '\\)', display: false },
+                        { left: '\\[', right: '\\]', display: true },
+                        { left: '\\begin{equation}', right: '\\end{equation}', display: true },
+                        { left: '\\begin{align}', right: '\\end{align}', display: true },
+                        { left: '\\begin{aligned}', right: '\\end{aligned}', display: true }
+                    ],
+                    throwOnError: false,
+                    ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+                });
+            } catch (error) {
+                console.warn('公式渲染失败:', error);
+            }
         }
 
         function createMessageRow(text, sender, options) {
@@ -605,6 +1228,17 @@
             if (sender === 'ai' && opts.error) {
                 metaItems.push(`<span class="meta-chip error">${escapeHtml(opts.error)}</span>`);
             }
+            if (sender === 'ai' && opts.graphSync && typeof opts.graphSync === 'object') {
+                const mode = opts.graphSync.mode || 'unknown';
+                const status = opts.graphSync.synced ? '已同步' : '待同步';
+                const taskType = opts.graphSync.task_type ? ` / ${opts.graphSync.task_type}` : '';
+                metaItems.push(`<span class="meta-chip">图谱同步：${escapeHtml(mode)} / ${escapeHtml(status)}${escapeHtml(taskType)}</span>`);
+                if (opts.graphSync.task_id) {
+                    const taskHref = `${API_BASE}/api/tasks/${encodeURIComponent(String(opts.graphSync.task_id))}`;
+                    metaItems.push(`<a class="meta-chip link" href="${taskHref}" target="_blank" rel="noopener noreferrer">查看任务</a>`);
+                    metaItems.push(`<button type="button" class="meta-chip button" data-task-status-id="${escapeHtml(String(opts.graphSync.task_id))}">就地查询状态</button>`);
+                }
+            }
 
             if (metaItems.length > 0) {
                 const metaDiv = document.createElement('div');
@@ -624,12 +1258,118 @@
             return row;
         }
 
-        function addMessage(text, sender, options) {
+        function addMessage(text, sender, options, persist) {
             const chatMessages = document.getElementById('chatMessages');
             const row = createMessageRow(text, sender, options || {});
             chatMessages.appendChild(row);
+
+            row.querySelectorAll('[data-task-status-id]').forEach(btn => {
+                btn.addEventListener('click', async function () {
+                    const taskId = this.getAttribute('data-task-status-id');
+                    if (!taskId) return;
+
+                    try {
+                        const resp = await fetch(`${API_BASE}/api/tasks/${encodeURIComponent(taskId)}`);
+                        const data = await resp.json();
+                        openTaskStatusModal(taskId, data);
+                    } catch (error) {
+                        openTaskStatusModal(taskId, {
+                            state: 'FAILED_TO_FETCH',
+                            error: '任务状态查询失败，请稍后再试。',
+                        });
+                    }
+                });
+            });
+
+            if (sender === 'ai') {
+                renderMathInContainer(row);
+            }
             chatMessages.scrollTop = chatMessages.scrollHeight;
+
+            if (persist !== false) {
+                appendMessageToSession(text, sender, options || {});
+            }
+
             return row;
+        }
+
+        function openTaskStatusModal(taskId, payload) {
+            const modal = document.getElementById('taskStatusModal');
+            const body = document.getElementById('taskModalBody');
+            if (!modal || !body) return;
+
+            taskModalTaskId = taskId;
+
+            const p = payload || {};
+            const state = p.state || 'UNKNOWN';
+            const taskType = (p.task_meta && p.task_meta.task_type) || 'unknown';
+            const resultText = p.result ? escapeHtml(JSON.stringify(p.result, null, 2)) : '';
+            const errorText = p.error ? escapeHtml(String(p.error)) : '';
+
+            body.innerHTML = `
+                <div><strong>Task ID:</strong> ${escapeHtml(String(taskId || ''))}</div>
+                <div><strong>任务类型:</strong> ${escapeHtml(taskType)}</div>
+                <div><strong>状态:</strong><span class="task-status-pill">${escapeHtml(state)}</span></div>
+                <div style="margin-top:8px;"><strong>创建时间:</strong> ${escapeHtml((p.task_meta && p.task_meta.created_at) || '--')}</div>
+                <div style="margin-top:8px;"><strong>用户:</strong> ${escapeHtml((p.task_meta && p.task_meta.user_id) || '--')}</div>
+                ${errorText ? `<div style="margin-top:8px; color:#b91c1c;"><strong>错误:</strong> ${errorText}</div>` : ''}
+                ${resultText ? `<div style="margin-top:8px;"><strong>结果:</strong><pre style="background:#0f172a;color:#e2e8f0;border-radius:8px;padding:8px;overflow:auto;">${resultText}</pre></div>` : ''}
+            `;
+
+            modal.classList.add('show');
+        }
+
+        async function refreshTaskStatusModal() {
+            if (!taskModalTaskId) return;
+            try {
+                const resp = await fetch(`${API_BASE}/api/tasks/${encodeURIComponent(taskModalTaskId)}`);
+                const data = await resp.json();
+                openTaskStatusModal(taskModalTaskId, data);
+
+                const terminalStates = ['SUCCESS', 'FAILURE', 'REVOKED'];
+                if (terminalStates.includes(String(data.state || '').toUpperCase())) {
+                    stopTaskStatusAutoRefresh();
+                }
+            } catch (error) {
+                openTaskStatusModal(taskModalTaskId, {
+                    state: 'FAILED_TO_FETCH',
+                    error: '任务状态查询失败，请稍后再试。',
+                });
+                stopTaskStatusAutoRefresh();
+            }
+        }
+
+        function startTaskStatusAutoRefresh() {
+            stopTaskStatusAutoRefresh();
+            taskModalAutoEnabled = true;
+            updateTaskModalAutoButton();
+            taskModalAutoTimer = setInterval(refreshTaskStatusModal, 1000);
+        }
+
+        function stopTaskStatusAutoRefresh() {
+            taskModalAutoEnabled = false;
+            updateTaskModalAutoButton();
+            if (taskModalAutoTimer) {
+                clearInterval(taskModalAutoTimer);
+                taskModalAutoTimer = null;
+            }
+        }
+
+        function toggleTaskStatusAutoRefresh() {
+            if (taskModalAutoEnabled) stopTaskStatusAutoRefresh();
+            else startTaskStatusAutoRefresh();
+        }
+
+        function updateTaskModalAutoButton() {
+            const autoBtn = document.getElementById('taskModalAutoBtn');
+            if (autoBtn) autoBtn.textContent = `自动刷新：${taskModalAutoEnabled ? '开' : '关'}`;
+        }
+
+        function closeTaskStatusModal() {
+            const modal = document.getElementById('taskStatusModal');
+            if (modal) modal.classList.remove('show');
+            taskModalTaskId = null;
+            stopTaskStatusAutoRefresh();
         }
 
         function addTypingMessage() {
@@ -674,7 +1414,7 @@
         async function autoExtractKnowledge(text, source) {
             if (!text) return;
             try {
-                await fetch(`${API_BASE}/api/knowledge_graph/extract`, {
+                const resp = await fetch(`${API_BASE}/api/knowledge_graph/extract`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
@@ -683,9 +1423,12 @@
                         source
                     })
                 });
+                const data = await resp.json();
                 window.dispatchEvent(new Event('knowledge:updated'));
+                return data || {};
             } catch (error) {
                 console.warn('知识抽取触发失败:', error);
+                return {};
             }
         }
 
@@ -703,30 +1446,104 @@
                         source: 'home'
                     })
                 });
-                const data = await resp.json();
+                const data = await parseApiResponse(resp);
+                let graphSync = (data.knowledge_extract && data.knowledge_extract.graph_sync) || null;
 
                 if (data.mode === 'async' && data.task_id) {
-                    await pollTaskUntilDone(data.task_id, 12000);
+                    const taskResult = await pollTaskUntilDone(data.task_id, 12000);
+                    if (taskResult && taskResult.knowledge_extract) {
+                        graphSync = taskResult.knowledge_extract.graph_sync || graphSync;
+                    }
                 }
 
                 window.dispatchEvent(new Event('knowledge:updated'));
                 loadHomeProfileAndGraph();
                 loadRecommendations();
+                return { data, graphSync };
             } catch (error) {
                 console.warn('内容录入失败:', error);
+                return { data: null, graphSync: null };
             }
         }
 
         async function pollTaskUntilDone(taskId, timeoutMs) {
             const start = Date.now();
+            let lastState = 'PENDING';
+            let transientErrors = 0;
+
             while (Date.now() - start < timeoutMs) {
-                const resp = await fetch(`${API_BASE}/api/tasks/${taskId}`);
-                const data = await resp.json();
-                if (data.state === 'SUCCESS') return data.result;
-                if (data.state === 'FAILURE') throw new Error(data.error || '任务失败');
-                await new Promise(resolve => setTimeout(resolve, 600));
+                try {
+                    const resp = await fetch(`${API_BASE}/api/tasks/${encodeURIComponent(taskId)}`);
+                    const data = await parseApiResponse(resp);
+                    lastState = String(data.state || 'PENDING').toUpperCase();
+
+                    if (lastState === 'SUCCESS') {
+                        return {
+                            ok: true,
+                            state: lastState,
+                            result: data.result || {}
+                        };
+                    }
+
+                    if (lastState === 'FAILURE' || lastState === 'REVOKED') {
+                        return {
+                            ok: false,
+                            state: lastState,
+                            error: data.error || data.error_message || '任务失败'
+                        };
+                    }
+                } catch (error) {
+                    transientErrors += 1;
+                    // 任务状态接口偶发失败时继续轮询，避免误报“同步失败”
+                    if (transientErrors >= 3) {
+                        return {
+                            ok: false,
+                            state: 'STATUS_API_UNSTABLE',
+                            error: error && error.message ? error.message : '任务状态接口波动'
+                        };
+                    }
+                }
+
+                await new Promise(resolve => setTimeout(resolve, 700));
             }
-            throw new Error('异步任务超时');
+
+            return {
+                ok: false,
+                state: 'TIMEOUT',
+                error: `异步任务仍在执行（最后状态: ${lastState}）`
+            };
+        }
+
+        async function monitorGraphSync(graphSync, contextLabel) {
+            if (!graphSync || graphSync.mode !== 'async' || !graphSync.task_id) return;
+
+            try {
+                const resp = await fetch(`${API_BASE}/api/tasks/${encodeURIComponent(graphSync.task_id)}`);
+                const data = await parseApiResponse(resp);
+
+                if (data.state === 'SUCCESS') {
+                    // 静默：不再追加二次对话消息。
+                    console.info(`${contextLabel}图谱异步同步已完成`, graphSync.task_id);
+                    return;
+                }
+
+                if (data.state === 'FAILURE') {
+                    console.warn(`${contextLabel}图谱异步同步失败`, data.error || 'sync_failed', graphSync.task_id);
+                    return;
+                }
+
+                // 对于 PENDING/STARTED/RETRY，短轮询几次；静默处理结果。
+                const taskResult = await pollTaskUntilDone(graphSync.task_id, 15000);
+
+                if (taskResult.ok) {
+                    console.info(`${contextLabel}图谱异步同步轮询完成`, graphSync.task_id, taskResult.result || {});
+                    return;
+                }
+
+                console.warn(`${contextLabel}图谱异步同步状态未确认`, taskResult.state, taskResult.error || '', graphSync.task_id);
+            } catch (error) {
+                console.warn(`${contextLabel}图谱异步同步状态查询异常`, (error && error.message) ? error.message : 'sync_status_failed', graphSync.task_id);
+            }
         }
 
         function renderHomeHeatmap(nodes) {
@@ -753,20 +1570,22 @@
                     fetch(`${API_BASE}/api/profile?user_id=${userId}`),
                     fetch(`${API_BASE}/api/knowledge_graph?user_id=${userId}`)
                 ]);
-                const profileData = await profileResp.json();
-                const graphData = await graphResp.json();
+                const [profileData, graphData] = await Promise.all([
+                    parseApiResponse(profileResp),
+                    parseApiResponse(graphResp)
+                ]);
 
-                if (profileData.success && profileData.profile) {
+                if (profileData.profile) {
                     const p = profileData.profile;
                     const styleMap = { visual: '视觉型', auditory: '听觉型', kinesthetic: '动觉型' };
                     document.getElementById('profile-style').textContent = styleMap[p.learning_style] || p.learning_style || '未知';
+                    const methodMap = { kmeans: 'KMeans聚类', rule: '规则推断', rule_fallback: '规则回退' };
+                    document.getElementById('profile-style-method').textContent = methodMap[p.style_method] || (p.style_method || '未知');
                     document.getElementById('profile-interests').textContent = (p.interests || []).slice(0, 3).join('、') || '综合学习';
                     document.getElementById('profile-best-time').textContent = p.best_time_range || '15:00-17:00';
                 }
 
-                if (graphData.success) {
-                    renderHomeHeatmap((graphData.graph && graphData.graph.nodes) || []);
-                }
+                renderHomeHeatmap((graphData.graph && graphData.graph.nodes) || []);
             } catch (error) {
                 console.warn('首页画像/图谱加载失败:', error);
             }
@@ -778,17 +1597,64 @@
             try {
                 const userId = getUserId();
                 const resp = await fetch(`${API_BASE}/api/recommendations?user_id=${userId}&limit=4`);
-                const data = await resp.json();
-                if (!data.success || !data.items || data.items.length === 0) {
+                const data = await parseApiResponse(resp);
+                if (!data.items || data.items.length === 0) {
                     list.textContent = '暂无推荐';
                     return;
                 }
-                list.innerHTML = data.items.map(item => {
+
+                const filterEl = document.getElementById('recommendation-style-filter');
+                const activeStyle = filterEl ? (filterEl.value || 'all') : 'all';
+                const filteredItems = (data.items || []).filter(item => {
+                    if (activeStyle === 'all') return true;
+                    const tags = Array.isArray(item.strategy_tags) ? item.strategy_tags : [];
+                    return tags.some(tag => String(tag).trim() === `style:${activeStyle}`);
+                });
+
+                if (filteredItems.length === 0) {
+                    list.textContent = '当前筛选条件下暂无推荐';
+                    return;
+                }
+
+                const styleLabelMap = {
+                    visual: '视觉型',
+                    auditory: '听觉型',
+                    kinesthetic: '动觉型',
+                };
+                const channelLabelMap = {
+                    visual: '图文通道',
+                    auditory: '听讲通道',
+                    kinesthetic: '练习通道',
+                };
+                const methodLabelMap = {
+                    kmeans: '聚类画像',
+                    rule: '规则画像',
+                    rule_fallback: '回退画像',
+                };
+
+                const formatTag = (tag) => {
+                    const raw = String(tag || '');
+                    const parts = raw.split(':');
+                    if (parts.length !== 2) return raw;
+                    const k = parts[0];
+                    const v = parts[1];
+                    if (k === 'style') return styleLabelMap[v] ? `风格:${styleLabelMap[v]}` : `风格:${v}`;
+                    if (k === 'channel') return channelLabelMap[v] ? `通道:${channelLabelMap[v]}` : `通道:${v}`;
+                    if (k === 'method') return methodLabelMap[v] ? `画像:${methodLabelMap[v]}` : `画像:${v}`;
+                    return raw;
+                };
+
+                list.innerHTML = filteredItems.map(item => {
                     const pct = Math.round((item.mastery || 0) * 100);
-                    return `<div class="mini-item">${item.title}<br><span style="color:#6b7280;">${item.reason}（当前${pct}%）</span></div>`;
+                    const time = item.recommend_time || '--';
+                    const tags = Array.isArray(item.strategy_tags)
+                        ? item.strategy_tags.slice(0, 3).map(formatTag).join(' / ')
+                        : '';
+                    const evidence = item.evidence_brief ? `<br><span style="color:#0f766e; font-size:12px;">证据：${item.evidence_brief}</span>` : '';
+                    return `<div class="mini-item">${item.title}<br><span style="color:#6b7280;">${item.reason}（当前${pct}%）</span>${evidence}<br><span style="color:#64748b; font-size:12px;">建议时段：${time}${tags ? `｜${tags}` : ''}</span></div>`;
                 }).join('');
             } catch (error) {
-                list.textContent = '推荐加载失败';
+                list.textContent = withSuggestion('推荐加载失败', error, '刷新页面或稍后重试');
             }
         }
 
@@ -815,19 +1681,20 @@
                         user_answer: user
                     })
                 });
-                const data = await resp.json();
-                if (!data.success) {
-                    resultBox.textContent = data.message || '诊断失败';
-                    return;
-                }
+                const data = await parseApiResponse(resp);
 
                 const d = data.diagnosis || {};
-                resultBox.innerHTML = `<div class="mini-item">错误类型：${d.error_type || '-'}<br>分类：${d.category || '-'}<br>建议：${d.recommendation || '-'}</div>`;
+                const confidencePct = typeof d.confidence === 'number' ? `${Math.round(d.confidence * 100)}%` : '-';
+                const signals = Array.isArray(d.signals) && d.signals.length ? d.signals.slice(0, 3).join('；') : '-';
+                const scoreDetail = d.score_detail || {};
+                const scoreLine = `knowledge:${scoreDetail.knowledge ?? '-'} / skill:${scoreDetail.skill ?? '-'} / habit:${scoreDetail.habit ?? '-'}`;
+                resultBox.innerHTML = `<div class="mini-item">错误类型：${d.error_type || '-'}<br>分类：${d.category || '-'}<br>置信度：${confidencePct}<br>信号：${signals}<br>评分：${scoreLine}<br>建议：${d.recommendation || '-'}</div>`;
+                await monitorGraphSync(data.graph_sync, '错题诊断：');
                 window.dispatchEvent(new Event('knowledge:updated'));
                 loadHomeProfileAndGraph();
                 loadRecommendations();
             } catch (error) {
-                resultBox.textContent = '诊断失败，请稍后重试';
+                resultBox.textContent = withSuggestion('诊断失败', error, '检查输入后重试');
             }
         }
         
@@ -852,27 +1719,29 @@
                         user_id: getUserId()
                     })
                 });
-                
-                const data = await response.json();
+
+                const data = await parseApiResponse(response);
                 
                 // 移除加载消息
                 removeTypingMessage();
+                const extractData = await autoExtractKnowledge(question, 'qa');
                 
                 // 添加AI回答
                 addMessage(normalizeAiAnswerText(data.answer), 'ai', {
                     source: data.source,
                     aiUsed: data.ai_used,
-                    error: data.error
+                    error: data.error,
+                    graphSync: extractData.graph_sync || null
                 });
-                autoExtractKnowledge(question, 'qa');
+                await monitorGraphSync(extractData.graph_sync, '问答：');
                 refreshAiStatus();
                 
             } catch (error) {
                 removeTypingMessage();
-                addMessage('抱歉，网络连接失败。请检查后端服务是否启动。', 'ai', {
+                addMessage(withSuggestion('抱歉，问答失败', error, '确认后端与AI配置正常后再试'), 'ai', {
                     source: 'system',
                     aiUsed: false,
-                    error: 'network_error'
+                    error: error.message || 'network_error'
                 });
                 refreshAiStatus();
             }
@@ -898,22 +1767,23 @@
                     method: 'POST',
                     body: formData
                 });
-                
-                const data = await response.json();
+
+                const data = await parseApiResponse(response);
                 removeTypingMessage();
                 addMessage(`图片分析完成。识别到知识点：${(data.detected_concepts || []).join('、') || '暂无'}`, 'ai', {
                     source: 'ocr',
                     aiUsed: true,
-                    error: ''
+                    error: '',
+                    graphSync: data.graph_sync || null
                 });
-                autoExtractKnowledge((data.detected_concepts || []).join('，'), 'image');
+                await monitorGraphSync(data.graph_sync, '图片识别：');
                 
             } catch (error) {
                 removeTypingMessage();
-                addMessage('图片上传失败，请重试。', 'ai', {
+                addMessage(withSuggestion('图片上传失败', error, '更换图片或稍后重试'), 'ai', {
                     source: 'ocr',
                     aiUsed: false,
-                    error: 'upload_failed'
+                    error: error.message || 'upload_failed'
                 });
             }
         }
@@ -944,13 +1814,15 @@
                 saveLinkBtn.addEventListener('click', async function() {
                     const val = linkInput.value.trim();
                     if (!val) return;
-                    await ingestContent('link', val, '学习链接');
+                    const ingestResult = await ingestContent('link', val, '学习链接');
                     linkInput.value = '';
                     addMessage('已保存学习链接并更新知识图谱。', 'ai', {
                         source: 'content',
                         aiUsed: true,
-                        error: ''
+                        error: '',
+                        graphSync: ingestResult && ingestResult.graphSync
                     });
+                    await monitorGraphSync(ingestResult && ingestResult.graphSync, '链接录入：');
                 });
             }
 
@@ -958,13 +1830,15 @@
                 saveNoteBtn.addEventListener('click', async function() {
                     const val = noteInput.value.trim();
                     if (!val) return;
-                    await ingestContent('note', val, '学习笔记');
+                    const ingestResult = await ingestContent('note', val, '学习笔记');
                     noteInput.value = '';
                     addMessage('已保存学习笔记并更新知识图谱。', 'ai', {
                         source: 'content',
                         aiUsed: true,
-                        error: ''
+                        error: '',
+                        graphSync: ingestResult && ingestResult.graphSync
                     });
+                    await monitorGraphSync(ingestResult && ingestResult.graphSync, '笔记录入：');
                 });
             }
 
@@ -1003,14 +1877,34 @@
             loadRecommendations();
         });
 
-        addMessage(
-            '你好，我是坊知工学习助手。你可以直接提问，我会给出结构化、可执行的学习建议。',
-            'ai',
-            { source: 'system', aiUsed: true, error: '' }
-        );
+        const taskModal = document.getElementById('taskStatusModal');
+        const taskModalCloseBtn = document.getElementById('taskModalCloseBtn');
+        const taskModalRefreshBtn = document.getElementById('taskModalRefreshBtn');
+        const taskModalAutoBtn = document.getElementById('taskModalAutoBtn');
+        if (taskModalCloseBtn) {
+            taskModalCloseBtn.addEventListener('click', closeTaskStatusModal);
+        }
+        if (taskModalRefreshBtn) {
+            taskModalRefreshBtn.addEventListener('click', refreshTaskStatusModal);
+        }
+        if (taskModalAutoBtn) {
+            taskModalAutoBtn.addEventListener('click', toggleTaskStatusAutoRefresh);
+        }
+        updateTaskModalAutoButton();
+        if (taskModal) {
+            taskModal.addEventListener('click', function (e) {
+                if (e.target === taskModal) closeTaskStatusModal();
+            });
+        }
+
+        initConversationUI();
 
         initContentIngestUI();
         initUserContextUI();
+        const recommendationFilter = document.getElementById('recommendation-style-filter');
+        if (recommendationFilter) {
+            recommendationFilter.addEventListener('change', loadRecommendations);
+        }
         loadHomeProfileAndGraph();
         loadRecommendations();
         refreshAiStatus();

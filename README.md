@@ -1,246 +1,187 @@
 # 坊知工 FZG
 
-面向学习场景的智能学习伴侣，提供问答、知识图谱、诊断、推荐、复习提醒一体化能力。
+面向学习场景的智能学习伴侣项目，包含后端 API、前端页面、知识图谱、学习诊断与推荐能力。
 
-## 先看结论
+## 1. 第一次启动：需要先配置什么环境
 
-- 仓库不包含必须的大型运行包也可以正常部署和运行核心功能。
-- 首次部署建议使用“手动启动”方式，不依赖本地路径硬编码脚本。
-- Redis、Celery、Neo4j、真实 AI 都是可选增强项，未配置时系统会回退。
+### 1.1 必需环境
 
----
-
-## 目录
-
-- [1. 运行环境](#1-运行环境)
-- [2. 最小可运行部署（推荐）](#2-最小可运行部署推荐)
-- [3. 健康检查](#3-健康检查)
-- [4. 启用真实 AI（可选）](#4-启用真实-ai可选)
-- [5. 启用 Redis + Celery（可选）](#5-启用-redis--celery可选)
-- [6. 启用 Neo4j（可选）](#6-启用-neo4j可选)
-- [7. 第三方工具下载（按需）](#7-第三方工具下载按需)
-- [8. Windows 启停脚本说明](#8-windows-启停脚本说明)
-- [9. 常见问题](#9-常见问题)
-
----
-
-## 1. 运行环境
-
-必需：
-
+- Windows 10/11（当前脚本按 Windows 编写）
 - Python 3.10+
-- Git
+- `pip`
 
-可选：
+### 1.2 建议环境（用于“完整功能”）
 
-- Redis（用于异步任务）
-- Neo4j（用于图谱持久化）
+- Redis（异步任务队列）
+- Celery（后台任务执行）
+- Neo4j Aura（图谱云存储）
+- 可用的 AI Key（例如 Qwen）
 
-说明：
+重要说明：
 
-- 没有 Redis/Celery，接口会自动回退同步处理。
-- 没有 Neo4j，图谱会回退本地存储。
-- 没有 AI Key，问答会回退兜底回答。
+- 使用 Neo4j Aura 时，不需要安装本地 Neo4j 服务端。
+- 本地只需要安装 Python `neo4j` 驱动（`pip install neo4j`，`requirements.txt` 已包含）。
 
----
-
-## 2. 最小可运行部署（推荐）
-
-### 2.1 克隆仓库
-
-```powershell
-git clone https://github.com/mapleleaves28744/dachuang_fangzhigong.git
-cd dachuang_fangzhigong
-```
-
-### 2.2 安装后端依赖
-
-```powershell
-cd backend
-pip install -r requirements.txt
-```
-
-### 2.3 创建环境变量
-
-```powershell
-copy .env.example .env
-```
-
-推荐首次先用最稳妥配置（backend/.env）：
-
-```env
-USE_REAL_AI=false
-OCR_PROVIDER=mock
-USE_NEO4J=false
-```
-
-### 2.4 启动后端
+### 1.3 安装后端依赖
 
 在项目根目录执行：
 
 ```powershell
-python backend/app.py
+cd backend
+python -m pip install -r requirements.txt
 ```
 
-### 2.5 启动前端静态服务
+### 1.4 准备环境变量
 
-新开一个终端，在项目根目录执行：
+在 `backend` 目录创建 `.env`（可从 `.env.example` 复制后修改）。
 
-```powershell
-python -m http.server 5501 --directory frontend
+推荐“完整功能”配置示例：
+
+```env
+# AI
+USE_REAL_AI=true
+AI_PROVIDER=qwen
+QWEN_API_KEY=your_api_key
+QWEN_API_URL=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+QWEN_MODEL_NAME=qwen-plus
+
+# OCR
+OCR_PROVIDER=mock
+
+# 存储（当前项目建议 sql + sqlite）
+STORAGE_BACKEND=sql
+DATABASE_URL=sqlite:///data/fzg.db
+
+# 图谱
+USE_NEO4J=auto
+NEO4J_URI=neo4j+s://<your-aura>.databases.neo4j.io
+NEO4J_USERNAME=<username>
+NEO4J_PASSWORD=<password>
+NEO4J_DATABASE=<database>
+
+# 图谱读取/写回策略
+GRAPH_PRIMARY=auto
+GRAPH_SYNC_MODE=auto
 ```
 
-### 2.6 打开页面
+说明：
 
-- 前端首页: http://127.0.0.1:5501/index.html
-- 健康检查: http://127.0.0.1:5000/health
+- `USE_NEO4J=auto` 时，配置完整且可连通才启用 Aura。
+- 使用 Aura 时，无需本地安装 Neo4j 数据库。
+- Redis/Celery 不可用时，后端会回退同步流程，但不是“完整异步功能”。
 
 ---
 
-## 3. 健康检查
+## 2. 如何启动整个项目（完整功能）
 
-执行：
+### 2.1 一键启动（推荐）
+
+在项目根目录执行：
+
+```powershell
+powershell -ExecutionPolicy Bypass -File backend/start-dev-stack.ps1
+```
+
+该脚本会尝试启动：
+
+- Redis（6379）
+- Celery Worker
+- Backend（5000）
+- Frontend（5501）
+
+### 2.2 一键停止
+
+```powershell
+powershell -ExecutionPolicy Bypass -File backend/stop-dev-stack.ps1
+```
+
+### 2.3 验证是否“完整功能”启动成功
 
 ```powershell
 Invoke-RestMethod -Uri http://127.0.0.1:5000/health | ConvertTo-Json -Depth 5
 ```
 
-首次最小部署时，下面这些字段是正常的：
+重点看：
 
-- status: ok
-- celery_enabled: false
-- neo4j_enabled: false
-- ai_key_configured: false（若未配置 Key）
+- `status` 应为 `ok`
+- `celery_enabled` 应为 `true`
+- `neo4j_enabled` 应为 `true`
+- `storage_backend` 应为 `sql`
+- `database_scheme` 应为 `sqlite`（或你配置的 MySQL）
 
----
+补充：
 
-## 4. 启用真实 AI（可选）
+- 你只要看到 `neo4j_enabled=true`，就说明已成功连接 Aura，不需要本地 Neo4j。
 
-编辑 backend/.env：
+### 2.4 前端访问
 
-```env
-AI_PROVIDER=qwen
-USE_REAL_AI=true
-QWEN_API_KEY=your-qwen-api-key
-QWEN_API_URL=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
-QWEN_MODEL_NAME=qwen-plus
-```
-
-启动后再次查看 /health，确认 ai_key_configured 为 true。
+- 首页: http://127.0.0.1:5501/index.html
+- 仪表盘: http://127.0.0.1:5501/dashboard.html
+- 知识图谱页: http://127.0.0.1:5501/knowledge-map.html
 
 ---
 
-## 5. 启用 Redis + Celery（可选）
+## 3. 项目整体介绍
 
-### 5.1 安装并启动 Redis
+## 3.1 项目目标
 
-请先在本机安装 Redis，并确保 6379 端口可用。
+坊知工希望提供一体化学习支持：
 
-### 5.2 配置 backend/.env
+- 智能问答
+- 学习行为记录
+- 知识点抽取与关系构建
+- 错题认知诊断
+- 学习画像与推荐
+- 复习提醒
 
-```env
-CELERY_BROKER_URL=redis://127.0.0.1:6379/0
-CELERY_RESULT_BACKEND=redis://127.0.0.1:6379/1
-```
-
-### 5.3 启动 Celery Worker
-
-在 backend 目录执行：
-
-```powershell
-celery -A app.celery_client worker -l info -P solo
-```
-
-说明：
-
-- 不启用 Celery 也可运行，异步接口会自动回退同步模式。
-
----
-
-## 6. 启用 Neo4j（可选）
-
-编辑 backend/.env：
-
-```env
-USE_NEO4J=true
-NEO4J_URI=neo4j+s://<your-instance>.databases.neo4j.io
-NEO4J_USERNAME=<your-neo4j-username>
-NEO4J_PASSWORD=<your-neo4j-password>
-NEO4J_DATABASE=<your-neo4j-database>
-```
-
-若不需要 Neo4j，请保持 USE_NEO4J=false 或 auto（未配全参数时自动关闭）。
-
----
-
-## 7. 第三方工具下载（按需）
-
-为了避免仓库体积过大，项目不强制内置下列安装包。需要时请自行下载并安装：
-
-- Redis: https://redis.io/docs/latest/operate/oss_and_stack/install/
-- Neo4j: https://neo4j.com/download/
-
-你也可以使用云服务版本（例如 Neo4j Aura），不需要本地安装包。
-
----
-
-## 8. Windows 启停脚本说明
-
-仓库提供了：
-
-- backend/start-dev-stack.ps1
-- backend/stop-dev-stack.ps1
-
-这些脚本更适合作者本机环境，可能包含路径或本地工具目录假设。首次部署建议优先按本 README 的手动步骤启动。
-
----
-
-## 9. 常见问题
-
-### 9.1 PowerShell 中文乱码
-
-```powershell
-chcp 65001
-```
-
-### 9.2 后端能启动但问答不是大模型回答
-
-检查 backend/.env 中：
-
-- USE_REAL_AI=true
-- QWEN_API_KEY 已正确填写
-
-并在 /health 确认 ai_key_configured=true。
-
-### 9.3 Celery 未启用
-
-确认 Redis 正常监听 6379，并已启动 worker。
-
-### 9.4 Neo4j 未启用
-
-确认 NEO4J_URI、NEO4J_USERNAME、NEO4J_PASSWORD、NEO4J_DATABASE 配置完整且可连通。
-
----
-
-## 项目结构
+## 3.2 目录结构
 
 ```text
 fzg/
-├─ backend/
-│  ├─ app.py
-│  ├─ knowledge_graph.py
-│  ├─ cognitive_diagnosis.py
-│  ├─ neo4j_store.py
-│  ├─ celery_app.py
-│  ├─ requirements.txt
-│  ├─ .env.example
-│  ├─ start-dev-stack.ps1
-│  └─ stop-dev-stack.ps1
-├─ frontend/
-│  ├─ index.html
-│  ├─ dashboard.html
-│  ├─ knowledge-map.html
-│  ├─ css/
-│  └─ js/
-└─ data/
+  backend/    # Flask API、任务调度、数据存储、图谱同步
+  frontend/   # 页面与前端脚本
+  data/       # 本地数据文件（历史/导出）
 ```
+
+## 3.3 后端核心模块
+
+- `backend/app.py`：主 API 服务与业务编排入口
+- `backend/database.py`：JSON/SQL 双存储抽象
+- `backend/neo4j_store.py`：Neo4j Aura 读写
+- `backend/cognitive_diagnosis.py`：错题诊断
+- `backend/learning_profile.py`：学习画像与推荐
+- `backend/scripts/sync_local_state_to_neo4j_aura.py`：以本地数据为准同步 Aura
+
+## 3.4 关键能力说明
+
+- 问答后可触发知识抽取与图谱同步
+- 图谱同步支持异步任务（Celery）与同步回退
+- 删除知识点支持同步到 Aura，并有重试与日志机制
+- 推荐基于画像、掌握度与诊断证据生成
+
+---
+
+## 4. 常见问题
+
+### 4.1 启动后 `neo4j_enabled=false`
+
+- 检查 `.env` 里的 Neo4j 连接信息是否正确
+- 检查网络是否可访问 Aura
+- 检查 Python 环境是否安装 `neo4j` 包
+- 不需要下载安装本地 Neo4j 服务端
+
+### 4.2 启动后 `celery_enabled=false`
+
+- 检查 Redis 是否启动并监听 6379
+- 检查 worker 进程是否运行
+
+### 4.3 Aura 数据比本地多
+
+执行一次本地权威同步：
+
+```powershell
+cd backend
+python scripts/sync_local_state_to_neo4j_aura.py
+```
+
+该脚本会删除 Aura 中本地不存在的用户图谱数据，并按本地状态重建。

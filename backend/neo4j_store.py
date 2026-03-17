@@ -234,3 +234,69 @@ class Neo4jGraphStore:
                 }
         except Exception:
             return None
+
+    def concept_exists(self, concept):
+        if not self.enabled or not self.driver:
+            return False
+
+        concept = (concept or "").strip()
+        if not concept:
+            return False
+
+        try:
+            with self.driver.session(database=self.database) as session:
+                row = session.run(
+                    """
+                    MATCH (c:Concept {name:$concept})
+                    RETURN count(c) AS cnt
+                    """,
+                    concept=concept,
+                ).single()
+                return bool(row and int(row.get("cnt", 0)) > 0)
+        except Exception:
+            return False
+
+    def fetch_learning_path(self, user_id, target, max_depth=6):
+        if not self.enabled or not self.driver:
+            return None
+
+        target = (target or "").strip()
+        if not target:
+            return []
+
+        depth = max(1, min(int(max_depth), 10))
+
+        try:
+            with self.driver.session(database=self.database) as session:
+                # 优先从已掌握概念出发，若无则退化为任意可达路径。
+                query = f"""
+                MATCH (t:Concept {{name:$target}})
+                OPTIONAL MATCH (u:User {{id:$user_id}})-[m:MASTERY]->(s:Concept)
+                WHERE coalesce(m.mastery, 0.0) >= 0.7
+                WITH t, collect(s) AS starts
+                UNWIND CASE WHEN size(starts) = 0 THEN [null] ELSE starts END AS start_node
+                MATCH p = shortestPath((start_node)-[:RELATED*..{depth}]->(t))
+                RETURN [n IN nodes(p) | n.name] AS path
+                ORDER BY length(p) ASC
+                LIMIT 1
+                """
+
+                row = session.run(query, user_id=user_id, target=target).single()
+                if row and row.get("path"):
+                    return row.get("path")
+
+                # 二次回退：从目标节点向前追溯前置链。
+                fallback_query = f"""
+                MATCH (t:Concept {{name:$target}})
+                OPTIONAL MATCH p = shortestPath((s:Concept)-[:RELATED*..{depth}]->(t))
+                RETURN [n IN nodes(p) | n.name] AS path
+                ORDER BY length(p) ASC
+                LIMIT 1
+                """
+                fallback_row = session.run(fallback_query, target=target).single()
+                if fallback_row and fallback_row.get("path"):
+                    return fallback_row.get("path")
+
+                return []
+        except Exception:
+            return None

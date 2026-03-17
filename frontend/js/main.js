@@ -1,6 +1,9 @@
 // 学习计划模块
 document.addEventListener('DOMContentLoaded', function() {
   console.log('页面加载完成，开始初始化学习计划...');
+  const API_BASE = 'http://127.0.0.1:5000';
+  const parseApiResponse = window.ApiUtils.parseApiResponse;
+  const withSuggestion = window.ApiUtils.withSuggestion;
   
   function getUserId() {
     return window.UserContext ? window.UserContext.getUserId() : 'default_user';
@@ -99,28 +102,18 @@ document.addEventListener('DOMContentLoaded', function() {
     
     try {
       const userId = getUserId();
-      const response = await fetch(`http://localhost:5000/api/plans?user_id=${userId}`);
-      
-      if (!response.ok) {
-        throw new Error(`HTTP错误: ${response.status}`);
-      }
-      
-      const data = await response.json();
+      const response = await fetch(`${API_BASE}/api/plans?user_id=${userId}`);
+      const data = await parseApiResponse(response);
       console.log('后端返回数据:', data);
-      
-      if (data.success) {
-        renderPlans(data.plans);
-      } else {
-        console.error('加载失败:', data.message);
-        renderPlans([]);
-      }
+
+      renderPlans(data.plans || []);
     } catch (error) {
       console.error('加载计划失败:', error);
-      // 使用默认数据
-      renderPlans([
-        { id: '1', time: '09:00', task: '复习函数定义', completed: false },
-        { id: '2', time: '15:00', task: '练习导数计算', completed: false }
-      ]);
+      const planList = document.getElementById('plan-list');
+      if (planList) {
+        planList.innerHTML = `<div style="color:#888;">${withSuggestion('学习计划加载失败', error, '刷新页面或稍后重试')}</div>`;
+      }
+      showEmptyState();
     }
   }
   
@@ -203,7 +196,7 @@ document.addEventListener('DOMContentLoaded', function() {
     addBtn.textContent = '添加中...';
     
     try {
-      const response = await fetch('http://localhost:5000/api/plans', {
+      const response = await fetch(`${API_BASE}/api/plans`, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -218,25 +211,21 @@ document.addEventListener('DOMContentLoaded', function() {
       
       console.log('后端响应状态:', response.status);
       
-      const data = await response.json();
+      const data = await parseApiResponse(response);
       console.log('后端响应数据:', data);
-      
-      if (data.success) {
-        // 清空输入
-        timeInput.value = '';
-        taskInput.value = '';
-        taskInput.focus();
-        
-        // 重新加载计划
-        await loadPlans();
-        
-        alert('添加成功！');
-      } else {
-        alert('添加失败: ' + (data.message || '未知错误'));
-      }
+
+      // 清空输入
+      timeInput.value = '';
+      taskInput.value = '';
+      taskInput.focus();
+
+      // 重新加载计划
+      await loadPlans();
+
+      alert('添加成功！');
     } catch (error) {
       console.error('添加失败:', error);
-      alert('网络错误，请检查后端服务是否运行');
+      alert(withSuggestion('添加失败', error, '检查输入后重试'));
     } finally {
       // 恢复按钮
       addBtn.disabled = false;
@@ -247,7 +236,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // 更新任务状态
   async function updateTaskStatus(planId, isCompleted) {
     try {
-      const response = await fetch(`http://localhost:5000/api/plans/${planId}`, {
+      const response = await fetch(`${API_BASE}/api/plans/${planId}`, {
         method: 'PUT',
         headers: { 
           'Content-Type': 'application/json',
@@ -259,12 +248,8 @@ document.addEventListener('DOMContentLoaded', function() {
         })
       });
       
-      const data = await response.json();
-      if (data.success) {
-        console.log('状态更新成功');
-      } else {
-        console.error('状态更新失败:', data.message);
-      }
+      await parseApiResponse(response);
+      console.log('状态更新成功');
     } catch (error) {
       console.error('状态更新失败:', error);
     }
@@ -273,7 +258,7 @@ document.addEventListener('DOMContentLoaded', function() {
   // 删除任务（后端）
   async function deleteTaskBackend(planId) {
     try {
-      const response = await fetch(`http://localhost:5000/api/plans/${planId}`, {
+      const response = await fetch(`${API_BASE}/api/plans/${planId}`, {
         method: 'DELETE',
         headers: { 
           'Content-Type': 'application/json',
@@ -281,13 +266,9 @@ document.addEventListener('DOMContentLoaded', function() {
         },
         body: JSON.stringify({ user_id: getUserId() })
       });
-      
-      const data = await response.json();
-      if (data.success) {
-        console.log('后端删除成功');
-      } else {
-        console.error('后端删除失败:', data.message);
-      }
+
+      await parseApiResponse(response);
+      console.log('后端删除成功');
     } catch (error) {
       console.error('后端删除失败:', error);
     }
@@ -299,13 +280,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     try {
       const userId = getUserId();
-      const response = await fetch(`http://127.0.0.1:5000/api/review/reminders?user_id=${userId}`);
-      const data = await response.json();
-
-      if (!data.success) {
-        list.textContent = '提醒加载失败';
-        return;
-      }
+      const response = await fetch(`${API_BASE}/api/review/reminders?user_id=${userId}`);
+      const data = await parseApiResponse(response);
 
       if (!data.due_items || data.due_items.length === 0) {
         list.innerHTML = '<div style="color:#10b981;">今天没有紧急复习项，继续保持。</div>';
@@ -318,7 +294,7 @@ document.addEventListener('DOMContentLoaded', function() {
       }).join('');
     } catch (error) {
       console.error('加载复习提醒失败:', error);
-      list.textContent = '提醒加载失败';
+      list.textContent = withSuggestion('提醒加载失败', error, '刷新页面或稍后重试');
     }
   }
 });

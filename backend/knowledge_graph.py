@@ -66,13 +66,17 @@ class KnowledgeGraph:
                             if data["mastery"] > 0.7]
             
             if not known_concepts:
-                known_concepts = list(self.graph.nodes())[:3]  # 从基础开始
+                # 如果没有已掌握的概念，则不使用任意默认节点作为起点，
+                # 让调用方决定是否使用其它兜底策略（如 app.py 的 infer_learning_path_with_fallback）
+                return []
             
             paths = []
             for start in known_concepts:
                 try:
                     path = nx.shortest_path(self.graph, start, target_concept)
-                    paths.append(path)
+                    # 忽略起点即目标的单节点路径，避免把目标本身误判为可达路径
+                    if path and len(path) > 1:
+                        paths.append(path)
                 except:
                     continue
             
