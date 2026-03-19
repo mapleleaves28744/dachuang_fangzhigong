@@ -1,7 +1,7 @@
 // 学习计划模块
 document.addEventListener('DOMContentLoaded', function() {
   console.log('页面加载完成，开始初始化学习计划...');
-  const API_BASE = 'http://127.0.0.1:5000';
+  const API_BASE = window.ApiUtils.getApiBase();
   const parseApiResponse = window.ApiUtils.parseApiResponse;
   const withSuggestion = window.ApiUtils.withSuggestion;
   
