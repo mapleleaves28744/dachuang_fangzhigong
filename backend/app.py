@@ -1,4 +1,4 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_from_directory
 from flask_cors import CORS
 import requests
 import json
@@ -60,6 +60,11 @@ CORS(app)  # 允许跨域请求
 
 TASK_META = {}
 TASK_META_MAX_SIZE = 500
+CELERY_WORKER_CACHE = {
+    "checked_at": 0.0,
+    "available": False,
+}
+CELERY_WORKER_CACHE_TTL = 2.0
 
 
 def register_task_meta(task_id, task_type, user_id=None, extra=None):
@@ -78,6 +83,28 @@ def register_task_meta(task_id, task_type, user_id=None, extra=None):
         old_keys = sorted(TASK_META.keys(), key=lambda k: TASK_META[k].get("created_at", ""))[:50]
         for k in old_keys:
             TASK_META.pop(k, None)
+
+
+def is_celery_worker_available(force=False):
+    """检查 Celery worker 是否在线，避免任务提交后长期 PENDING。"""
+    if not celery_client:
+        return False
+
+    now = time.time()
+    if (not force) and (now - CELERY_WORKER_CACHE.get("checked_at", 0.0) <= CELERY_WORKER_CACHE_TTL):
+        return bool(CELERY_WORKER_CACHE.get("available", False))
+
+    available = False
+    try:
+        inspector = celery_client.control.inspect(timeout=0.6)
+        ping_result = inspector.ping() if inspector else None
+        available = bool(ping_result)
+    except Exception:
+        available = False
+
+    CELERY_WORKER_CACHE["checked_at"] = now
+    CELERY_WORKER_CACHE["available"] = available
+    return available
 
 
 def get_request_id():
@@ -2300,13 +2327,19 @@ def analyze():
         error_message="",
     ))
 
-@app.route('/api/ask', methods=['POST'])
+@app.route('/api/ask', methods=['GET', 'POST'])
 def ask_question():
     """智能问答"""
     request_id = get_request_id()
-    data = request.json or {}
-    question = data.get('question', '').strip()
-    user_id = data.get('user_id', 'default_user')
+    data = request.get_json(silent=True) or {}
+
+    # 兼容 POST(JSON) 与 GET(Query) 两种调用方式，降低前端/代理环境差异带来的 405 风险。
+    if request.method == 'GET':
+        question = (request.args.get('question', '') or '').strip()
+        user_id = (request.args.get('user_id', 'default_user') or 'default_user').strip() or 'default_user'
+    else:
+        question = (data.get('question', '') or '').strip()
+        user_id = (data.get('user_id', 'default_user') or 'default_user').strip() or 'default_user'
     
     if not question:
         return error_response(request_id, 400, "INVALID_INPUT", "问题不能为空")
@@ -3149,7 +3182,8 @@ def sync_user_graph(user_id, concept_list, relation_list, deleted_concepts=None)
     mode = GRAPH_SYNC_MODE if GRAPH_SYNC_MODE in {"auto", "sync", "async"} else "auto"
 
     # async 明确启用，或 auto 且 Celery 可用时，优先异步。
-    use_async = mode == "async" or (mode == "auto" and celery_client and AsyncResult)
+    worker_available = is_celery_worker_available()
+    use_async = mode == "async" or (mode == "auto" and celery_client and AsyncResult and worker_available)
     if use_async and celery_client:
         try:
             payload = {
@@ -3168,7 +3202,8 @@ def sync_user_graph(user_id, concept_list, relation_list, deleted_concepts=None)
             return {
                 "enabled": True,
                 "mode": "async",
-                "synced": True,
+                "synced": False,
+                "submitted": True,
                 "task_id": result.id,
                 "task_type": "sync_user_graph",
                 "status_url": f"/api/tasks/{result.id}",
@@ -3228,7 +3263,8 @@ def sync_mastery_update(user_id, concept, mastery, review_count=0, last_reviewed
         }
 
     mode = GRAPH_SYNC_MODE if GRAPH_SYNC_MODE in {"auto", "sync", "async"} else "auto"
-    use_async = mode == "async" or (mode == "auto" and celery_client and AsyncResult)
+    worker_available = is_celery_worker_available()
+    use_async = mode == "async" or (mode == "auto" and celery_client and AsyncResult and worker_available)
     if use_async and celery_client and "sync_mastery_update_task" in globals():
         try:
             payload = {
@@ -3248,7 +3284,8 @@ def sync_mastery_update(user_id, concept, mastery, review_count=0, last_reviewed
             return {
                 "enabled": True,
                 "mode": "async",
-                "synced": True,
+                "synced": False,
+                "submitted": True,
                 "task_id": result.id,
                 "task_type": "sync_mastery_update",
                 "status_url": f"/api/tasks/{result.id}",
@@ -3284,7 +3321,8 @@ def sync_delete_concept(user_id, concept):
         }
 
     mode = GRAPH_SYNC_MODE if GRAPH_SYNC_MODE in {"auto", "sync", "async"} else "auto"
-    use_async = mode == "async" or (mode == "auto" and celery_client and AsyncResult)
+    worker_available = is_celery_worker_available()
+    use_async = mode == "async" or (mode == "auto" and celery_client and AsyncResult and worker_available)
     if use_async and celery_client and "sync_delete_concept_task" in globals():
         try:
             payload = {"user_id": user_id, "concept": concept}
@@ -3298,7 +3336,8 @@ def sync_delete_concept(user_id, concept):
             return {
                 "enabled": True,
                 "mode": "async",
-                "synced": True,
+                "synced": False,
+                "submitted": True,
                 "task_id": result.id,
                 "task_type": "sync_delete_concept",
                 "status_url": f"/api/tasks/{result.id}",
@@ -3598,10 +3637,41 @@ def health():
         "graph_primary": GRAPH_PRIMARY,
         "graph_sync_mode": GRAPH_SYNC_MODE,
         "celery_enabled": celery_client is not None,
+        "celery_worker_available": is_celery_worker_available(),
         "storage_backend": storage_info.get("storage_backend", "json"),
         "database_scheme": storage_info.get("database_scheme", ""),
         "message": "智能学习伴侣服务运行正常"
     })
+
+
+FRONTEND_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "frontend"))
+
+
+@app.route('/', methods=['GET'])
+def frontend_index():
+    """通过后端直接提供前端首页，便于远程端口转发场景统一走 5000 端口。"""
+    index_file = os.path.join(FRONTEND_DIR, 'index.html')
+    if os.path.isfile(index_file):
+        return send_from_directory(FRONTEND_DIR, 'index.html')
+    return jsonify({"success": False, "message": "frontend/index.html not found"}), 404
+
+
+@app.route('/<path:asset_path>', methods=['GET'])
+def frontend_assets(asset_path):
+    """提供前端静态资源文件（js/css/html）。"""
+    normalized = (asset_path or '').strip()
+    if not normalized:
+        return send_from_directory(FRONTEND_DIR, 'index.html')
+
+    # 避免把未知 API 路径误当作静态文件。
+    if normalized.startswith('api/'):
+        return jsonify({"success": False, "message": "API endpoint not found"}), 404
+
+    full_path = os.path.join(FRONTEND_DIR, normalized)
+    if os.path.isfile(full_path):
+        return send_from_directory(FRONTEND_DIR, normalized)
+
+    return jsonify({"success": False, "message": "Resource not found"}), 404
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000, host='0.0.0.0')

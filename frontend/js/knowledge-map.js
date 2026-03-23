@@ -1,5 +1,5 @@
 (function () {
-  const API_BASE = 'http://127.0.0.1:5000';
+  const API_BASE = window.ApiUtils.getApiBase();
   const parseApiResponse = window.ApiUtils.parseApiResponse;
   const withSuggestion = window.ApiUtils.withSuggestion;
 
@@ -203,6 +203,53 @@
     }
   }
 
+  async function pollTaskUntilDone(taskId, timeoutMs) {
+    const start = Date.now();
+    let lastState = 'PENDING';
+
+    while (Date.now() - start < timeoutMs) {
+      try {
+        const resp = await fetch(`${API_BASE}/api/tasks/${encodeURIComponent(taskId)}`);
+        const data = await parseApiResponse(resp);
+        lastState = String(data.state || 'PENDING').toUpperCase();
+
+        if (lastState === 'SUCCESS') {
+          return { ok: true, state: lastState, result: data.result || {} };
+        }
+
+        if (lastState === 'FAILURE' || lastState === 'REVOKED') {
+          return {
+            ok: false,
+            state: lastState,
+            error: data.error || data.error_message || '任务失败'
+          };
+        }
+      } catch (err) {
+        // 轮询期间偶发错误可重试。
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 700));
+    }
+
+    return {
+      ok: false,
+      state: 'TIMEOUT',
+      error: `异步任务未在预期时间完成（最后状态: ${lastState}）`
+    };
+  }
+
+  async function monitorGraphSync(graphSync, contextLabel) {
+    if (!graphSync || graphSync.mode !== 'async' || !graphSync.task_id) {
+      return { ok: true, state: 'SYNC_OR_DISABLED' };
+    }
+
+    const taskResult = await pollTaskUntilDone(graphSync.task_id, 15000);
+    if (!taskResult.ok) {
+      console.warn(`${contextLabel}图谱异步同步未确认`, taskResult.state, taskResult.error || '', graphSync.task_id);
+    }
+    return taskResult;
+  }
+
   async function saveMastery() {
     if (!state.selectedNode) {
       alert('请先在图谱中选择一个知识点。');
@@ -223,7 +270,8 @@
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
-      await parseApiResponse(resp);
+      const data = await parseApiResponse(resp);
+      await monitorGraphSync(data.graph_sync, '掌握度更新：');
       await loadGraph();
       await loadDueReminders();
       window.dispatchEvent(new Event('knowledge:updated'));
@@ -252,7 +300,8 @@
           concept
         })
       });
-      await parseApiResponse(resp);
+      const data = await parseApiResponse(resp);
+      await monitorGraphSync(data.graph_sync, '删除节点：');
 
       await loadGraph();
       await loadDueReminders();
@@ -310,6 +359,7 @@
       });
 
       const data = await parseApiResponse(resp);
+      await monitorGraphSync(data.graph_sync, '文本抽取：');
 
       const concepts = (data.detected_concepts || []).join('、') || '无';
       const rels = (data.relations || []).map(r => `${r.source} -> ${r.target}`).join('；') || '无';

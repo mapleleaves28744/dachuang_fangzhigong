@@ -1954,7 +1954,7 @@
     <script src="js/user-context.js"></script>
     <script src="js/api-utils.js"></script>
     <script>
-        const API_BASE = 'http://127.0.0.1:5000';
+        const API_BASE = window.ApiUtils.getApiBase();
         const CHAT_STORE_KEY = 'fangzhigong_chat_sessions_v1';
         const MAX_CHAT_SESSIONS = 20;
         const { parseApiResponse, withSuggestion } = window.ApiUtils;
@@ -3703,7 +3703,7 @@
                     return;
                 }
 
-                const response = await fetch(`${API_BASE}/api/ask`, {
+                let response = await fetch(`${API_BASE}/api/ask`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ 
@@ -3711,6 +3711,17 @@
                         user_id: getUserId()
                     })
                 });
+
+                // 某些代理/网关会拒绝 POST，遇到 405 时自动回退到 GET 以确保问答可用。
+                if (response.status === 405) {
+                    const qs = new URLSearchParams({
+                        question: question,
+                        user_id: getUserId()
+                    });
+                    response = await fetch(`${API_BASE}/api/ask?${qs.toString()}`, {
+                        method: 'GET'
+                    });
+                }
 
                 const data = await parseApiResponse(response);
                 
