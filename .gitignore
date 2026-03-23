@@ -32,3 +32,7 @@ backend/data/users.json
 # OS files
 .DS_Store
 Thumbs.db
+
+# 忽略数据库文件
+backend/data/fzg.db
+dump.rdb

@@ -1,0 +1,609 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>我的空间</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --ink: #0f172a;
+            --muted: #64748b;
+            --line: #dbe4ef;
+            --panel: #ffffff;
+            --brand: #0f5bd8;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: "Manrope", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+            background: #ffffff;
+            color: var(--ink);
+        }
+
+        .global-sidebar-toggle {
+            position: fixed;
+            left: 12px;
+            top: 12px;
+            width: 42px;
+            height: 42px;
+            border: 1px solid #d8e2f1;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+            color: #0f172a;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 1400;
+        }
+
+        body.sidebar-open .global-sidebar-toggle {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .global-sidebar-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.22);
+            display: none;
+            z-index: 1290;
+        }
+
+        .global-sidebar-backdrop.show { display: block; }
+
+        .global-sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: #f8fafd;
+            border-right: 1px solid #dbe4ef;
+            box-shadow: 12px 0 26px rgba(15, 23, 42, 0.12);
+            transform: translateX(-100%);
+            transition: transform 0.22s ease;
+            z-index: 1300;
+            display: flex;
+            flex-direction: column;
+            padding: 16px 14px;
+        }
+
+        .global-sidebar.open { transform: translateX(0); }
+
+        .global-sidebar-logo {
+            font-size: 26px;
+            font-weight: 900;
+            margin-bottom: 16px;
+            color: #0f172a;
+        }
+
+        .global-sidebar-link {
+            display: block;
+            text-decoration: none;
+            color: #1f2937;
+            border: 1px solid transparent;
+            border-radius: 10px;
+            padding: 10px 12px;
+            margin-bottom: 6px;
+            font-weight: 700;
+            background: transparent;
+        }
+
+        .global-sidebar-link:hover {
+            background: #eef4ff;
+            border-color: #d4e1f7;
+        }
+
+        .global-sidebar-link.active {
+            background: #e8f0ff;
+            border-color: #bfd4f6;
+            color: #1d4ed8;
+        }
+
+        .global-sidebar-section {
+            margin-top: 8px;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: #64748b;
+            font-weight: 700;
+        }
+
+        .wrap {
+            max-width: 1320px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .topbar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .title {
+            font-size: 28px;
+            font-weight: 900;
+        }
+
+        .subtitle {
+            color: var(--muted);
+            font-size: 13px;
+            margin-top: 4px;
+        }
+
+        .btn {
+            border: 1px solid #cfe0f8;
+            background: #f5f9ff;
+            color: #1d4ed8;
+            border-radius: 10px;
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 320px minmax(0, 1fr);
+            gap: 14px;
+        }
+
+        .panel {
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            background: var(--panel);
+            box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
+            padding: 12px;
+        }
+
+        .panel-title {
+            font-size: 15px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .space-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 72vh;
+            overflow-y: auto;
+        }
+
+        .space-card {
+            width: 100%;
+            text-align: left;
+            border: 1px solid #dee6f2;
+            border-radius: 12px;
+            background: #ffffff;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .space-card.active {
+            border-color: #84aef0;
+            background: #f8fbff;
+            box-shadow: 0 6px 16px rgba(29, 78, 216, 0.1);
+        }
+
+        .space-name {
+            font-size: 14px;
+            font-weight: 800;
+            margin-bottom: 3px;
+        }
+
+        .space-meta {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .item-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .item-card {
+            border: 1px solid #e2e8f4;
+            border-radius: 12px;
+            background: #ffffff;
+            padding: 10px;
+            cursor: pointer;
+        }
+
+        .item-card.active {
+            border-color: #84aef0;
+            background: #f8fbff;
+        }
+
+        .item-name {
+            font-size: 13px;
+            font-weight: 700;
+            margin-bottom: 2px;
+            word-break: break-all;
+        }
+
+        .item-meta {
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        .viewer {
+            border: 1px dashed #d5e0ef;
+            border-radius: 12px;
+            background: #fafcff;
+            padding: 10px;
+            min-height: 320px;
+        }
+
+        .viewer-title {
+            font-size: 15px;
+            font-weight: 800;
+            margin-bottom: 6px;
+        }
+
+        .viewer-meta {
+            font-size: 12px;
+            color: var(--muted);
+            margin-bottom: 8px;
+        }
+
+        .viewer-actions {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+
+        .viewer-body img {
+            max-width: 100%;
+            border-radius: 10px;
+            border: 1px solid #dbe4ef;
+        }
+
+        .viewer-body iframe {
+            width: 100%;
+            min-height: 420px;
+            border: 1px solid #dbe4ef;
+            border-radius: 10px;
+            background: #ffffff;
+        }
+
+        .viewer-body audio {
+            width: 100%;
+        }
+
+        .viewer-body pre {
+            white-space: pre-wrap;
+            word-break: break-word;
+            background: #ffffff;
+            border: 1px solid #e2e8f4;
+            border-radius: 10px;
+            padding: 10px;
+            color: #1f2937;
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .hint {
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        @media (max-width: 980px) {
+            .layout { grid-template-columns: 1fr; }
+            .item-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <button class="global-sidebar-toggle" id="globalSidebarToggle" type="button" aria-label="打开侧栏">☰</button>
+    <div class="global-sidebar-backdrop" id="globalSidebarBackdrop"></div>
+    <aside class="global-sidebar" id="globalSidebar">
+        <div class="global-sidebar-logo">坊知工</div>
+        <a class="global-sidebar-link" data-side-link="index.html" href="index.html">+ 添加内容</a>
+        <div class="global-sidebar-section">空间</div>
+        <a class="global-sidebar-link" data-side-link="spaces.html" href="spaces.html">◻ 我的空间</a>
+    </aside>
+
+    <div class="wrap">
+        <div class="topbar">
+            <div>
+                <div class="title">我的空间</div>
+                <div class="subtitle" id="spaceUserLabel">用户：-</div>
+            </div>
+            <a class="btn" href="index.html">返回首页</a>
+        </div>
+
+        <div class="layout">
+            <section class="panel">
+                <div class="panel-title">空间列表</div>
+                <div class="space-list" id="spaceList"></div>
+            </section>
+
+            <section class="panel">
+                <div class="panel-title" id="itemPanelTitle">空间内容</div>
+                <div class="item-grid" id="itemGrid"></div>
+                <div class="viewer" id="itemViewer">
+                    <div class="hint">点击左侧空间和内容项查看详情。</div>
+                </div>
+            </section>
+        </div>
+    </div>
+
+    <script src="js/user-context.js"></script>
+    <script>
+        let spaces = [];
+        let activeSpaceId = null;
+        let activeItemId = null;
+
+        function getUserId() {
+            return window.UserContext ? window.UserContext.getUserId() : 'default_user';
+        }
+
+        function getStoreKey() {
+            return `fangzhigong_entry_spaces_${getUserId()}`;
+        }
+
+        function nowLabel(date) {
+            const d = date ? new Date(date) : new Date();
+            const hh = String(d.getHours()).padStart(2, '0');
+            const mm = String(d.getMinutes()).padStart(2, '0');
+            return `${hh}:${mm}`;
+        }
+
+        function esc(text) {
+            return String(text || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function loadSpaces() {
+            spaces = [];
+            activeSpaceId = null;
+            try {
+                const raw = localStorage.getItem(getStoreKey());
+                if (!raw) return;
+                const parsed = JSON.parse(raw);
+                if (parsed && Array.isArray(parsed.spaces)) {
+                    spaces = parsed.spaces.map(space => ({
+                        id: String(space.id || ''),
+                        name: String(space.name || '新空间'),
+                        createdAt: Number(space.createdAt || Date.now()),
+                        items: Array.isArray(space.items) ? space.items : []
+                    })).filter(space => !!space.id);
+                }
+                if (parsed && parsed.activeEntrySpaceId) {
+                    activeSpaceId = String(parsed.activeEntrySpaceId);
+                }
+            } catch (error) {
+                spaces = [];
+                activeSpaceId = null;
+            }
+        }
+
+        function saveSpaces() {
+            localStorage.setItem(getStoreKey(), JSON.stringify({
+                activeEntrySpaceId: activeSpaceId,
+                spaces
+            }));
+        }
+
+        function ensureState() {
+            if (!spaces.length) return;
+            if (!spaces.find(space => space.id === activeSpaceId)) {
+                activeSpaceId = spaces[0].id;
+            }
+        }
+
+        function getActiveSpace() {
+            return spaces.find(space => space.id === activeSpaceId) || null;
+        }
+
+        function setActiveSpace(spaceId) {
+            if (!spaces.find(space => space.id === spaceId)) return;
+            activeSpaceId = spaceId;
+            activeItemId = null;
+            saveSpaces();
+            render();
+        }
+
+        function setActiveItem(itemId) {
+            activeItemId = itemId;
+            renderViewer();
+            renderItemGrid();
+        }
+
+        function getActiveItem() {
+            const space = getActiveSpace();
+            if (!space || !Array.isArray(space.items)) return null;
+            return space.items.find(item => item.id === activeItemId) || null;
+        }
+
+        function renderSpaceList() {
+            const list = document.getElementById('spaceList');
+            if (!list) return;
+            if (!spaces.length) {
+                list.innerHTML = '<div class="hint">暂无空间内容</div>';
+                return;
+            }
+
+            const sorted = [...spaces].sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+            list.innerHTML = sorted.map(space => {
+                const count = Array.isArray(space.items) ? space.items.length : 0;
+                const activeClass = space.id === activeSpaceId ? 'active' : '';
+                return `<button type="button" class="space-card ${activeClass}" data-space-id="${esc(space.id)}"><div class="space-name">${esc(space.name)}</div><div class="space-meta">${count} 内容</div></button>`;
+            }).join('');
+
+            list.querySelectorAll('[data-space-id]').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    setActiveSpace(this.getAttribute('data-space-id'));
+                });
+            });
+        }
+
+        function renderItemGrid() {
+            const grid = document.getElementById('itemGrid');
+            const title = document.getElementById('itemPanelTitle');
+            if (!grid || !title) return;
+
+            const space = getActiveSpace();
+            if (!space) {
+                title.textContent = '空间内容';
+                grid.innerHTML = '<div class="hint">暂无空间</div>';
+                return;
+            }
+
+            title.textContent = `${space.name} · 内容`;
+            const items = Array.isArray(space.items) ? space.items : [];
+            if (!items.length) {
+                grid.innerHTML = '<div class="hint">该空间暂无内容</div>';
+                return;
+            }
+
+            grid.innerHTML = items.slice(0, 60).map(item => {
+                const activeClass = item.id === activeItemId ? 'active' : '';
+                const sizeKb = Math.max(1, Math.round((Number(item.size) || 0) / 1024));
+                return `<button type="button" class="item-card ${activeClass}" data-item-id="${esc(item.id)}"><div class="item-name">${esc(item.name || '未命名文件')}</div><div class="item-meta">${esc(item.kind || 'document')} · ${sizeKb} KB · ${nowLabel(item.addedAt)}</div></button>`;
+            }).join('');
+
+            grid.querySelectorAll('[data-item-id]').forEach(btn => {
+                btn.addEventListener('click', function () {
+                    setActiveItem(this.getAttribute('data-item-id'));
+                });
+            });
+        }
+
+        function renderViewer() {
+            const viewer = document.getElementById('itemViewer');
+            if (!viewer) return;
+
+            const item = getActiveItem();
+            if (!item) {
+                viewer.innerHTML = '<div class="hint">点击内容项查看详情。</div>';
+                return;
+            }
+
+            const mime = String(item.mime || '').toLowerCase();
+            const type = String(item.kind || 'document');
+            const sizeKb = Math.max(1, Math.round((Number(item.size) || 0) / 1024));
+            const openHref = item.fileDataUrl || item.audioDataUrl || '';
+            const actionLine = openHref
+                ? `<a class="btn" href="${esc(openHref)}" target="_blank" rel="noopener noreferrer">新窗口打开</a>`
+                : '<span class="hint">当前条目未保存原始文件，仅显示已保存信息</span>';
+
+            let body = '';
+            if ((type === 'audio' || mime.startsWith('audio/')) && item.audioDataUrl) {
+                body = `<audio controls src="${esc(item.audioDataUrl)}"></audio>`;
+            } else if (mime.startsWith('image/') && item.fileDataUrl) {
+                body = `<img alt="预览" src="${esc(item.fileDataUrl)}">`;
+            } else if ((mime.includes('pdf') || type === 'pdf') && item.fileDataUrl) {
+                body = `<iframe title="PDF预览" src="${esc(item.fileDataUrl)}"></iframe>`;
+            } else if (item.content) {
+                body = `<pre>${esc(item.content)}</pre>`;
+            } else if (item.fileDataUrl) {
+                body = `<iframe title="文件预览" src="${esc(item.fileDataUrl)}"></iframe>`;
+            } else {
+                body = '<div class="hint">暂无可展示内容</div>';
+            }
+
+            viewer.innerHTML = `
+                <div class="viewer-title">${esc(item.name || '未命名文件')}</div>
+                <div class="viewer-meta">${esc(type)} · ${sizeKb} KB · ${nowLabel(item.addedAt)}</div>
+                <div class="viewer-actions">${actionLine}</div>
+                <div class="viewer-body">${body}</div>
+            `;
+        }
+
+        function applyQueryDefaultSpace() {
+            const params = new URLSearchParams(window.location.search || '');
+            const sid = (params.get('space_id') || '').trim();
+            if (!sid) return;
+            if (spaces.find(space => space.id === sid)) {
+                activeSpaceId = sid;
+            }
+        }
+
+        function render() {
+            renderSpaceList();
+            renderItemGrid();
+            renderViewer();
+        }
+
+        function initGlobalSidebar() {
+            const toggle = document.getElementById('globalSidebarToggle');
+            const drawer = document.getElementById('globalSidebar');
+            const backdrop = document.getElementById('globalSidebarBackdrop');
+            if (!toggle || !drawer || !backdrop) return;
+
+            const openDrawer = () => {
+                drawer.classList.add('open');
+                backdrop.classList.add('show');
+                document.body.classList.add('sidebar-open');
+            };
+            const closeDrawer = () => {
+                drawer.classList.remove('open');
+                backdrop.classList.remove('show');
+                document.body.classList.remove('sidebar-open');
+            };
+
+            toggle.addEventListener('click', openDrawer);
+            backdrop.addEventListener('click', closeDrawer);
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') closeDrawer();
+            });
+
+            const path = (window.location.pathname || '').replace(/\\/g, '/');
+            document.querySelectorAll('[data-side-link]').forEach(link => {
+                const target = String(link.getAttribute('data-side-link') || '');
+                if (target && (path.endsWith('/' + target) || path.endsWith(target))) {
+                    link.classList.add('active');
+                }
+            });
+        }
+
+        function init() {
+            const label = document.getElementById('spaceUserLabel');
+            initGlobalSidebar();
+            if (label) {
+                label.textContent = `用户：${getUserId()}`;
+            }
+
+            loadSpaces();
+            ensureState();
+            applyQueryDefaultSpace();
+            ensureState();
+            render();
+
+            if (window.UserContext) {
+                window.UserContext.onChange(function () {
+                    if (label) {
+                        label.textContent = `用户：${getUserId()}`;
+                    }
+                    loadSpaces();
+                    ensureState();
+                    applyQueryDefaultSpace();
+                    ensureState();
+                    render();
+                });
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

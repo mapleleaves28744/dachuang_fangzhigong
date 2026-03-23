@@ -6,6 +6,94 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #f5f7fa; }
+
+        .global-sidebar-toggle {
+            position: fixed;
+            left: 12px;
+            top: 12px;
+            width: 42px;
+            height: 42px;
+            border: 1px solid #d8e2f1;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+            color: #0f172a;
+            font-size: 20px;
+            cursor: pointer;
+            z-index: 1400;
+        }
+
+        body.sidebar-open .global-sidebar-toggle {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .global-sidebar-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.22);
+            display: none;
+            z-index: 1290;
+        }
+
+        .global-sidebar-backdrop.show { display: block; }
+
+        .global-sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: #f8fafd;
+            border-right: 1px solid #dbe4ef;
+            box-shadow: 12px 0 26px rgba(15, 23, 42, 0.12);
+            transform: translateX(-100%);
+            transition: transform 0.22s ease;
+            z-index: 1300;
+            display: flex;
+            flex-direction: column;
+            padding: 16px 14px;
+        }
+
+        .global-sidebar.open { transform: translateX(0); }
+
+        .global-sidebar-logo {
+            font-size: 26px;
+            font-weight: 900;
+            margin-bottom: 16px;
+            color: #0f172a;
+        }
+
+        .global-sidebar-link {
+            display: block;
+            text-decoration: none;
+            color: #1f2937;
+            border: 1px solid transparent;
+            border-radius: 10px;
+            padding: 10px 12px;
+            margin-bottom: 6px;
+            font-weight: 700;
+            background: transparent;
+        }
+
+        .global-sidebar-link:hover {
+            background: #eef4ff;
+            border-color: #d4e1f7;
+        }
+
+        .global-sidebar-link.active {
+            background: #e8f0ff;
+            border-color: #bfd4f6;
+            color: #1d4ed8;
+        }
+
+        .global-sidebar-section {
+            margin-top: 8px;
+            margin-bottom: 6px;
+            font-size: 13px;
+            color: #64748b;
+            font-weight: 700;
+        }
         
         .dashboard-container { max-width: 1400px; margin: 0 auto; padding: 20px; }
         
@@ -86,6 +174,15 @@
     </style>
 </head>
 <body>
+    <button class="global-sidebar-toggle" id="globalSidebarToggle" type="button" aria-label="打开侧栏">☰</button>
+    <div class="global-sidebar-backdrop" id="globalSidebarBackdrop"></div>
+    <aside class="global-sidebar" id="globalSidebar">
+        <div class="global-sidebar-logo">坊知工</div>
+        <a class="global-sidebar-link" data-side-link="index.html" href="index.html">+ 添加内容</a>
+        <div class="global-sidebar-section">空间</div>
+        <a class="global-sidebar-link" data-side-link="spaces.html" href="spaces.html">◻ 我的空间</a>
+    </aside>
+
     <div class="dashboard-container">
         <!-- 头部 -->
         <div class="dashboard-header">
@@ -420,8 +517,41 @@
         label.textContent = `当前用户：${window.UserContext.getUserId()}`;
     }
 
+    function initGlobalSidebar() {
+        const toggle = document.getElementById('globalSidebarToggle');
+        const drawer = document.getElementById('globalSidebar');
+        const backdrop = document.getElementById('globalSidebarBackdrop');
+        if (!toggle || !drawer || !backdrop) return;
+
+        const openDrawer = () => {
+            drawer.classList.add('open');
+            backdrop.classList.add('show');
+            document.body.classList.add('sidebar-open');
+        };
+        const closeDrawer = () => {
+            drawer.classList.remove('open');
+            backdrop.classList.remove('show');
+            document.body.classList.remove('sidebar-open');
+        };
+
+        toggle.addEventListener('click', openDrawer);
+        backdrop.addEventListener('click', closeDrawer);
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') closeDrawer();
+        });
+
+        const path = (window.location.pathname || '').replace(/\\/g, '/');
+        document.querySelectorAll('[data-side-link]').forEach(link => {
+            const target = String(link.getAttribute('data-side-link') || '');
+            if (target && (path.endsWith('/' + target) || path.endsWith(target))) {
+                link.classList.add('active');
+            }
+        });
+    }
+
     // 页面加载时自动刷新
     window.addEventListener('DOMContentLoaded', function() {
+        initGlobalSidebar();
         syncDashboardUserLabel();
         loadDashboardTodayTasks();
         loadDashboardReviewReminders();

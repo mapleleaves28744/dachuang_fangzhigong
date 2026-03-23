@@ -8,6 +8,7 @@ import os
 import uuid
 import re
 import base64
+import random
 from knowledge_graph import KnowledgeGraph
 from cognitive_diagnosis import CognitiveDiagnosis
 from neo4j_store import Neo4jGraphStore
@@ -191,6 +192,8 @@ from database import (
     append_user_event as db_append_user_event,
     get_storage_info,
     init_storage,
+    load_json,
+    save_json,
 )
 
 # 初始化数据目录
@@ -1368,6 +1371,615 @@ def generate_mock_analysis(question):
             "learning_preference": "视觉化学习和分步讲解"
         }
 
+
+QUESTION_BANK_TEMPLATES = [
+    {
+        "id": "qb-limit-001",
+        "concept": "极限",
+        "difficulty": "easy",
+        "question_type": "single_choice",
+        "question": "函数极限的本质更接近下列哪一项？",
+        "options": [
+            "A. 函数在该点处的取值",
+            "B. 自变量趋近某值时函数值的变化趋势",
+            "C. 函数图像的最高点",
+            "D. 导数的另一种写法",
+        ],
+        "answer": "B",
+        "analysis": "极限描述的是趋近过程中的趋势，不要求该点函数值一定存在。",
+    },
+    {
+        "id": "qb-function-001",
+        "concept": "函数",
+        "difficulty": "easy",
+        "question_type": "single_choice",
+        "question": "下列对函数关系的描述，哪一项正确？",
+        "options": [
+            "A. 一个输入可以对应多个输出",
+            "B. 每个输入只能对应一个确定输出",
+            "C. 输出必须是整数",
+            "D. 自变量必须连续",
+        ],
+        "answer": "B",
+        "analysis": "函数定义核心是“唯一对应”：每个输入对应唯一输出。",
+    },
+    {
+        "id": "qb-derivative-001",
+        "concept": "导数",
+        "difficulty": "medium",
+        "question_type": "single_choice",
+        "question": "导数在几何上最直接表示为：",
+        "options": [
+            "A. 曲线某点切线斜率",
+            "B. 曲线围成面积",
+            "C. 函数在区间上的平均值",
+            "D. 函数零点个数",
+        ],
+        "answer": "A",
+        "analysis": "导数刻画瞬时变化率，几何意义是切线斜率。",
+    },
+    {
+        "id": "qb-monotonic-001",
+        "concept": "单调性",
+        "difficulty": "medium",
+        "question_type": "single_choice",
+        "question": "若在某区间内 f'(x) > 0，则函数在该区间通常：",
+        "options": [
+            "A. 单调递减",
+            "B. 单调递增",
+            "C. 恒为常数",
+            "D. 必有极大值",
+        ],
+        "answer": "B",
+        "analysis": "导数大于 0 对应函数上升趋势，即单调递增。",
+    },
+    {
+        "id": "qb-extreme-001",
+        "concept": "极值",
+        "difficulty": "hard",
+        "question_type": "single_choice",
+        "question": "判断极值点时，下列说法更合理的是：",
+        "options": [
+            "A. 只要 f'(x)=0 就一定是极值点",
+            "B. 需结合一阶导号变或二阶导信息综合判断",
+            "C. 任意连续点都可判为极值点",
+            "D. 极值与导数无关",
+        ],
+        "answer": "B",
+        "analysis": "驻点不一定是极值点，需要进一步判别导数符号变化或二阶导。",
+    },
+    {
+        "id": "qb-integral-001",
+        "concept": "积分",
+        "difficulty": "medium",
+        "question_type": "single_choice",
+        "question": "定积分最典型的应用之一是：",
+        "options": [
+            "A. 求瞬时速度",
+            "B. 求曲线与坐标轴围成区域的面积",
+            "C. 判断函数奇偶性",
+            "D. 求方程根的个数",
+        ],
+        "answer": "B",
+        "analysis": "定积分常用于面积累计，体现“累加”思想。",
+    },
+]
+
+QUESTION_BANK_CUSTOM_FILE = "question_bank_custom.json"
+QUESTION_TYPES = {"single_choice", "short_answer", "retry"}
+QUESTION_DIFFICULTY = {"easy", "medium", "hard"}
+QUESTION_BANK_SCOPE = {"all", "official", "mine"}
+
+
+def normalize_question_options(options):
+    if not isinstance(options, list):
+        return []
+    normalized = []
+    for item in options:
+        text = str(item or "").strip()
+        if text:
+            normalized.append(text)
+    return normalized[:8]
+
+
+def normalize_question_item(raw, fallback_id="", creator="", is_public_default=True, bank_source=""):
+    if not isinstance(raw, dict):
+        return None
+
+    concept = normalize_concept_name(raw.get("concept") or "")
+    question = str(raw.get("question") or "").strip()
+    answer = str(raw.get("answer") or "").strip()
+    question_type = str(raw.get("question_type") or "single_choice").strip().lower()
+    difficulty = str(raw.get("difficulty") or "medium").strip().lower()
+    analysis = str(raw.get("analysis") or "").strip()
+    options = normalize_question_options(raw.get("options", []))
+
+    if not concept or concept == "??" or not question:
+        return None
+    if question_type not in QUESTION_TYPES:
+        question_type = "single_choice"
+    if difficulty not in QUESTION_DIFFICULTY:
+        difficulty = "medium"
+    if not answer:
+        return None
+    if question_type == "single_choice" and len(options) < 2:
+        return None
+
+    return {
+        "id": str(raw.get("id") or fallback_id or f"qb-custom-{uuid.uuid4().hex[:12]}"),
+        "concept": concept,
+        "difficulty": difficulty,
+        "question_type": question_type,
+        "question": question,
+        "options": options,
+        "answer": answer,
+        "analysis": analysis,
+        "created_at": str(raw.get("created_at") or datetime.now().isoformat()),
+        "created_by": str(raw.get("created_by") or creator or "system"),
+        "is_public": bool(raw.get("is_public", is_public_default)),
+        "bank_source": str(raw.get("bank_source") or bank_source or "user_custom"),
+    }
+
+
+def load_custom_question_bank_items():
+    data = load_json(QUESTION_BANK_CUSTOM_FILE, {"items": []})
+    items = data.get("items", []) if isinstance(data, dict) else []
+    result = []
+    for item in items:
+        normalized = normalize_question_item(item)
+        if normalized:
+            result.append(normalized)
+    return result
+
+
+def save_custom_question_bank_items(items):
+    payload = {
+        "items": items if isinstance(items, list) else [],
+        "updated_at": datetime.now().isoformat(),
+    }
+    save_json(QUESTION_BANK_CUSTOM_FILE, payload)
+
+
+def get_visible_custom_questions(user_id):
+    visible = []
+    for item in load_custom_question_bank_items():
+        owner = str(item.get("created_by") or "")
+        if item.get("is_public", True) or owner == user_id:
+            visible.append(item)
+    return visible
+
+
+def get_recent_drawn_question_ids(user_id, limit=8):
+    events = load_user_event_list(user_id, "question_draw")
+    ids = []
+    for item in reversed(events):
+        if not isinstance(item, dict):
+            continue
+        qid = str(item.get("question_id") or "").strip()
+        if qid and qid not in ids:
+            ids.append(qid)
+        if len(ids) >= limit:
+            break
+    return set(ids)
+
+
+def parse_import_questions_text(text, user_id):
+    source_text = str(text or "").strip()
+    if not source_text:
+        return [], ["导入文本为空"]
+
+    rows = []
+    errors = []
+
+    try:
+        parsed = json.loads(source_text)
+        if isinstance(parsed, dict):
+            parsed = parsed.get("questions", [parsed])
+        if isinstance(parsed, list):
+            for i, item in enumerate(parsed):
+                normalized = normalize_question_item(
+                    item,
+                    fallback_id=f"qb-import-{uuid.uuid4().hex[:12]}",
+                    creator=user_id,
+                    is_public_default=True,
+                    bank_source="user_import",
+                )
+                if normalized:
+                    rows.append(normalized)
+                else:
+                    errors.append(f"JSON第{i + 1}题格式无效")
+            return rows, errors
+    except Exception:
+        pass
+
+    lines = [line.strip() for line in source_text.splitlines() if line.strip()]
+    for idx, line in enumerate(lines, start=1):
+        parts = [p.strip() for p in line.split("||")]
+        if len(parts) < 6:
+            errors.append(f"第{idx}行字段不足，需至少6段（concept||difficulty||type||question||options||answer）")
+            continue
+        concept, difficulty, q_type, question, options_text, answer = parts[:6]
+        analysis = parts[6] if len(parts) > 6 else ""
+        options = [x.strip() for x in options_text.split(";") if x.strip()]
+
+        normalized = normalize_question_item(
+            {
+                "concept": concept,
+                "difficulty": difficulty,
+                "question_type": q_type,
+                "question": question,
+                "options": options,
+                "answer": answer,
+                "analysis": analysis,
+                "is_public": False,
+            },
+            fallback_id=f"qb-import-{uuid.uuid4().hex[:12]}",
+            creator=user_id,
+            is_public_default=False,
+            bank_source="user_import",
+        )
+        if normalized:
+            rows.append(normalized)
+        else:
+            errors.append(f"第{idx}行格式无效")
+
+    return rows, errors
+
+
+def generate_official_questions_fallback(concept, difficulty, count):
+    concept_text = normalize_concept_name(concept or "")
+    level = (difficulty or "medium").strip().lower()
+    picked = []
+    base_pool = [dict(x) for x in QUESTION_BANK_TEMPLATES]
+    if concept_text:
+        base_pool = [x for x in base_pool if normalize_concept_name(x.get("concept") or "") == concept_text] or base_pool
+    random.shuffle(base_pool)
+
+    for i in range(max(1, min(10, int(count or 3)))):
+        src = base_pool[i % len(base_pool)]
+        q = dict(src)
+        q["id"] = f"qb-ai-fallback-{uuid.uuid4().hex[:12]}"
+        q["difficulty"] = level if level in QUESTION_DIFFICULTY else str(src.get("difficulty") or "medium")
+        q["question"] = f"{src.get('question', '')}（扩展题 {i + 1}）"
+        q["bank_source"] = "official_ai"
+        q["created_by"] = "official_ai"
+        q["is_public"] = True
+        q["created_at"] = datetime.now().isoformat()
+        picked.append(q)
+    return picked
+
+
+def generate_official_questions_with_ai(concept, difficulty, count):
+    cfg = get_ai_runtime_config()
+    target_count = max(1, min(10, int(count or 3)))
+    level = (difficulty or "medium").strip().lower()
+    concept_text = normalize_concept_name(concept or "")
+
+    if not USE_REAL_AI or not str(cfg.get("api_key") or "").strip():
+        return generate_official_questions_fallback(concept_text, level, target_count), "fallback"
+
+    try:
+        prompt = f"""
+你是数学题库生成器。请生成 {target_count} 道题目，并只返回 JSON。
+
+要求：
+1) concept 优先使用“{concept_text or '导数'}”，difficulty 使用“{level if level in QUESTION_DIFFICULTY else 'medium'}”。
+2) question_type 仅可 single_choice 或 short_answer。
+3) single_choice 必须有 4 个 options（A/B/C/D），answer 为正确选项字母。
+4) short_answer 可不填 options，answer 给标准要点。
+5) 必须返回合法 JSON，不要解释文本。
+
+格式：
+{{
+  "questions": [
+    {{"concept":"导数","difficulty":"medium","question_type":"single_choice","question":"...","options":["A...","B...","C...","D..."],"answer":"A","analysis":"..."}}
+  ]
+}}
+"""
+        headers = {
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {cfg.get('api_key', '')}",
+        }
+        payload = {
+            "model": cfg.get("model", "qwen-plus"),
+            "messages": [
+                {"role": "system", "content": "你必须返回合法JSON。"},
+                {"role": "user", "content": prompt},
+            ],
+            "temperature": 0.6,
+            "max_tokens": 1600,
+        }
+        resp = requests.post(cfg.get("api_url"), headers=headers, json=payload, timeout=35)
+        resp.raise_for_status()
+        content = (resp.json().get("choices", [{}])[0].get("message", {}).get("content", "") or "").strip()
+        parsed = parse_json_from_ai_text(content)
+        raw_list = []
+        if isinstance(parsed, dict):
+            raw_list = parsed.get("questions", []) if isinstance(parsed.get("questions", []), list) else []
+        elif isinstance(parsed, list):
+            raw_list = parsed
+
+        results = []
+        for item in raw_list[:target_count * 2]:
+            normalized = normalize_question_item(
+                item,
+                fallback_id=f"qb-ai-{uuid.uuid4().hex[:12]}",
+                creator="official_ai",
+                is_public_default=True,
+                bank_source="official_ai",
+            )
+            if normalized:
+                normalized["created_by"] = "official_ai"
+                normalized["bank_source"] = "official_ai"
+                results.append(normalized)
+            if len(results) >= target_count:
+                break
+
+        if results:
+            return results, "ai"
+        return generate_official_questions_fallback(concept_text, level, target_count), "fallback"
+    except Exception:
+        return generate_official_questions_fallback(concept_text, level, target_count), "fallback"
+
+
+def extract_choice_letter(text):
+    value = str(text or "").strip().upper()
+    if not value:
+        return ""
+    m = re.search(r"([A-Z])", value)
+    return m.group(1) if m else ""
+
+
+def evaluate_question_answer(question_item, user_answer):
+    q_type = str(question_item.get("question_type") or "single_choice").strip().lower()
+    expected_answer = str(question_item.get("answer") or "").strip()
+    analysis = str(question_item.get("analysis") or "").strip()
+    user_text = str(user_answer or "").strip()
+
+    if q_type == "single_choice":
+        expected_choice = extract_choice_letter(expected_answer)
+        user_choice = extract_choice_letter(user_text)
+        is_correct = bool(expected_choice and user_choice and expected_choice == user_choice)
+        score = 1.0 if is_correct else 0.0
+        feedback = "回答正确，继续下一题。" if is_correct else f"回答不正确，正确答案是 {expected_choice or expected_answer}。"
+        if analysis:
+            feedback = f"{feedback}\n解析：{analysis}"
+        return {
+            "is_correct": is_correct,
+            "score": score,
+            "expected_answer": expected_answer,
+            "feedback": feedback,
+            "evaluation_method": "rule_single_choice",
+        }
+
+    keywords = []
+    for token in re.findall(r"[\u4e00-\u9fff]{2,8}|[A-Za-z]{4,}", expected_answer):
+        t = token.strip().lower()
+        if t and t not in keywords:
+            keywords.append(t)
+        if len(keywords) >= 6:
+            break
+
+    user_lower = user_text.lower()
+    hit = sum(1 for kw in keywords if kw in user_lower)
+    denom = max(1, len(keywords))
+    score = round(min(1.0, hit / denom), 3)
+    if expected_answer and expected_answer in user_text:
+        score = 1.0
+
+    is_correct = score >= 0.6
+    if is_correct:
+        feedback = "回答基本正确，关键点覆盖较好。"
+    else:
+        feedback = "回答还不完整，建议补充定义关键词和关键步骤。"
+    if analysis:
+        feedback = f"{feedback}\n参考解析：{analysis}"
+
+    return {
+        "is_correct": is_correct,
+        "score": score,
+        "expected_answer": expected_answer,
+        "feedback": feedback,
+        "evaluation_method": "rule_keyword_match",
+    }
+
+
+def find_question_by_id(user_id, question_id):
+    if not question_id:
+        return None
+    bank, _ = build_question_bank_for_user(user_id)
+    for item in bank:
+        if str(item.get("id") or "") == str(question_id):
+            return item
+    return None
+
+
+def build_dynamic_question_templates(user_id, user_knowledge):
+    """根据用户薄弱点和诊断记录生成动态题目。"""
+    dynamic_items = []
+    concepts = user_knowledge.get("concepts", []) if isinstance(user_knowledge, dict) else []
+    weak_items = []
+
+    for item in concepts:
+        if not isinstance(item, dict):
+            continue
+        concept = normalize_concept_name(item.get("concept") or "")
+        if not concept:
+            continue
+        try:
+            mastery = float(item.get("mastery", 0.35) or 0.35)
+        except Exception:
+            mastery = 0.35
+        if mastery < 0.75:
+            weak_items.append((concept, mastery))
+
+    weak_items.sort(key=lambda x: x[1])
+    for concept, mastery in weak_items[:4]:
+        difficulty = "easy" if mastery < 0.35 else ("medium" if mastery < 0.6 else "hard")
+        dynamic_items.append({
+            "id": f"dyn-{user_id}-{concept}-sa",
+            "concept": concept,
+            "difficulty": difficulty,
+            "question_type": "short_answer",
+            "question": f"请用自己的话解释“{concept}”的核心定义，并给出 1 个应用场景。",
+            "options": [],
+            "answer": "应包含定义关键词，并给出可落地的例子。",
+            "analysis": "可从“定义-条件-应用”三步作答，优先保证概念准确。",
+            "bank_source": "dynamic_personal",
+            "created_by": user_id,
+        })
+
+    diagnosis_list = load_user_event_list(user_id, "diagnosis")
+    for event in diagnosis_list[-2:]:
+        if not isinstance(event, dict):
+            continue
+        stem = str(event.get("question") or "").strip()
+        correct_answer = str(event.get("correct_answer") or "").strip()
+        if not stem:
+            continue
+        topic = "错题复盘"
+        topics = event.get("topics", []) if isinstance(event.get("topics", []), list) else []
+        if topics:
+            topic = str(topics[0] or "错题复盘").strip() or "错题复盘"
+
+        dynamic_items.append({
+            "id": f"dyn-{user_id}-{abs(hash(stem)) % 100000}-retry",
+            "concept": topic,
+            "difficulty": "medium",
+            "question_type": "retry",
+            "question": f"错题重练：{stem}",
+            "options": [],
+            "answer": correct_answer,
+            "analysis": "建议先写关键步骤，再对照标准答案补全遗漏点。",
+            "bank_source": "dynamic_personal",
+            "created_by": user_id,
+        })
+
+    return dynamic_items
+
+
+def build_question_bank_for_user(user_id):
+    """构建用户题库（静态模板 + 动态生成）。"""
+    user_knowledge = normalize_user_knowledge(get_user_knowledge(user_id))
+    bank = []
+    for item in QUESTION_BANK_TEMPLATES:
+        row = dict(item)
+        row.setdefault("bank_source", "official_template")
+        row.setdefault("created_by", "system")
+        row.setdefault("is_public", True)
+        bank.append(row)
+    bank.extend(get_visible_custom_questions(user_id))
+    bank.extend(build_dynamic_question_templates(user_id, user_knowledge))
+
+    mastery_map = {}
+    for item in user_knowledge.get("concepts", []):
+        if not isinstance(item, dict):
+            continue
+        concept = normalize_concept_name(item.get("concept") or "")
+        if not concept:
+            continue
+        try:
+            mastery_map[concept] = float(item.get("mastery", 0.35) or 0.35)
+        except Exception:
+            mastery_map[concept] = 0.35
+
+    return bank, mastery_map
+
+
+def select_question_from_bank(bank, mastery_map, concept=None, difficulty=None, recent_ids=None, bank_scope="all", user_id="default_user"):
+    """按知识薄弱程度加权抽题。"""
+    target_concept = normalize_concept_name(concept or "")
+    target_difficulty = (difficulty or "").strip().lower()
+    target_scope = (bank_scope or "all").strip().lower()
+    if target_scope not in QUESTION_BANK_SCOPE:
+        target_scope = "all"
+
+    candidates = []
+    for item in bank:
+        if not isinstance(item, dict):
+            continue
+        item_concept = normalize_concept_name(item.get("concept") or "")
+        item_diff = str(item.get("difficulty") or "").strip().lower()
+        item_source = str(item.get("bank_source") or "")
+        created_by = str(item.get("created_by") or "")
+
+        if target_concept and item_concept != target_concept:
+            continue
+        if target_difficulty and item_diff != target_difficulty:
+            continue
+
+        if target_scope == "official" and not (item_source.startswith("official") or created_by in {"system", "official_ai"}):
+            continue
+        if target_scope == "mine" and created_by != user_id:
+            continue
+
+        candidates.append(item)
+
+    if not candidates:
+        return None
+
+    recent_ids = recent_ids or set()
+    non_repeat = [item for item in candidates if str(item.get("id") or "") not in recent_ids]
+    if non_repeat:
+        candidates = non_repeat
+
+    if target_scope == "all" and not target_concept and not target_difficulty:
+        mine_candidates = [
+            item for item in candidates
+            if str(item.get("created_by") or "") == user_id
+            or str(item.get("bank_source") or "") in {"user_custom", "user_import"}
+        ]
+        if mine_candidates and random.random() < 0.6:
+            candidates = mine_candidates
+
+    weights = []
+    for item in candidates:
+        item_concept = normalize_concept_name(item.get("concept") or "")
+        mastery = mastery_map.get(item_concept, 0.45)
+        base_weight = 1.0 + max(0.0, 1.0 - float(mastery)) * 2.5
+
+        diff = str(item.get("difficulty") or "").lower()
+        if diff == "easy":
+            base_weight += 0.2
+        elif diff == "hard":
+            base_weight += 0.35
+
+        if str(item.get("bank_source") or "") in {"user_custom", "user_import", "official_ai"}:
+            base_weight += 0.4
+
+        base_weight *= 0.9 + random.random() * 0.2
+
+        weights.append(base_weight)
+
+    picked = random.choices(candidates, weights=weights, k=1)[0]
+    return picked
+
+
+def build_question_prompt_text(question_item):
+    """构造前端可直接展示的发问文本。"""
+    stem = str(question_item.get("question") or "").strip()
+    options = question_item.get("options", []) if isinstance(question_item.get("options", []), list) else []
+    level = str(question_item.get("difficulty") or "medium").strip().lower()
+    concept = str(question_item.get("concept") or "综合").strip()
+    source = str(question_item.get("bank_source") or "official_template")
+
+    source_label = "官方题库"
+    if source in {"user_custom", "user_import"}:
+        source_label = "我的题库"
+    elif source == "official_ai":
+        source_label = "官方AI题库"
+    elif source == "dynamic_personal":
+        source_label = "个性化动态题"
+
+    lines = [f"【题库抽题】来源：{source_label}｜知识点：{concept}｜难度：{level}", stem]
+    if options:
+        lines.extend(str(opt) for opt in options)
+        lines.append("请直接回复选项字母（如 A）并说明你的理由。")
+    else:
+        lines.append("请分步骤作答，我会继续追问并给出反馈。")
+
+    return "\n".join(lines)
+
 def ask_ai_question(question, user_id):
     """调用大模型进行智能问答（支持 Qwen/DeepSeek）。"""
     try:
@@ -1724,6 +2336,292 @@ def ask_question():
         answer=answer,
         source=source,
         ai_used=True,
+        error_code="",
+        error_message="",
+    ))
+
+
+@app.route('/api/question_bank/draw', methods=['GET'])
+def draw_question_from_bank_api():
+    """题库抽题：按用户知识薄弱点加权抽题并发问。"""
+    request_id = get_request_id()
+    user_id = (request.args.get('user_id', 'default_user') or 'default_user').strip() or 'default_user'
+    concept = (request.args.get('concept', '') or '').strip()
+    difficulty = (request.args.get('difficulty', '') or '').strip().lower()
+    bank_scope = (request.args.get('bank_scope', 'all') or 'all').strip().lower()
+
+    # 官方题库抽题时自动生题，避免题目长期不变。
+    if bank_scope in {"official", "all"}:
+        existing_bank, _ = build_question_bank_for_user(user_id)
+        official_ai_count = sum(1 for x in existing_bank if str(x.get("bank_source") or "") == "official_ai")
+        should_generate = official_ai_count < 5 or random.random() < 0.35
+        if should_generate:
+            generate_count = 3 if official_ai_count < 5 else 1
+            generated_items, _ = generate_official_questions_with_ai(concept, difficulty or "medium", generate_count)
+            if generated_items:
+                custom_items = load_custom_question_bank_items()
+                custom_items.extend(generated_items)
+                save_custom_question_bank_items(custom_items)
+
+    bank, mastery_map = build_question_bank_for_user(user_id)
+    question_item = select_question_from_bank(
+        bank,
+        mastery_map,
+        concept=concept,
+        difficulty=difficulty,
+        recent_ids=get_recent_drawn_question_ids(user_id, limit=8),
+        bank_scope=bank_scope,
+        user_id=user_id,
+    )
+
+    if not question_item:
+        return error_response(
+            request_id,
+            404,
+            "QUESTION_NOT_FOUND",
+            "未找到满足条件的题目",
+            concept=concept,
+            difficulty=difficulty,
+        )
+
+    prompt_text = build_question_prompt_text(question_item)
+    event_payload = {
+        "id": str(uuid.uuid4()),
+        "timestamp": datetime.now().isoformat(),
+        "question_id": question_item.get("id"),
+        "concept": question_item.get("concept"),
+        "difficulty": question_item.get("difficulty"),
+        "question_type": question_item.get("question_type"),
+    }
+    append_user_event(user_id, "question_draw", event_payload)
+
+    return jsonify(success_payload(
+        request_id,
+        message="抽题成功",
+        user_id=user_id,
+        question={
+            "id": question_item.get("id"),
+            "concept": question_item.get("concept"),
+            "difficulty": question_item.get("difficulty"),
+            "question_type": question_item.get("question_type"),
+            "question": question_item.get("question"),
+            "options": question_item.get("options", []),
+            "bank_source": question_item.get("bank_source", "official_template"),
+        },
+        prompt_text=prompt_text,
+        bank_size=len(bank),
+        filters={
+            "concept": concept,
+            "difficulty": difficulty,
+            "bank_scope": bank_scope,
+        },
+        error_code="",
+        error_message="",
+    ))
+
+
+@app.route('/api/question_bank/questions', methods=['GET'])
+def list_question_bank_questions_api():
+    """查看题库（默认仅返回当前用户可见题）。"""
+    request_id = get_request_id()
+    user_id = (request.args.get('user_id', 'default_user') or 'default_user').strip() or 'default_user'
+    concept = normalize_concept_name(request.args.get('concept', '') or '')
+    difficulty = (request.args.get('difficulty', '') or '').strip().lower()
+
+    bank, _ = build_question_bank_for_user(user_id)
+    items = []
+    for item in bank:
+        if concept and normalize_concept_name(item.get("concept") or "") != concept:
+            continue
+        if difficulty and str(item.get("difficulty") or "").strip().lower() != difficulty:
+            continue
+        items.append({
+            "id": item.get("id"),
+            "concept": item.get("concept"),
+            "difficulty": item.get("difficulty"),
+            "question_type": item.get("question_type"),
+            "question": item.get("question"),
+            "options": item.get("options", []),
+            "created_by": item.get("created_by", "system"),
+            "is_public": bool(item.get("is_public", True)),
+            "bank_source": item.get("bank_source", "official_template"),
+        })
+
+    return jsonify(success_payload(
+        request_id,
+        user_id=user_id,
+        count=len(items),
+        questions=items,
+        error_code="",
+        error_message="",
+    ))
+
+
+@app.route('/api/question_bank/questions', methods=['POST'])
+def add_question_bank_question_api():
+    """动态新增题目到可扩展题库。"""
+    request_id = get_request_id()
+    data = request.json or {}
+    user_id = (data.get('user_id', 'default_user') or 'default_user').strip() or 'default_user'
+
+    normalized = normalize_question_item(
+        raw=data,
+        fallback_id=f"qb-custom-{uuid.uuid4().hex[:12]}",
+        creator=user_id,
+        is_public_default=False,
+        bank_source="user_custom",
+    )
+    if not normalized:
+        return error_response(request_id, 400, "INVALID_INPUT", "题目信息不完整或格式错误")
+
+    custom_items = load_custom_question_bank_items()
+    custom_items = [item for item in custom_items if str(item.get("id") or "") != normalized["id"]]
+    custom_items.append(normalized)
+    save_custom_question_bank_items(custom_items)
+
+    return jsonify(success_payload(
+        request_id,
+        message="题目已加入动态题库",
+        user_id=user_id,
+        question={
+            "id": normalized["id"],
+            "concept": normalized["concept"],
+            "difficulty": normalized["difficulty"],
+            "question_type": normalized["question_type"],
+            "question": normalized["question"],
+            "options": normalized.get("options", []),
+            "bank_source": normalized.get("bank_source", "user_custom"),
+        },
+        custom_bank_count=len(custom_items),
+        error_code="",
+        error_message="",
+    ))
+
+
+@app.route('/api/question_bank/import', methods=['POST'])
+def import_question_bank_question_api():
+    """粘贴板导题：支持 JSON 或行文本批量导入。"""
+    request_id = get_request_id()
+    data = request.json or {}
+    user_id = (data.get('user_id', 'default_user') or 'default_user').strip() or 'default_user'
+    text = str(data.get('text') or '').strip()
+
+    if not text:
+        return error_response(request_id, 400, "INVALID_INPUT", "导入文本不能为空")
+
+    imported, errors = parse_import_questions_text(text, user_id)
+    if not imported:
+        return error_response(request_id, 400, "INVALID_INPUT", "未解析到有效题目", parse_errors=errors[:8])
+
+    custom_items = load_custom_question_bank_items()
+    ids = {str(x.get("id") or "") for x in custom_items}
+    for item in imported:
+        if str(item.get("id") or "") in ids:
+            item["id"] = f"qb-import-{uuid.uuid4().hex[:12]}"
+        custom_items.append(item)
+    save_custom_question_bank_items(custom_items)
+
+    return jsonify(success_payload(
+        request_id,
+        message="导题成功",
+        user_id=user_id,
+        imported_count=len(imported),
+        custom_bank_count=len(custom_items),
+        parse_errors=errors[:8],
+        error_code="",
+        error_message="",
+    ))
+
+
+@app.route('/api/question_bank/generate', methods=['POST'])
+def generate_question_bank_question_api():
+    """官方题库：通过 AI 批量生题并入库。"""
+    request_id = get_request_id()
+    data = request.json or {}
+    user_id = (data.get('user_id', 'default_user') or 'default_user').strip() or 'default_user'
+    concept = normalize_concept_name(data.get('concept') or '')
+    difficulty = (data.get('difficulty', 'medium') or 'medium').strip().lower()
+    try:
+        count = int(data.get('count', 3) or 3)
+    except Exception:
+        count = 3
+    count = max(1, min(10, count))
+
+    questions, mode = generate_official_questions_with_ai(concept, difficulty, count)
+    if not questions:
+        return error_response(request_id, 502, "QUESTION_GENERATE_FAILED", "官方题库生题失败")
+
+    custom_items = load_custom_question_bank_items()
+    custom_items.extend(questions)
+    save_custom_question_bank_items(custom_items)
+
+    return jsonify(success_payload(
+        request_id,
+        message="官方题库生题完成",
+        user_id=user_id,
+        generate_mode=mode,
+        generated_count=len(questions),
+        custom_bank_count=len(custom_items),
+        sample_questions=[
+            {
+                "id": q.get("id"),
+                "concept": q.get("concept"),
+                "difficulty": q.get("difficulty"),
+                "question_type": q.get("question_type"),
+                "question": q.get("question"),
+                "bank_source": q.get("bank_source", "official_ai"),
+            }
+            for q in questions[:5]
+        ],
+        error_code="",
+        error_message="",
+    ))
+
+
+@app.route('/api/question_bank/answer', methods=['POST'])
+def answer_question_bank_question_api():
+    """提交题库答案并返回判题反馈。"""
+    request_id = get_request_id()
+    data = request.json or {}
+    user_id = (data.get('user_id', 'default_user') or 'default_user').strip() or 'default_user'
+    question_id = str(data.get('question_id') or '').strip()
+    user_answer = str(data.get('user_answer') or '').strip()
+
+    if not question_id:
+        return error_response(request_id, 400, "INVALID_INPUT", "question_id 不能为空")
+    if not user_answer:
+        return error_response(request_id, 400, "INVALID_INPUT", "user_answer 不能为空")
+
+    question_item = find_question_by_id(user_id, question_id)
+    if not question_item:
+        return error_response(request_id, 404, "QUESTION_NOT_FOUND", "题目不存在或不可见")
+
+    evaluation = evaluate_question_answer(question_item, user_answer)
+    event_payload = {
+        "id": str(uuid.uuid4()),
+        "timestamp": datetime.now().isoformat(),
+        "question_id": question_id,
+        "concept": question_item.get("concept"),
+        "difficulty": question_item.get("difficulty"),
+        "question_type": question_item.get("question_type"),
+        "user_answer": user_answer,
+        "is_correct": bool(evaluation.get("is_correct", False)),
+        "score": float(evaluation.get("score", 0.0) or 0.0),
+    }
+    append_user_event(user_id, "question_answer", event_payload)
+
+    return jsonify(success_payload(
+        request_id,
+        message="判题完成",
+        user_id=user_id,
+        question_id=question_id,
+        concept=question_item.get("concept"),
+        is_correct=bool(evaluation.get("is_correct", False)),
+        score=float(evaluation.get("score", 0.0) or 0.0),
+        expected_answer=evaluation.get("expected_answer", ""),
+        feedback=evaluation.get("feedback", ""),
+        evaluation_method=evaluation.get("evaluation_method", "rule"),
+        next_action="继续点击题库抽题进行下一题",
         error_code="",
         error_message="",
     ))
