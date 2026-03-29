@@ -1493,6 +1493,7 @@ QUESTION_BANK_TEMPLATES = [
 ]
 
 QUESTION_BANK_CUSTOM_FILE = "question_bank_custom.json"
+QUESTION_BANK_OFFICIAL_FILE = "question_bank_official_ai.json"
 QUESTION_TYPES = {"single_choice", "short_answer", "retry"}
 QUESTION_DIFFICULTY = {"easy", "medium", "hard"}
 QUESTION_BANK_SCOPE = {"all", "official", "mine"}
@@ -1548,20 +1549,111 @@ def normalize_question_item(raw, fallback_id="", creator="", is_public_default=T
     }
 
 
-def load_custom_question_bank_items():
-    data = load_json(QUESTION_BANK_CUSTOM_FILE, {"items": []})
-    items = data.get("items", []) if isinstance(data, dict) else []
+def is_official_question_item(item):
+    source = str(item.get("bank_source") or "").strip().lower()
+    creator = str(item.get("created_by") or "").strip().lower()
+    return source.startswith("official") or creator == "official_ai"
+
+
+def _dedupe_questions_by_id(items):
+    seen = set()
     result = []
     for item in items:
-        normalized = normalize_question_item(item)
-        if normalized:
-            result.append(normalized)
+        if not isinstance(item, dict):
+            continue
+        qid = str(item.get("id") or "").strip()
+        if not qid or qid in seen:
+            continue
+        seen.add(qid)
+        result.append(item)
     return result
 
 
-def save_custom_question_bank_items(items):
+def load_official_question_bank_items():
+    data = load_json(QUESTION_BANK_OFFICIAL_FILE, {"items": []})
+    items = data.get("items", []) if isinstance(data, dict) else []
+    result = []
+    for item in items:
+        normalized = normalize_question_item(
+            item,
+            creator="official_ai",
+            is_public_default=True,
+            bank_source="official_ai",
+        )
+        if normalized:
+            normalized["created_by"] = "official_ai"
+            normalized["is_public"] = True
+            normalized["bank_source"] = "official_ai"
+            result.append(normalized)
+    return _dedupe_questions_by_id(result)
+
+
+def save_official_question_bank_items(items):
+    normalized_items = []
+    for item in items if isinstance(items, list) else []:
+        normalized = normalize_question_item(
+            item,
+            creator="official_ai",
+            is_public_default=True,
+            bank_source="official_ai",
+        )
+        if normalized:
+            normalized["created_by"] = "official_ai"
+            normalized["is_public"] = True
+            normalized["bank_source"] = "official_ai"
+            normalized_items.append(normalized)
+
     payload = {
-        "items": items if isinstance(items, list) else [],
+        "items": _dedupe_questions_by_id(normalized_items),
+        "updated_at": datetime.now().isoformat(),
+    }
+    save_json(QUESTION_BANK_OFFICIAL_FILE, payload)
+
+
+def load_custom_question_bank_items():
+    data = load_json(QUESTION_BANK_CUSTOM_FILE, {"items": []})
+    items = data.get("items", []) if isinstance(data, dict) else []
+    custom_items = []
+    legacy_official_items = []
+
+    for item in items:
+        normalized = normalize_question_item(item)
+        if not normalized:
+            continue
+        if is_official_question_item(normalized):
+            normalized["created_by"] = "official_ai"
+            normalized["is_public"] = True
+            normalized["bank_source"] = "official_ai"
+            legacy_official_items.append(normalized)
+            continue
+
+        if str(normalized.get("bank_source") or "").strip().lower() in {"", "official_ai", "official_template"}:
+            normalized["bank_source"] = "user_custom"
+        custom_items.append(normalized)
+
+    # 历史数据迁移：将误存到 custom 文件中的官方题目搬到官方题库文件。
+    if legacy_official_items:
+        official_items = load_official_question_bank_items()
+        official_items.extend(legacy_official_items)
+        save_official_question_bank_items(official_items)
+        save_custom_question_bank_items(custom_items)
+
+    return _dedupe_questions_by_id(custom_items)
+
+
+def save_custom_question_bank_items(items):
+    normalized_items = []
+    for item in items if isinstance(items, list) else []:
+        normalized = normalize_question_item(item)
+        if not normalized:
+            continue
+        if is_official_question_item(normalized):
+            # 官方题目不应写入自定义题库文件。
+            continue
+        normalized_items.append(normalized)
+
+    payload = {
+        "items": _dedupe_questions_by_id(normalized_items),
         "updated_at": datetime.now().isoformat(),
     }
     save_json(QUESTION_BANK_CUSTOM_FILE, payload)
@@ -1891,10 +1983,11 @@ def build_question_bank_for_user(user_id):
     bank = []
     for item in QUESTION_BANK_TEMPLATES:
         row = dict(item)
-        row.setdefault("bank_source", "official_template")
+        row.setdefault("bank_source", "seed_template")
         row.setdefault("created_by", "system")
         row.setdefault("is_public", True)
         bank.append(row)
+    bank.extend(load_official_question_bank_items())
     bank.extend(get_visible_custom_questions(user_id))
     bank.extend(build_dynamic_question_templates(user_id, user_knowledge))
 
@@ -1935,7 +2028,7 @@ def select_question_from_bank(bank, mastery_map, concept=None, difficulty=None, 
         if target_difficulty and item_diff != target_difficulty:
             continue
 
-        if target_scope == "official" and not (item_source.startswith("official") or created_by in {"system", "official_ai"}):
+        if target_scope == "official" and item_source != "official_ai":
             continue
         if target_scope == "mine" and created_by != user_id:
             continue
@@ -1995,6 +2088,8 @@ def build_question_prompt_text(question_item):
         source_label = "我的题库"
     elif source == "official_ai":
         source_label = "官方AI题库"
+    elif source == "seed_template":
+        source_label = "基础练习题库"
     elif source == "dynamic_personal":
         source_label = "个性化动态题"
 
@@ -2392,9 +2487,9 @@ def draw_question_from_bank_api():
             generate_count = 3 if official_ai_count < 5 else 1
             generated_items, _ = generate_official_questions_with_ai(concept, difficulty or "medium", generate_count)
             if generated_items:
-                custom_items = load_custom_question_bank_items()
-                custom_items.extend(generated_items)
-                save_custom_question_bank_items(custom_items)
+                official_items = load_official_question_bank_items()
+                official_items.extend(generated_items)
+                save_official_question_bank_items(official_items)
 
     bank, mastery_map = build_question_bank_for_user(user_id)
     question_item = select_question_from_bank(
@@ -2460,10 +2555,19 @@ def list_question_bank_questions_api():
     user_id = (request.args.get('user_id', 'default_user') or 'default_user').strip() or 'default_user'
     concept = normalize_concept_name(request.args.get('concept', '') or '')
     difficulty = (request.args.get('difficulty', '') or '').strip().lower()
+    bank_scope = (request.args.get('bank_scope', 'all') or 'all').strip().lower()
+    if bank_scope not in QUESTION_BANK_SCOPE:
+        bank_scope = 'all'
 
     bank, _ = build_question_bank_for_user(user_id)
     items = []
     for item in bank:
+        source = str(item.get("bank_source") or "")
+        creator = str(item.get("created_by") or "")
+        if bank_scope == "official" and source != "official_ai":
+            continue
+        if bank_scope == "mine" and creator != user_id:
+            continue
         if concept and normalize_concept_name(item.get("concept") or "") != concept:
             continue
         if difficulty and str(item.get("difficulty") or "").strip().lower() != difficulty:
@@ -2483,6 +2587,7 @@ def list_question_bank_questions_api():
     return jsonify(success_payload(
         request_id,
         user_id=user_id,
+        bank_scope=bank_scope,
         count=len(items),
         questions=items,
         error_code="",
@@ -2584,9 +2689,9 @@ def generate_question_bank_question_api():
     if not questions:
         return error_response(request_id, 502, "QUESTION_GENERATE_FAILED", "官方题库生题失败")
 
-    custom_items = load_custom_question_bank_items()
-    custom_items.extend(questions)
-    save_custom_question_bank_items(custom_items)
+    official_items = load_official_question_bank_items()
+    official_items.extend(questions)
+    save_official_question_bank_items(official_items)
 
     return jsonify(success_payload(
         request_id,
@@ -2594,7 +2699,7 @@ def generate_question_bank_question_api():
         user_id=user_id,
         generate_mode=mode,
         generated_count=len(questions),
-        custom_bank_count=len(custom_items),
+        official_bank_count=len(load_official_question_bank_items()),
         sample_questions=[
             {
                 "id": q.get("id"),
