@@ -150,6 +150,18 @@
             white-space: nowrap;
         }
 
+        .quick-draw-btn {
+            border: 1px solid #86efac;
+            background: #ecfdf3;
+            color: #166534;
+            border-radius: 10px;
+            padding: 7px 10px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+
         .clear-chat-btn {
             border-color: #fecaca;
             color: #991b1b;
@@ -592,6 +604,113 @@
         .mini-list { margin-top: 8px; font-size: 13px; color: #475569; }
         .mini-item { padding: 6px 0; border-bottom: 1px dashed #dbe5f2; }
 
+        .qb-stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .qb-stat-item {
+            border: 1px solid #dbe5f2;
+            border-radius: 10px;
+            background: #f8fbff;
+            padding: 8px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: #334155;
+        }
+
+        .qb-stat-item strong {
+            color: #0f172a;
+            font-size: 16px;
+        }
+
+        .qb-control-row {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin-top: 8px;
+            flex-wrap: wrap;
+        }
+
+        .qb-control-row .mini-input {
+            margin-top: 0;
+            flex: 1;
+            min-width: 130px;
+        }
+
+        .qb-btn-row {
+            display: flex;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .qb-btn-row .mini-btn {
+            margin-top: 0;
+            width: auto;
+            flex: 1;
+        }
+
+        .qb-status-box,
+        .qb-feedback-box,
+        .qb-question-box {
+            margin-top: 8px;
+            border-radius: 10px;
+            border: 1px solid #dbe5f2;
+            background: #f8fbff;
+            padding: 10px;
+            font-size: 13px;
+            line-height: 1.55;
+            color: #334155;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .qb-status-box.success { border-color: #86efac; background: #f0fdf4; color: #166534; }
+        .qb-status-box.error { border-color: #fecaca; background: #fff7f7; color: #991b1b; }
+
+        .qb-question-meta {
+            font-size: 12px;
+            color: #64748b;
+            margin-bottom: 6px;
+        }
+
+        .qb-option-list {
+            margin: 8px 0 0;
+            padding-left: 18px;
+        }
+
+        .qb-option-list li {
+            margin-bottom: 4px;
+        }
+
+        .qb-answer-row {
+            margin-top: 8px;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .qb-answer-row .mini-input {
+            margin-top: 0;
+            flex: 1;
+        }
+
+        .qb-answer-row .mini-btn {
+            margin-top: 0;
+            width: 136px;
+        }
+
+        .qb-maintain-title {
+            margin-top: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            color: #334155;
+        }
+
         @media (max-width: 1200px) {
             .sidebar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         }
@@ -623,6 +742,10 @@
             .message-bubble { max-width: 100%; }
             .sidebar { grid-template-columns: 1fr; }
             .conversation-list { grid-template-columns: 1fr; }
+            .qb-answer-row { flex-direction: column; align-items: stretch; }
+            .qb-answer-row .mini-btn { width: 100%; }
+            .qb-stat-grid { grid-template-columns: 1fr; }
+            .qb-btn-row { flex-direction: column; }
         }
     </style>
 </head>
@@ -649,6 +772,7 @@
                     </div>
                     <div class="chat-header-actions">
                         <button class="new-chat-btn" id="newChatBtn" type="button">+ 新对话</button>
+                        <button class="quick-draw-btn" id="quickDrawBtn" type="button" onclick="openQuestionBankPage()">题库抽题</button>
                         <button class="rename-chat-btn" id="renameChatBtn" type="button">重命名</button>
                         <button class="clear-chat-btn" id="clearChatBtn" type="button">清空当前</button>
                         <div class="chat-status" id="chatAiStatus">
@@ -807,6 +931,7 @@
         let taskModalTaskId = null;
         let taskModalAutoTimer = null;
         let taskModalAutoEnabled = false;
+        let pendingQuestionContext = null;
 
         function nowLabel(date) {
             const d = date instanceof Date ? date : new Date(date || Date.now());
@@ -1074,6 +1199,15 @@
 
         function getUserId() {
             return window.UserContext ? window.UserContext.getUserId() : 'default_user';
+        }
+
+        function openQuestionBankPage() {
+            const uid = getUserId();
+            const target = `question-bank.html?user_id=${encodeURIComponent(uid)}`;
+            const opened = window.open(target, '_blank');
+            if (!opened) {
+                window.location.href = target;
+            }
         }
 
         function escapeHtml(text) {
@@ -1697,6 +1831,314 @@
                 resultBox.textContent = withSuggestion('诊断失败', error, '检查输入后重试');
             }
         }
+
+        function setQuestionBankStatus(text, tone) {
+            const box = document.getElementById('qb-status');
+            if (!box) return;
+            box.className = 'qb-status-box';
+            if (tone === 'success') box.classList.add('success');
+            if (tone === 'error') box.classList.add('error');
+            box.textContent = text || '';
+        }
+
+        function setQuestionBankFeedback(text) {
+            const box = document.getElementById('qb-feedback');
+            if (!box) return;
+            box.textContent = text || '';
+        }
+
+        function renderQuestionBankQuestion(question) {
+            const box = document.getElementById('qb-question-box');
+            if (!box) return;
+            if (!question) {
+                box.textContent = '抽题后这里会显示题目。';
+                return;
+            }
+
+            const sourceMap = {
+                official_ai: '官方AI题库',
+                user_custom: '我的题库',
+                user_import: '我的题库',
+                seed_template: '基础练习题库'
+            };
+            const source = String(question.bank_source || 'seed_template');
+            const sourceLabel = sourceMap[source] || source;
+            const options = Array.isArray(question.options) ? question.options : [];
+
+            const optionsHtml = options.length
+                ? `<ol class="qb-option-list">${options.map(opt => `<li>${escapeHtml(String(opt || ''))}</li>`).join('')}</ol>`
+                : '<div style="margin-top:6px; color:#64748b;">简答题：请写出关键步骤与结论。</div>';
+
+            box.innerHTML = `
+                <div class="qb-question-meta">来源：${escapeHtml(sourceLabel)} ｜ 知识点：${escapeHtml(String(question.concept || '-'))} ｜ 难度：${escapeHtml(String(question.difficulty || '-'))}</div>
+                <div><strong>${escapeHtml(String(question.question || ''))}</strong></div>
+                ${optionsHtml}
+            `;
+        }
+
+        async function refreshQuestionBankStats() {
+            const officialCountEl = document.getElementById('qb-official-count');
+            const mineCountEl = document.getElementById('qb-mine-count');
+            if (!officialCountEl || !mineCountEl) return;
+
+            try {
+                const userId = getUserId();
+                const [officialResp, mineResp] = await Promise.all([
+                    fetch(`${API_BASE}/api/question_bank/questions?user_id=${encodeURIComponent(userId)}&bank_scope=official`),
+                    fetch(`${API_BASE}/api/question_bank/questions?user_id=${encodeURIComponent(userId)}&bank_scope=mine`)
+                ]);
+
+                const [officialData, mineData] = await Promise.all([
+                    parseApiResponse(officialResp),
+                    parseApiResponse(mineResp)
+                ]);
+
+                officialCountEl.textContent = String(officialData.count || 0);
+                mineCountEl.textContent = String(mineData.count || 0);
+            } catch (error) {
+                officialCountEl.textContent = '-';
+                mineCountEl.textContent = '-';
+                setQuestionBankStatus(withSuggestion('题库统计加载失败', error, '稍后点击刷新统计重试'), 'error');
+            }
+        }
+
+        async function drawQuestionFromBank() {
+            const scopeEl = document.getElementById('qb-bank-scope');
+            const conceptEl = document.getElementById('qb-concept-filter');
+            const difficultyEl = document.getElementById('qb-difficulty-filter');
+
+            const bankScope = scopeEl ? (scopeEl.value || 'official') : 'official';
+            const concept = conceptEl ? conceptEl.value.trim() : '';
+            const difficulty = difficultyEl ? (difficultyEl.value || '').trim() : '';
+
+            setQuestionBankStatus('正在抽题...', '');
+            setQuestionBankFeedback('提交后这里会显示判题反馈。');
+
+            try {
+                const qs = new URLSearchParams({
+                    user_id: getUserId(),
+                    bank_scope: bankScope,
+                });
+                if (concept) qs.set('concept', concept);
+                if (difficulty) qs.set('difficulty', difficulty);
+
+                const resp = await fetch(`${API_BASE}/api/question_bank/draw?${qs.toString()}`);
+                const data = await parseApiResponse(resp);
+                const question = data.question || null;
+                pendingQuestionContext = question;
+
+                renderQuestionBankQuestion(question);
+                setQuestionBankStatus(`已抽题：${bankScope === 'mine' ? '我的题库' : '官方AI题库'}，请在下方提交答案。`, 'success');
+                setQuestionBankFeedback('请先作答，再点“提交答案”。');
+
+                if (data.prompt_text) {
+                    addMessage(data.prompt_text, 'ai', {
+                        source: 'question_bank',
+                        aiUsed: false,
+                        error: ''
+                    });
+                }
+            } catch (error) {
+                pendingQuestionContext = null;
+                renderQuestionBankQuestion(null);
+                setQuestionBankStatus(withSuggestion('抽题失败', error, '检查筛选条件或切换题库后重试'), 'error');
+            }
+        }
+
+        async function submitCurrentQuestionByText(userAnswer, fromChat) {
+            if (!pendingQuestionContext || !pendingQuestionContext.id) {
+                throw new Error('当前没有待作答题目，请先抽题');
+            }
+
+            const resp = await fetch(`${API_BASE}/api/question_bank/answer`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_id: getUserId(),
+                    question_id: pendingQuestionContext.id,
+                    user_answer: userAnswer
+                })
+            });
+            const answerData = await parseApiResponse(resp);
+
+            const scorePct = Math.round(Number(answerData.score || 0) * 100);
+            const feedbackText = [
+                `判题结果：${answerData.is_correct ? '正确' : '待改进'}（${scorePct}分）`,
+                answerData.feedback || '',
+                answerData.next_action || '可继续抽题。'
+            ].filter(Boolean).join('\n');
+
+            setQuestionBankFeedback(feedbackText);
+            setQuestionBankStatus('本题已提交，已返回反馈。可继续抽下一题。', 'success');
+            pendingQuestionContext = null;
+
+            addMessage(feedbackText, 'ai', {
+                source: 'question_bank',
+                aiUsed: false,
+                error: ''
+            });
+
+            if (!fromChat) {
+                const answerInput = document.getElementById('qb-user-answer');
+                if (answerInput) answerInput.value = '';
+            }
+
+            return answerData;
+        }
+
+        async function submitQuestionBankAnswer() {
+            const answerInput = document.getElementById('qb-user-answer');
+            if (!answerInput) return;
+
+            const userAnswer = answerInput.value.trim();
+            if (!userAnswer) {
+                setQuestionBankStatus('请先输入答案再提交。', 'error');
+                return;
+            }
+
+            try {
+                await submitCurrentQuestionByText(userAnswer, false);
+            } catch (error) {
+                setQuestionBankStatus(withSuggestion('提交答案失败', error, '确认已先抽题并检查输入后重试'), 'error');
+            }
+        }
+
+        async function generateOfficialQuestionBankQuestions() {
+            const conceptEl = document.getElementById('qb-generate-concept');
+            const difficultyEl = document.getElementById('qb-generate-difficulty');
+            const countEl = document.getElementById('qb-generate-count');
+            const resultEl = document.getElementById('qb-generate-result');
+            const btn = document.getElementById('qb-generate-btn');
+            if (!difficultyEl || !countEl || !resultEl || !btn) return;
+
+            btn.disabled = true;
+            btn.textContent = '生成中...';
+
+            try {
+                const resp = await fetch(`${API_BASE}/api/question_bank/generate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: getUserId(),
+                        concept: conceptEl ? conceptEl.value.trim() : '',
+                        difficulty: difficultyEl.value || 'medium',
+                        count: Number(countEl.value || 3)
+                    })
+                });
+                const data = await parseApiResponse(resp);
+                resultEl.textContent = `官方题库新增 ${data.generated_count || 0} 题（模式：${data.generate_mode || 'fallback'}）。`;
+                setQuestionBankStatus('官方AI题库已更新，可直接抽题。', 'success');
+                await refreshQuestionBankStats();
+            } catch (error) {
+                resultEl.textContent = withSuggestion('官方生题失败', error, '稍后重试或检查AI配置');
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '生成到官方AI题库';
+            }
+        }
+
+        async function addCustomQuestionToBank() {
+            const conceptEl = document.getElementById('qb-custom-concept');
+            const difficultyEl = document.getElementById('qb-custom-difficulty');
+            const typeEl = document.getElementById('qb-custom-type');
+            const questionEl = document.getElementById('qb-custom-question');
+            const optionsEl = document.getElementById('qb-custom-options');
+            const answerEl = document.getElementById('qb-custom-answer');
+            const analysisEl = document.getElementById('qb-custom-analysis');
+            const resultEl = document.getElementById('qb-custom-result');
+            const addBtn = document.getElementById('qb-custom-add-btn');
+
+            if (!conceptEl || !difficultyEl || !typeEl || !questionEl || !optionsEl || !answerEl || !analysisEl || !resultEl || !addBtn) return;
+
+            const concept = conceptEl.value.trim();
+            const question = questionEl.value.trim();
+            const answer = answerEl.value.trim();
+            const questionType = typeEl.value || 'single_choice';
+            const difficulty = difficultyEl.value || 'medium';
+            const analysis = analysisEl.value.trim();
+            const options = optionsEl.value.split('\n').map(line => line.trim()).filter(Boolean);
+
+            if (!concept || !question || !answer) {
+                resultEl.textContent = '请至少填写知识点、题干和标准答案。';
+                return;
+            }
+            if (questionType === 'single_choice' && options.length < 2) {
+                resultEl.textContent = '单选题至少需要 2 个选项。';
+                return;
+            }
+
+            addBtn.disabled = true;
+            addBtn.textContent = '保存中...';
+
+            try {
+                const resp = await fetch(`${API_BASE}/api/question_bank/questions`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: getUserId(),
+                        concept,
+                        difficulty,
+                        question_type: questionType,
+                        question,
+                        options,
+                        answer,
+                        analysis,
+                        is_public: false
+                    })
+                });
+                const data = await parseApiResponse(resp);
+                resultEl.textContent = `已加入我的题库：${(data.question && data.question.id) || '新题'}。`;
+                setQuestionBankStatus('我的题库已更新，可切换“我的题库”抽题。', 'success');
+
+                questionEl.value = '';
+                optionsEl.value = '';
+                answerEl.value = '';
+                analysisEl.value = '';
+                await refreshQuestionBankStats();
+            } catch (error) {
+                resultEl.textContent = withSuggestion('保存题目失败', error, '检查题目格式后重试');
+            } finally {
+                addBtn.disabled = false;
+                addBtn.textContent = '加入我的题库';
+            }
+        }
+
+        function initQuestionBankUI() {
+            const drawBtn = document.getElementById('qb-draw-btn');
+            const refreshBtn = document.getElementById('qb-refresh-btn');
+            const submitBtn = document.getElementById('qb-submit-answer-btn');
+            const answerInput = document.getElementById('qb-user-answer');
+            const generateBtn = document.getElementById('qb-generate-btn');
+            const addBtn = document.getElementById('qb-custom-add-btn');
+            const typeEl = document.getElementById('qb-custom-type');
+            const optionsEl = document.getElementById('qb-custom-options');
+
+            if (!drawBtn || !refreshBtn || !submitBtn || !answerInput || !generateBtn || !addBtn || !typeEl || !optionsEl) {
+                return;
+            }
+
+            const updateOptionsState = () => {
+                const isChoice = (typeEl.value || 'single_choice') === 'single_choice';
+                optionsEl.disabled = !isChoice;
+                optionsEl.style.opacity = isChoice ? '1' : '0.55';
+            };
+
+            drawBtn.addEventListener('click', drawQuestionFromBank);
+            refreshBtn.addEventListener('click', refreshQuestionBankStats);
+            submitBtn.addEventListener('click', submitQuestionBankAnswer);
+            generateBtn.addEventListener('click', generateOfficialQuestionBankQuestions);
+            addBtn.addEventListener('click', addCustomQuestionToBank);
+            typeEl.addEventListener('change', updateOptionsState);
+            answerInput.addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    submitQuestionBankAnswer();
+                }
+            });
+
+            updateOptionsState();
+            refreshQuestionBankStats();
+        }
         
         // 发送问题
         async function askQuestion() {
@@ -1711,6 +2153,13 @@
             addTypingMessage();
             
             try {
+                if (pendingQuestionContext && pendingQuestionContext.id) {
+                    await submitCurrentQuestionByText(question, true);
+                    removeTypingMessage();
+                    refreshAiStatus();
+                    return;
+                }
+
                 let response = await fetch(`${API_BASE}/api/ask`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -1749,11 +2198,18 @@
                 
             } catch (error) {
                 removeTypingMessage();
-                addMessage(withSuggestion('抱歉，问答失败', error, '确认后端与AI配置正常后再试'), 'ai', {
-                    source: 'system',
+                const isQuestionBankMode = !!(pendingQuestionContext && pendingQuestionContext.id);
+                const failText = isQuestionBankMode
+                    ? withSuggestion('题目作答失败', error, '可重新提交答案，或点击抽一题切换题目')
+                    : withSuggestion('抱歉，问答失败', error, '确认后端与AI配置正常后再试');
+                addMessage(failText, 'ai', {
+                    source: isQuestionBankMode ? 'question_bank' : 'system',
                     aiUsed: false,
                     error: error.message || 'network_error'
                 });
+                if (isQuestionBankMode) {
+                    setQuestionBankStatus(withSuggestion('题目作答失败', error, '可重新作答或重新抽题'), 'error');
+                }
                 refreshAiStatus();
             }
         }

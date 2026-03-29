@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>题库问答中心 - 坊知工</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+    <style>
+        :root {
+            --ink: #172033;
+            --muted: #64748b;
+            --line: #dbe4ef;
+            --panel: #ffffff;
+            --brand: #0f5bd8;
+            --brand-2: #1e88e5;
+            --ok: #0f9b6b;
+            --danger: #c2410c;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: "Noto Sans SC", "Source Han Sans SC", "Microsoft YaHei", sans-serif;
+            color: var(--ink);
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at 8% 8%, rgba(14, 165, 233, 0.22), transparent 35%),
+                radial-gradient(circle at 92% 86%, rgba(16, 185, 129, 0.2), transparent 40%),
+                linear-gradient(150deg, #eff6ff 0%, #f8fafc 40%, #ecfeff 100%);
+        }
+
+        .app-container { max-width: 1320px; margin: 0 auto; padding: 22px; }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 6px;
+            margin-bottom: 18px;
+        }
+
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: 0.4px;
+            color: #0f172a;
+        }
+
+        .nav-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            color: #0f172a;
+            text-decoration: none;
+            padding: 10px 14px;
+            border-radius: 999px;
+            border: 1px solid #cfe1ff;
+            background: rgba(255, 255, 255, 0.7);
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: minmax(0, 1.5fr) minmax(320px, 1fr);
+            gap: 16px;
+            align-items: start;
+        }
+
+        .chat-section,
+        .panel-card {
+            background: var(--panel);
+            border-radius: 20px;
+            border: 1px solid var(--line);
+            box-shadow: 0 18px 45px rgba(15, 35, 75, 0.12);
+            padding: 18px;
+        }
+
+        .chat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e6edf7;
+        }
+
+        .chat-title {
+            font-size: 24px;
+            font-weight: 800;
+        }
+
+        .chat-subtitle { color: var(--muted); font-size: 13px; margin-top: 4px; }
+
+        .chat-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .draw-btn {
+            border: 1px solid #86efac;
+            background: #ecfdf3;
+            color: #166534;
+            border-radius: 10px;
+            padding: 8px 12px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .status-chip {
+            border: 1px solid #cfe1ff;
+            background: #f8fbff;
+            color: #1e3a8a;
+            border-radius: 999px;
+            padding: 6px 10px;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+
+        .chat-messages {
+            height: min(70vh, 760px);
+            overflow-y: auto;
+            background: linear-gradient(180deg, #f9fbff, #f4f8ff 60%, #f7fcff);
+            border: 1px solid #d9e5f6;
+            border-radius: 14px;
+            padding: 14px;
+        }
+
+        .message-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 12px;
+            align-items: flex-start;
+        }
+
+        .message-row.user {
+            flex-direction: row-reverse;
+        }
+
+        .avatar {
+            width: 34px;
+            height: 34px;
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 800;
+            color: #fff;
+            background: linear-gradient(145deg, #0f5bd8, #1e88e5);
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .message-row.user .avatar {
+            background: linear-gradient(145deg, #0f9b6b, #16a34a);
+        }
+
+        .message-bubble {
+            max-width: min(84%, 780px);
+            background: #ffffff;
+            border: 1px solid #dbe5f2;
+            border-radius: 14px;
+            padding: 10px 12px;
+            line-height: 1.62;
+            font-size: 14px;
+            color: #223048;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .message-row.user .message-bubble {
+            background: #eff6ff;
+            border-color: #bfdbfe;
+        }
+
+        .message-meta {
+            margin-top: 6px;
+            color: #64748b;
+            font-size: 12px;
+        }
+
+        .input-area {
+            display: flex;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .input-area textarea {
+            flex: 1;
+            min-height: 76px;
+            resize: vertical;
+            padding: 10px 12px;
+            border: 1px solid #cdd9ea;
+            border-radius: 12px;
+            font-size: 14px;
+            color: #0f172a;
+            background: #ffffff;
+        }
+
+        .input-area textarea:focus {
+            outline: 2px solid #bfdbfe;
+            border-color: #93c5fd;
+        }
+
+        .send-btn {
+            min-width: 106px;
+            min-height: 48px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 700;
+            color: #ffffff;
+            background: linear-gradient(145deg, var(--brand-2), var(--brand));
+            box-shadow: 0 6px 16px rgba(30, 88, 216, 0.35);
+        }
+
+        .panel-title {
+            font-size: 18px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            color: #0f172a;
+        }
+
+        .muted {
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .stat-box {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border: 1px solid #dbe5f2;
+            border-radius: 10px;
+            background: #f8fbff;
+            padding: 9px 10px;
+            margin-top: 10px;
+            font-size: 13px;
+            color: #334155;
+        }
+
+        .stat-box strong {
+            color: #0f172a;
+            font-size: 18px;
+        }
+
+        .mini-input,
+        .mini-select,
+        .mini-textarea {
+            width: 100%;
+            margin-top: 8px;
+            border: 1px solid #cfd8e6;
+            border-radius: 9px;
+            padding: 10px;
+            font-size: 14px;
+            background: #fff;
+            color: #0f172a;
+        }
+
+        .mini-textarea { min-height: 74px; resize: vertical; }
+
+        .mini-input:focus,
+        .mini-select:focus,
+        .mini-textarea:focus {
+            outline: 2px solid #bfdbfe;
+            border-color: #93c5fd;
+        }
+
+        .mini-row {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        .mini-btn {
+            margin-top: 8px;
+            width: 100%;
+            border: none;
+            border-radius: 9px;
+            cursor: pointer;
+            font-weight: 700;
+            padding: 10px;
+            color: #fff;
+            background: #175cd3;
+        }
+
+        .mini-btn.secondary {
+            background: #0f9b6b;
+        }
+
+        .tips-box,
+        .list-box {
+            margin-top: 8px;
+            border: 1px solid #dbe5f2;
+            border-radius: 10px;
+            background: #f8fbff;
+            padding: 10px;
+            font-size: 13px;
+            color: #334155;
+            line-height: 1.6;
+        }
+
+        .list-item {
+            padding: 6px 0;
+            border-bottom: 1px dashed #dbe5f2;
+        }
+
+        .list-item:last-child {
+            border-bottom: none;
+        }
+
+        @media (max-width: 1080px) {
+            .main-content { grid-template-columns: 1fr; }
+            .chat-messages { height: 58vh; }
+        }
+
+        @media (max-width: 720px) {
+            .app-container { padding: 12px; }
+            .logo { font-size: 22px; }
+            .navbar { flex-direction: column; align-items: flex-start; gap: 10px; }
+            .chat-header { flex-direction: column; align-items: flex-start; }
+            .input-area { flex-direction: column; }
+            .send-btn { width: 100%; }
+            .mini-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        <nav class="navbar">
+            <div class="logo">坊知工 · 题库问答中心</div>
+            <div class="nav-actions">
+                <a class="nav-btn" href="index.html">返回首页</a>
+                <a class="nav-btn" href="dashboard.html">学习仪表盘</a>
+            </div>
+        </nav>
+
+        <div class="main-content">
+            <section class="chat-section">
+                <div class="chat-header">
+                    <div>
+                        <div class="chat-title">我的题库 AI 对话练习</div>
+                        <div class="chat-subtitle">点击抽题后，在下方对话框直接作答，系统会返回判题反馈。</div>
+                    </div>
+                    <div class="chat-actions">
+                        <button id="drawBtn" class="draw-btn" type="button">抽一题</button>
+                        <div id="chatStatus" class="status-chip">等待抽题</div>
+                    </div>
+                </div>
+
+                <div id="chatMessages" class="chat-messages"></div>
+
+                <div class="input-area">
+                    <textarea id="answerInput" placeholder="输入你的答案（如 A，或简答关键步骤）"></textarea>
+                    <button id="sendBtn" class="send-btn" type="button">发送</button>
+                </div>
+            </section>
+
+            <aside class="panel-card">
+                <div class="panel-title">我的题库维护</div>
+                <div class="muted">仅维护你自己的题库，不包含官方 AI 题库。</div>
+
+                <div class="stat-box">
+                    <span>我的题库题量</span>
+                    <strong id="mineCount">-</strong>
+                </div>
+
+                <input id="customConcept" class="mini-input" placeholder="知识点（如 导数）">
+                <div class="mini-row">
+                    <select id="customDifficulty" class="mini-select">
+                        <option value="easy">简单</option>
+                        <option value="medium" selected>中等</option>
+                        <option value="hard">困难</option>
+                    </select>
+                    <select id="customType" class="mini-select">
+                        <option value="single_choice" selected>单选题</option>
+                        <option value="short_answer">简答题</option>
+                    </select>
+                </div>
+
+                <textarea id="customQuestion" class="mini-textarea" placeholder="题干"></textarea>
+                <textarea id="customOptions" class="mini-textarea" placeholder="单选题选项：每行一个，如 A. xx"></textarea>
+                <input id="customAnswer" class="mini-input" placeholder="标准答案">
+                <textarea id="customAnalysis" class="mini-textarea" placeholder="解析（可选）"></textarea>
+                <button id="addQuestionBtn" class="mini-btn secondary" type="button">加入我的题库</button>
+
+                <div id="maintainTips" class="tips-box">新增题目后会自动进入“我的题库”抽题范围。</div>
+
+                <div class="panel-title" style="margin-top:14px; font-size:16px;">最近题目</div>
+                <div id="recentMineList" class="list-box">加载中...</div>
+            </aside>
+        </div>
+    </div>
+
+    <script src="js/user-context.js"></script>
+    <script src="js/api-utils.js"></script>
+    <script>
+        const API_BASE = window.ApiUtils.getApiBase();
+        const { parseApiResponse, withSuggestion } = window.ApiUtils;
+        let pendingQuestionContext = null;
+
+        function getUserId() {
+            return window.UserContext ? window.UserContext.getUserId() : 'default_user';
+        }
+
+        function applyUserIdFromQuery() {
+            try {
+                const url = new URL(window.location.href);
+                const qUserId = (url.searchParams.get('user_id') || '').trim();
+                if (qUserId && window.UserContext) {
+                    window.UserContext.setUserId(qUserId);
+                }
+            } catch (error) {
+                // ignore
+            }
+        }
+
+        function escapeHtml(text) {
+            return String(text || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function renderMathInContainer(container) {
+            if (!container || typeof renderMathInElement !== 'function') return;
+            try {
+                renderMathInElement(container, {
+                    delimiters: [
+                        { left: '$$', right: '$$', display: true },
+                        { left: '$', right: '$', display: false },
+                        { left: '\\(', right: '\\)', display: false },
+                        { left: '\\[', right: '\\]', display: true }
+                    ],
+                    throwOnError: false,
+                    ignoredTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+                });
+            } catch (error) {
+                console.warn('公式渲染失败', error);
+            }
+        }
+
+        function setChatStatus(text) {
+            const status = document.getElementById('chatStatus');
+            if (status) status.textContent = text || '';
+        }
+
+        function addMessage(text, sender, meta) {
+            const chat = document.getElementById('chatMessages');
+            if (!chat) return;
+
+            const row = document.createElement('div');
+            row.className = `message-row ${sender === 'user' ? 'user' : 'ai'}`;
+
+            const avatar = document.createElement('div');
+            avatar.className = 'avatar';
+            avatar.textContent = sender === 'user' ? '我' : 'AI';
+
+            const bubble = document.createElement('div');
+            bubble.className = 'message-bubble';
+            bubble.innerHTML = escapeHtml(String(text || '')).replace(/\n/g, '<br>');
+
+            if (meta) {
+                const metaDiv = document.createElement('div');
+                metaDiv.className = 'message-meta';
+                metaDiv.textContent = meta;
+                bubble.appendChild(metaDiv);
+            }
+
+            row.appendChild(avatar);
+            row.appendChild(bubble);
+            chat.appendChild(row);
+            renderMathInContainer(row);
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        async function refreshMineSummary() {
+            const countEl = document.getElementById('mineCount');
+            const listEl = document.getElementById('recentMineList');
+            if (!countEl || !listEl) return;
+
+            try {
+                const resp = await fetch(`${API_BASE}/api/question_bank/questions?user_id=${encodeURIComponent(getUserId())}&bank_scope=mine`);
+                const data = await parseApiResponse(resp);
+                const questions = Array.isArray(data.questions) ? data.questions : [];
+
+                countEl.textContent = String(data.count || questions.length || 0);
+                if (questions.length === 0) {
+                    listEl.textContent = '暂无题目，请先新增。';
+                    return;
+                }
+
+                listEl.innerHTML = questions.slice(0, 5).map(q => {
+                    const diff = String(q.difficulty || '-');
+                    const concept = String(q.concept || '-');
+                    const stem = String(q.question || '').slice(0, 42);
+                    return `<div class="list-item">${escapeHtml(concept)} ｜ ${escapeHtml(diff)}<br>${escapeHtml(stem)}</div>`;
+                }).join('');
+            } catch (error) {
+                countEl.textContent = '-';
+                listEl.textContent = withSuggestion('题库统计失败', error, '刷新页面重试');
+            }
+        }
+
+        async function drawMineQuestion() {
+            setChatStatus('正在抽题...');
+            try {
+                const resp = await fetch(`${API_BASE}/api/question_bank/draw?user_id=${encodeURIComponent(getUserId())}&bank_scope=mine`);
+                const data = await parseApiResponse(resp);
+                pendingQuestionContext = data.question || null;
+                addMessage(data.prompt_text || '已抽题，请作答。', 'ai', '来源：我的题库');
+                setChatStatus('已抽题，请在下方输入答案');
+            } catch (error) {
+                pendingQuestionContext = null;
+                if (error && error.code === 'QUESTION_NOT_FOUND') {
+                    addMessage('我的题库暂无可抽题目，请先在右侧新增题目。', 'ai', '来源：系统');
+                    setChatStatus('暂无题目');
+                    return;
+                }
+                addMessage(withSuggestion('抽题失败', error, '稍后重试'), 'ai', '来源：系统');
+                setChatStatus('抽题失败');
+            }
+        }
+
+        async function submitCurrentAnswer(userAnswer) {
+            if (!pendingQuestionContext || !pendingQuestionContext.id) {
+                addMessage('请先点击“抽一题”，再提交答案。', 'ai', '来源：系统');
+                return;
+            }
+
+            const resp = await fetch(`${API_BASE}/api/question_bank/answer`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    user_id: getUserId(),
+                    question_id: pendingQuestionContext.id,
+                    user_answer: userAnswer
+                })
+            });
+            const answerData = await parseApiResponse(resp);
+
+            const scorePct = Math.round(Number(answerData.score || 0) * 100);
+            const feedback = [
+                `判题结果：${answerData.is_correct ? '正确' : '待改进'}（${scorePct}分）`,
+                answerData.feedback || '',
+                answerData.next_action || '可继续抽题。'
+            ].filter(Boolean).join('\n');
+
+            addMessage(feedback, 'ai', '来源：题库判题');
+            setChatStatus('本题已反馈，可继续抽题');
+            pendingQuestionContext = null;
+        }
+
+        async function sendAnswerFromInput() {
+            const input = document.getElementById('answerInput');
+            if (!input) return;
+
+            const text = input.value.trim();
+            if (!text) return;
+
+            addMessage(text, 'user');
+            input.value = '';
+
+            try {
+                await submitCurrentAnswer(text);
+            } catch (error) {
+                addMessage(withSuggestion('提交答案失败', error, '检查网络后重试'), 'ai', '来源：系统');
+                setChatStatus('提交失败');
+            }
+        }
+
+        async function addCustomQuestion() {
+            const conceptEl = document.getElementById('customConcept');
+            const difficultyEl = document.getElementById('customDifficulty');
+            const typeEl = document.getElementById('customType');
+            const questionEl = document.getElementById('customQuestion');
+            const optionsEl = document.getElementById('customOptions');
+            const answerEl = document.getElementById('customAnswer');
+            const analysisEl = document.getElementById('customAnalysis');
+            const tipsEl = document.getElementById('maintainTips');
+            const addBtn = document.getElementById('addQuestionBtn');
+
+            if (!conceptEl || !difficultyEl || !typeEl || !questionEl || !optionsEl || !answerEl || !analysisEl || !tipsEl) return;
+
+            const concept = conceptEl.value.trim();
+            const question = questionEl.value.trim();
+            const answer = answerEl.value.trim();
+            const questionType = (typeEl.value || 'single_choice').trim();
+            const difficulty = (difficultyEl.value || 'medium').trim();
+            const analysis = analysisEl.value.trim();
+            const options = optionsEl.value.split('\n').map(v => v.trim()).filter(Boolean);
+
+            if (!concept || !question || !answer) {
+                tipsEl.textContent = '请至少填写知识点、题干和标准答案。';
+                return;
+            }
+            if (questionType === 'single_choice' && options.length < 2) {
+                tipsEl.textContent = '单选题至少需要 2 个选项。';
+                return;
+            }
+
+            if (addBtn) {
+                addBtn.disabled = true;
+                addBtn.textContent = '保存中...';
+            }
+
+            try {
+                const resp = await fetch(`${API_BASE}/api/question_bank/questions`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        user_id: getUserId(),
+                        concept,
+                        difficulty,
+                        question_type: questionType,
+                        question,
+                        options,
+                        answer,
+                        analysis,
+                        is_public: false
+                    })
+                });
+                const data = await parseApiResponse(resp);
+                tipsEl.textContent = `已加入我的题库：${(data.question && data.question.id) || '新题'}`;
+
+                questionEl.value = '';
+                optionsEl.value = '';
+                answerEl.value = '';
+                analysisEl.value = '';
+
+                await refreshMineSummary();
+            } catch (error) {
+                tipsEl.textContent = withSuggestion('新增题目失败', error, '检查格式后重试');
+            } finally {
+                if (addBtn) {
+                    addBtn.disabled = false;
+                    addBtn.textContent = '加入我的题库';
+                }
+            }
+        }
+
+        function initMaintainFormBehavior() {
+            const typeEl = document.getElementById('customType');
+            const optionsEl = document.getElementById('customOptions');
+            if (!typeEl || !optionsEl) return;
+
+            function syncOptionsInput() {
+                const isChoice = (typeEl.value || 'single_choice') === 'single_choice';
+                optionsEl.disabled = !isChoice;
+                optionsEl.placeholder = isChoice ? '单选题选项：每行一个，如 A. xx' : '简答题无需填写选项';
+                if (!isChoice) {
+                    optionsEl.value = '';
+                }
+            }
+
+            typeEl.addEventListener('change', syncOptionsInput);
+            syncOptionsInput();
+        }
+
+        function bindEvents() {
+            const drawBtn = document.getElementById('drawBtn');
+            const sendBtn = document.getElementById('sendBtn');
+            const addBtn = document.getElementById('addQuestionBtn');
+            const input = document.getElementById('answerInput');
+
+            if (drawBtn) drawBtn.addEventListener('click', drawMineQuestion);
+            if (sendBtn) sendBtn.addEventListener('click', sendAnswerFromInput);
+            if (addBtn) addBtn.addEventListener('click', addCustomQuestion);
+            if (input) {
+                input.addEventListener('keypress', function (e) {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        sendAnswerFromInput();
+                    }
+                });
+            }
+        }
+
+        applyUserIdFromQuery();
+        initMaintainFormBehavior();
+        bindEvents();
+        refreshMineSummary();
+        addMessage('欢迎来到题库问答中心。这里仅使用“我的题库”进行 AI 对话式练习。', 'ai', `当前用户：${getUserId()}`);
+
+        if (window.UserContext) {
+            window.UserContext.onChange(function () {
+                pendingQuestionContext = null;
+                setChatStatus('用户已切换，请先抽题');
+                refreshMineSummary();
+            });
+        }
+     </script>
+ </body>
+ </html>

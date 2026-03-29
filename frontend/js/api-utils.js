@@ -103,7 +103,9 @@
       OCR_PROVIDER_DISABLED: '图像识别功能未启用，请联系管理员配置 OCR_PROVIDER=qwen_vl',
       OCR_KEY_MISSING: '图像识别未配置密钥，请联系管理员',
       OCR_UPSTREAM_ERROR: '图像识别服务暂时不可用，请稍后重试',
-      OCR_EMPTY_RESPONSE: '图像识别未返回内容，请更换图片重试'
+      OCR_EMPTY_RESPONSE: '图像识别未返回内容，请更换图片重试',
+      QUESTION_NOT_FOUND: '未找到题目，请重新抽题或调整筛选条件',
+      QUESTION_GENERATE_FAILED: '官方题库生成失败，请稍后重试'
     };
 
     if (errorCode && codeMap[errorCode]) {
