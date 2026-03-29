@@ -372,6 +372,60 @@
             cursor: pointer;
         }
 
+        .understanding-card {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid #dbeafe;
+            background: #f8fbff;
+        }
+
+        .understanding-title {
+            font-size: 12px;
+            color: #1e3a8a;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .understanding-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .understanding-btn {
+            border: 1px solid #bfdbfe;
+            background: #ffffff;
+            color: #1e40af;
+            border-radius: 999px;
+            font-size: 12px;
+            padding: 4px 10px;
+            cursor: pointer;
+        }
+
+        .understanding-btn.active {
+            border-color: #1e40af;
+            background: #dbeafe;
+            color: #1e3a8a;
+            font-weight: 700;
+        }
+
+        .understanding-btn:disabled {
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+
+        .understanding-note {
+            margin-top: 8px;
+            font-size: 11px;
+            color: #475569;
+        }
+
+        .understanding-note.locked {
+            color: #1e40af;
+            font-weight: 600;
+        }
+
         .task-modal {
             position: fixed;
             inset: 0;
@@ -1056,7 +1110,10 @@
             const session = ensureActiveSession();
             clearChatDom();
             (session.messages || []).forEach(m => {
-                addMessage(m.text, m.sender, m.options || {}, false);
+                addMessage(m.text, m.sender, {
+                    ...(m.options || {}),
+                    _messageTime: m.time
+                }, false);
             });
             renderSessionList();
         }
@@ -1144,10 +1201,14 @@
 
         function appendMessageToSession(text, sender, options) {
             const session = ensureActiveSession();
+            const safeOptions = { ...(options || {}) };
+            if (sender === 'ai' && safeOptions.showUnderstandingCard && !safeOptions.feedbackMessageId) {
+                safeOptions.feedbackMessageId = `${session.id || 'session'}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
+            }
             const msg = {
                 text: String(text || ''),
                 sender,
-                options: options || {},
+                options: safeOptions,
                 time: Date.now()
             };
             session.messages = session.messages || [];
@@ -1159,6 +1220,61 @@
             activeSessionId = session.id;
             renderSessionList();
             saveSessionsToLocal();
+            return msg;
+        }
+
+        function saveUnderstandingFeedback(messageTime, payload) {
+            const session = getActiveSession();
+            if (!session || !Array.isArray(session.messages)) return;
+
+            const target = session.messages.find(m => Number(m.time) === Number(messageTime));
+            if (!target) return;
+
+            const data = payload || {};
+            target.options = target.options || {};
+            target.options.showUnderstandingCard = true;
+            target.options.understandingFeedback = data.feedback || target.options.understandingFeedback || '';
+            target.options.understandingLocked = !!data.locked;
+            target.options.feedbackMessageId = data.messageId || target.options.feedbackMessageId || '';
+            target.options.understandingSavedAt = data.savedAt || target.options.understandingSavedAt || '';
+            if (Array.isArray(data.concepts) && data.concepts.length > 0) {
+                target.options.understandingConcepts = data.concepts;
+            }
+            saveSessionsToLocal();
+        }
+
+        async function submitUnderstandingFeedback(payload) {
+            const resp = await fetch(`${API_BASE}/api/feedback/answer_understanding`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload || {})
+            });
+            return parseApiResponse(resp);
+        }
+
+        function updateUnderstandingCardToLocked(row, feedbackValue) {
+            if (!row) return;
+            row.dataset.feedbackLocked = 'true';
+
+            const buttons = row.querySelectorAll('[data-understanding-value]');
+            buttons.forEach(btn => {
+                const isActive = btn.getAttribute('data-understanding-value') === feedbackValue;
+                btn.classList.toggle('active', isActive);
+                btn.disabled = true;
+            });
+
+            const note = row.querySelector('[data-understanding-note]');
+            if (note) {
+                note.classList.add('locked');
+                note.textContent = '反馈已记录，当前选择不可修改。';
+            }
+        }
+
+        function buildNotUnderstoodFollowup(concepts) {
+            const list = Array.isArray(concepts) ? concepts.filter(Boolean) : [];
+            const top = list.slice(0, 2);
+            const topicText = top.length > 0 ? `，重点是${top.join('、')}` : '';
+            return `简短补充：先抓住核心定义与适用条件${topicText}；然后用一个最小例子对照“什么时候能用、什么时候不能用”。如果你愿意，我可以继续给你 3 句版超短讲解。`;
         }
 
         function initConversationUI() {
@@ -1381,6 +1497,33 @@
                 bubble.appendChild(metaDiv);
             }
 
+            if (sender === 'ai' && opts.showUnderstandingCard) {
+                const isLocked = !!opts.understandingLocked;
+                const understandingCard = document.createElement('div');
+                understandingCard.className = 'understanding-card';
+                understandingCard.innerHTML = `
+                    <div class="understanding-title">你是否理解该回答？</div>
+                    <div class="understanding-actions">
+                        <button
+                            type="button"
+                            class="understanding-btn ${opts.understandingFeedback === 'understood' ? 'active' : ''}"
+                            data-understanding-value="understood"
+                            ${isLocked ? 'disabled' : ''}
+                        >是</button>
+                        <button
+                            type="button"
+                            class="understanding-btn ${opts.understandingFeedback === 'not_understood' ? 'active' : ''}"
+                            data-understanding-value="not_understood"
+                            ${isLocked ? 'disabled' : ''}
+                        >暂时未理解</button>
+                    </div>
+                    <div class="understanding-note ${isLocked ? 'locked' : ''}" data-understanding-note>
+                        ${isLocked ? '反馈已记录，当前选择不可修改。' : '请选择一个选项，提交后不可修改。'}
+                    </div>
+                `;
+                bubble.appendChild(understandingCard);
+            }
+
             if (sender === 'user') {
                 row.appendChild(bubble);
                 row.appendChild(avatar);
@@ -1394,7 +1537,8 @@
 
         function addMessage(text, sender, options, persist) {
             const chatMessages = document.getElementById('chatMessages');
-            const row = createMessageRow(text, sender, options || {});
+            const safeOptions = options || {};
+            const row = createMessageRow(text, sender, safeOptions);
             chatMessages.appendChild(row);
 
             row.querySelectorAll('[data-task-status-id]').forEach(btn => {
@@ -1415,13 +1559,90 @@
                 });
             });
 
+            const persistedMessageTime = Number(safeOptions._messageTime || 0);
+            if (persistedMessageTime > 0) {
+                row.dataset.messageTime = String(persistedMessageTime);
+            }
+            if (safeOptions.feedbackMessageId) {
+                row.dataset.feedbackMessageId = String(safeOptions.feedbackMessageId);
+            }
+            if (safeOptions.understandingLocked) {
+                row.dataset.feedbackLocked = 'true';
+            }
+
+            row.querySelectorAll('[data-understanding-value]').forEach(btn => {
+                btn.addEventListener('click', async function () {
+                    if (row.dataset.feedbackLocked === 'true') return;
+                    const value = this.getAttribute('data-understanding-value');
+                    if (!value) return;
+
+                    const wrapper = this.closest('.understanding-actions');
+                    if (!wrapper) return;
+
+                    const buttons = wrapper.querySelectorAll('.understanding-btn');
+                    buttons.forEach(item => {
+                        item.disabled = true;
+                    });
+
+                    const messageTime = Number(row.dataset.messageTime || 0);
+                    const messageId = String(
+                        row.dataset.feedbackMessageId || (messageTime > 0 ? `msg_${messageTime}` : '')
+                    );
+                    const feedbackConcepts = Array.isArray(safeOptions.understandingConcepts)
+                        ? safeOptions.understandingConcepts
+                        : [];
+
+                    try {
+                        const result = await submitUnderstandingFeedback({
+                            user_id: getUserId(),
+                            message_id: messageId,
+                            feedback: value,
+                            concepts: feedbackConcepts,
+                            source: safeOptions.source || 'qa'
+                        });
+
+                        updateUnderstandingCardToLocked(row, value);
+
+                        if (messageTime > 0) {
+                            saveUnderstandingFeedback(messageTime, {
+                                feedback: value,
+                                locked: true,
+                                messageId,
+                                concepts: feedbackConcepts,
+                                savedAt: (result && result.timestamp) || new Date().toISOString()
+                            });
+                        }
+
+                        if (value === 'not_understood') {
+                            addMessage(buildNotUnderstoodFollowup(feedbackConcepts), 'ai', {
+                                source: 'system',
+                                aiUsed: true,
+                                error: '',
+                                showUnderstandingCard: false
+                            });
+                        }
+                    } catch (error) {
+                        buttons.forEach(item => {
+                            item.disabled = false;
+                        });
+                        window.alert(withSuggestion('反馈提交失败', error, '请稍后重试，成功后将锁定选项'));
+                    }
+                });
+            });
+
             if (sender === 'ai') {
                 renderMathInContainer(row);
             }
             chatMessages.scrollTop = chatMessages.scrollHeight;
 
             if (persist !== false) {
-                appendMessageToSession(text, sender, options || {});
+                const msg = appendMessageToSession(text, sender, safeOptions);
+                if (msg && msg.time) {
+                    row.dataset.messageTime = String(msg.time);
+                    if (msg.options && msg.options.feedbackMessageId) {
+                        row.dataset.feedbackMessageId = String(msg.options.feedbackMessageId);
+                    }
+                }
             }
 
             return row;
@@ -2191,7 +2412,11 @@
                     source: data.source,
                     aiUsed: data.ai_used,
                     error: data.error,
-                    graphSync: extractData.graph_sync || null
+                    graphSync: extractData.graph_sync || null,
+                    showUnderstandingCard: true,
+                    understandingConcepts: Array.isArray(extractData.detected_concepts)
+                        ? extractData.detected_concepts.slice(0, 8)
+                        : []
                 });
                 await monitorGraphSync(extractData.graph_sync, '问答：');
                 refreshAiStatus();
@@ -2205,7 +2430,9 @@
                 addMessage(failText, 'ai', {
                     source: isQuestionBankMode ? 'question_bank' : 'system',
                     aiUsed: false,
-                    error: error.message || 'network_error'
+                    error: error.message || 'network_error',
+                    showUnderstandingCard: true,
+                    understandingConcepts: []
                 });
                 if (isQuestionBankMode) {
                     setQuestionBankStatus(withSuggestion('题目作答失败', error, '可重新作答或重新抽题'), 'error');

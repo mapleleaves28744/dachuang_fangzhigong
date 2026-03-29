@@ -9,6 +9,8 @@ import uuid
 import re
 import base64
 import random
+import hashlib
+import secrets
 from knowledge_graph import KnowledgeGraph
 from cognitive_diagnosis import CognitiveDiagnosis
 from neo4j_store import Neo4jGraphStore
@@ -203,6 +205,19 @@ QWEN_VL_MODEL_NAME = os.getenv("QWEN_VL_MODEL_NAME", "qwen-vl-plus")
 GRAPH_PRIMARY = os.getenv("GRAPH_PRIMARY", "auto").strip().lower()  # auto|neo4j|json
 GRAPH_SYNC_MODE = os.getenv("GRAPH_SYNC_MODE", "auto").strip().lower()  # auto|sync|async
 RELATION_MIN_SCORE = float(os.getenv("RELATION_MIN_SCORE", "0.45"))
+
+# 认证配置
+AUTH_REQUIRED = os.getenv("AUTH_REQUIRED", "true").strip().lower() == "true"
+AUTH_TEST_BYPASS = os.getenv("AUTH_TEST_BYPASS", "true").strip().lower() == "true"
+AUTH_USERS_FILE = os.getenv("AUTH_USERS_FILE", "auth_users.json").strip() or "auth_users.json"
+AUTH_SESSIONS_FILE = os.getenv("AUTH_SESSIONS_FILE", "auth_sessions.json").strip() or "auth_sessions.json"
+AUTH_TOKEN_TTL_HOURS = max(1, int(os.getenv("AUTH_TOKEN_TTL_HOURS", "168") or 168))
+AUTH_PUBLIC_ENDPOINTS = {
+    "/api/auth/login",
+    "/api/auth/register",
+    "/api/auth/logout",
+    "/api/auth/me",
+}
 
 # 异步任务配置
 celery_client = create_celery()
@@ -694,6 +709,88 @@ def save_user_event_list(user_id, suffix, event_list):
 def append_user_event(user_id, suffix, item):
     """向用户事件日志追加一条记录。"""
     db_append_user_event(user_id, suffix, item)
+
+
+def normalize_feedback_concepts(raw_concepts):
+    """规范化反馈携带的概念列表。"""
+    concepts = raw_concepts if isinstance(raw_concepts, list) else []
+    normalized = []
+    for value in concepts:
+        concept = normalize_concept_name(value)
+        if not concept or concept == "??":
+            continue
+        if concept in normalized:
+            continue
+        normalized.append(concept)
+        if len(normalized) >= 12:
+            break
+    return normalized
+
+
+def apply_understanding_feedback_to_mastery(user_id, concepts, feedback):
+    """将回答理解反馈映射到知识掌握度，供热力图/推荐等模块使用。"""
+    concept_list = []
+    graph_sync_results = []
+    mastery_updates = []
+
+    if not concepts:
+        return mastery_updates, graph_sync_results
+
+    user_knowledge = normalize_user_knowledge(get_user_knowledge(user_id))
+    concept_list = user_knowledge.get("concepts", [])
+    now_iso = datetime.now().isoformat()
+
+    delta = 0.05 if feedback == "understood" else -0.08
+    default_seed = 0.45 if feedback == "understood" else 0.35
+
+    for concept in concepts:
+        target = None
+        for item in concept_list:
+            if item.get("concept") == concept:
+                target = item
+                break
+
+        before = float(target.get("mastery", default_seed)) if isinstance(target, dict) else default_seed
+        after = round(max(0.0, min(1.0, before + delta)), 3)
+
+        if target is None:
+            target = {
+                "concept": concept,
+                "first_seen": now_iso,
+                "last_seen": now_iso,
+                "mastery": after,
+                "review_count": 1,
+                "last_reviewed": now_iso,
+            }
+            concept_list.append(target)
+        else:
+            target["mastery"] = after
+            target["last_seen"] = now_iso
+            target["review_count"] = int(target.get("review_count", 0)) + 1
+            target["last_reviewed"] = now_iso
+
+        graph_sync = sync_mastery_update(
+            user_id=user_id,
+            concept=concept,
+            mastery=after,
+            review_count=int(target.get("review_count", 1)),
+            last_reviewed=target.get("last_reviewed") or now_iso,
+        )
+
+        graph_sync_results.append({
+            "concept": concept,
+            "graph_sync": graph_sync,
+        })
+        mastery_updates.append({
+            "concept": concept,
+            "before": round(before, 3),
+            "after": after,
+            "delta": round(after - before, 3),
+        })
+
+    user_knowledge["concepts"] = concept_list
+    set_user_knowledge(user_id, user_knowledge)
+    return mastery_updates, graph_sync_results
 
 
 def extract_topics_from_text(text):
@@ -2846,6 +2943,90 @@ def ingest_learning_content_api():
 
     result = process_content_ingest_sync(user_id, content_type, content, title, source)
     return jsonify(success_payload(request_id, **result, mode="sync"))
+
+
+@app.route('/api/feedback/answer_understanding', methods=['POST'])
+def submit_answer_understanding_feedback_api():
+    """记录回答理解反馈（一次性）并联动掌握度。"""
+    request_id = get_request_id()
+    data = request.json or {}
+
+    user_id = str(data.get("user_id", "default_user") or "default_user").strip() or "default_user"
+    message_id = str(data.get("message_id", "") or "").strip()
+    feedback = str(data.get("feedback", "") or "").strip().lower()
+    source = str(data.get("source", "qa") or "qa").strip() or "qa"
+    concepts = normalize_feedback_concepts(data.get("concepts", []))
+
+    if not message_id:
+        return error_response(request_id, 400, "INVALID_INPUT", "message_id 不能为空")
+    if feedback not in {"understood", "not_understood"}:
+        return error_response(request_id, 400, "INVALID_INPUT", "feedback 仅支持 understood 或 not_understood")
+
+    feedback_events = load_user_event_list(user_id, "answer_feedback")
+    existing = None
+    for item in feedback_events:
+        if str(item.get("message_id", "")).strip() == message_id:
+            existing = item
+            break
+
+    if isinstance(existing, dict):
+        existing_feedback = str(existing.get("feedback", "") or "").strip().lower()
+        if existing_feedback and existing_feedback != feedback:
+            return error_response(
+                request_id,
+                409,
+                "FEEDBACK_LOCKED",
+                "该回答反馈已提交，不能再修改",
+                message_id=message_id,
+                feedback=existing_feedback,
+                locked=True,
+            )
+
+        return jsonify(success_payload(
+            request_id,
+            message="反馈已存在",
+            message_id=message_id,
+            feedback=existing_feedback or feedback,
+            locked=True,
+            timestamp=existing.get("timestamp", ""),
+            concepts=existing.get("concepts", []),
+            mastery_updates=[],
+            graph_sync=[],
+            error_code="",
+            error_message="",
+        ))
+
+    timestamp = datetime.now().isoformat()
+    event = {
+        "message_id": message_id,
+        "feedback": feedback,
+        "source": source,
+        "concepts": concepts,
+        "timestamp": timestamp,
+    }
+    append_user_event(user_id, "answer_feedback", event)
+
+    mastery_updates, graph_sync_results = apply_understanding_feedback_to_mastery(
+        user_id=user_id,
+        concepts=concepts,
+        feedback=feedback,
+    )
+    build_learning_profile(user_id)
+
+    return jsonify(success_payload(
+        request_id,
+        message="反馈已记录",
+        message_id=message_id,
+        feedback=feedback,
+        locked=True,
+        source=source,
+        timestamp=timestamp,
+        concepts=concepts,
+        mastery_updates=mastery_updates,
+        graph_sync=graph_sync_results,
+        error_code="",
+        error_message="",
+    ))
 
 
 def extract_knowledge_from_text_api_inner(user_id, text, source):
