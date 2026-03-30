@@ -8,6 +8,25 @@ function Is-PortListening([int]$Port) {
   return $null -ne $conn
 }
 
+function Get-PortCommandLine([int]$Port) {
+  $conn = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
+  if (-not $conn) { return "" }
+  $proc = Get-CimInstance Win32_Process -Filter "ProcessId = $($conn.OwningProcess)" -ErrorAction SilentlyContinue
+  return [string]($proc.CommandLine)
+}
+
+function Get-BackendPort {
+  if (Is-PortListening 5000) {
+    $port5000Cmd = Get-PortCommandLine 5000
+    if ($port5000Cmd -match 'backend/app.py') {
+      return 5000
+    }
+    Write-Host "Port 5000 is already occupied, backend will use 5001 to avoid local proxy conflicts" -ForegroundColor Yellow
+    return 5001
+  }
+  return 5000
+}
+
 function Test-PythonPath([string]$PathValue) {
   try {
     & $PathValue -c "import flask, flask_cors, requests" | Out-Null
@@ -109,17 +128,18 @@ if ($redisReady) {
 }
 
 # 3) Flask backend
-if (-not (Is-PortListening 5000)) {
-  $backendCmd = "Set-Location '$projectRoot'; & '$pythonPathEscaped' backend/app.py"
+$backendPort = Get-BackendPort
+if (-not (Is-PortListening $backendPort)) {
+  $backendCmd = "Set-Location '$projectRoot'; `$env:BACKEND_PORT='$backendPort'; & '$pythonPathEscaped' backend/app.py"
   Start-Process powershell -ArgumentList "-NoExit", "-Command", $backendCmd
   Start-Sleep -Seconds 2
-  if (Is-PortListening 5000) {
-    Write-Host "Backend started on 5000" -ForegroundColor Green
+  if (Is-PortListening $backendPort) {
+    Write-Host "Backend started on $backendPort" -ForegroundColor Green
   } else {
-    Write-Host "Backend start attempted but 5000 is not listening (check dependency/env in backend window)" -ForegroundColor DarkYellow
+    Write-Host "Backend start attempted but $backendPort is not listening (check dependency/env in backend window)" -ForegroundColor DarkYellow
   }
 } else {
-  Write-Host "Backend already running on 5000" -ForegroundColor Yellow
+  Write-Host "Backend already running on $backendPort" -ForegroundColor Yellow
 }
 
 # 4) Frontend static server
@@ -133,6 +153,6 @@ if (-not (Is-PortListening 5501)) {
 
 Write-Host ""
 Write-Host "Portable dev stack ready" -ForegroundColor Green
-Write-Host "Backend  : http://127.0.0.1:5000" -ForegroundColor Cyan
+Write-Host "Backend  : http://127.0.0.1:$backendPort" -ForegroundColor Cyan
 Write-Host "Frontend : http://127.0.0.1:5501/index.html" -ForegroundColor Cyan
-Write-Host "Health   : http://127.0.0.1:5000/health" -ForegroundColor Cyan
+Write-Host "Health   : http://127.0.0.1:$backendPort/health" -ForegroundColor Cyan

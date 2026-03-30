@@ -1,10 +1,11 @@
 import json
 import os
+from datetime import datetime
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
 
 from db import ENGINE, Base, get_database_url, get_session
-from models import UserEvent, UserKnowledge, UserPlan, UserProfile
+from models import AuthSession, AuthUser, UserEvent, UserKnowledge, UserPlan, UserProfile
 
 
 DATA_DIR = "data"
@@ -33,6 +34,19 @@ def save_json(filename, data):
 
 
 class JsonRepository:
+    @staticmethod
+    def _load_items(filename: str) -> List[Dict[str, Any]]:
+        data = load_json(filename, {"items": []})
+        if isinstance(data, dict):
+            items = data.get("items", [])
+            if isinstance(items, list):
+                return [item for item in items if isinstance(item, dict)]
+        return []
+
+    @staticmethod
+    def _save_items(filename: str, items: List[Dict[str, Any]]) -> None:
+        save_json(filename, {"items": items})
+
     def get_user_plans(self, user_id: str) -> List[Dict[str, Any]]:
         plans = load_json("user_plans.json", {})
         return plans.get(user_id, [])
@@ -61,6 +75,80 @@ class JsonRepository:
         events = self.get_user_events(user_id, suffix)
         events.append(item)
         save_json(f"{user_id}_{suffix}.json", events)
+
+    def get_auth_user(self, username: str) -> Optional[Dict[str, Any]]:
+        username = str(username or "").strip()
+        if not username:
+            return None
+
+        for item in self._load_items("auth_users.json"):
+            if str(item.get("username", "")).strip() == username:
+                return dict(item)
+        return None
+
+    def upsert_auth_user(self, user: Dict[str, Any]) -> Dict[str, Any]:
+        items = self._load_items("auth_users.json")
+        username = str(user.get("username", "")).strip()
+        updated = False
+        for idx, item in enumerate(items):
+            if str(item.get("username", "")).strip() == username:
+                items[idx] = dict(user)
+                updated = True
+                break
+        if not updated:
+            items.append(dict(user))
+        self._save_items("auth_users.json", items)
+        return dict(user)
+
+    def get_auth_session_by_token_hash(self, token_hash: str) -> Optional[Dict[str, Any]]:
+        token_hash = str(token_hash or "").strip()
+        if not token_hash:
+            return None
+
+        for item in self._load_items("auth_sessions.json"):
+            if str(item.get("token_hash", "")).strip() == token_hash:
+                return dict(item)
+        return None
+
+    def upsert_auth_session(self, session_data: Dict[str, Any]) -> Dict[str, Any]:
+        items = self._load_items("auth_sessions.json")
+        session_id = str(session_data.get("session_id", "")).strip()
+        updated = False
+        for idx, item in enumerate(items):
+            if str(item.get("session_id", "")).strip() == session_id:
+                items[idx] = dict(session_data)
+                updated = True
+                break
+        if not updated:
+            items.append(dict(session_data))
+        self._save_items("auth_sessions.json", items)
+        return dict(session_data)
+
+    def revoke_auth_session(self, token_hash: str, revoked_at: str) -> bool:
+        items = self._load_items("auth_sessions.json")
+        token_hash = str(token_hash or "").strip()
+        changed = False
+        for item in items:
+            if str(item.get("token_hash", "")).strip() == token_hash:
+                item["revoked_at"] = revoked_at
+                changed = True
+                break
+        if changed:
+            self._save_items("auth_sessions.json", items)
+        return changed
+
+    def touch_auth_session(self, token_hash: str, last_seen_at: str) -> bool:
+        items = self._load_items("auth_sessions.json")
+        token_hash = str(token_hash or "").strip()
+        changed = False
+        for item in items:
+            if str(item.get("token_hash", "")).strip() == token_hash:
+                item["last_seen_at"] = last_seen_at
+                changed = True
+                break
+        if changed:
+            self._save_items("auth_sessions.json", items)
+        return changed
 
 
 class SqlRepository:
@@ -132,6 +220,103 @@ class SqlRepository:
                 )
             )
 
+    def get_auth_user(self, username: str) -> Optional[Dict[str, Any]]:
+        with get_session() as session:
+            row = session.query(AuthUser).filter(AuthUser.username == username).one_or_none()
+            if not row:
+                return None
+            return {
+                "username": row.username,
+                "display_name": row.display_name,
+                "password_hash": row.password_hash,
+                "locale": row.locale,
+                "created_at": row.created_at.isoformat() if row.created_at else None,
+                "updated_at": row.updated_at.isoformat() if row.updated_at else None,
+                "last_login_at": row.last_login_at.isoformat() if row.last_login_at else None,
+            }
+
+    def upsert_auth_user(self, user: Dict[str, Any]) -> Dict[str, Any]:
+        with get_session() as session:
+            row = session.query(AuthUser).filter(AuthUser.username == user["username"]).one_or_none()
+            if not row:
+                row = AuthUser(username=user["username"])
+                session.add(row)
+
+            row.display_name = user.get("display_name") or user["username"]
+            row.password_hash = user.get("password_hash") or ""
+            row.locale = user.get("locale") or "CN"
+            if user.get("last_login_at"):
+                row.last_login_at = datetime.fromisoformat(user["last_login_at"])
+
+            session.flush()
+            return {
+                "username": row.username,
+                "display_name": row.display_name,
+                "password_hash": row.password_hash,
+                "locale": row.locale,
+                "created_at": row.created_at.isoformat() if row.created_at else None,
+                "updated_at": row.updated_at.isoformat() if row.updated_at else None,
+                "last_login_at": row.last_login_at.isoformat() if row.last_login_at else None,
+            }
+
+    def get_auth_session_by_token_hash(self, token_hash: str) -> Optional[Dict[str, Any]]:
+        with get_session() as session:
+            row = session.query(AuthSession).filter(AuthSession.token_hash == token_hash).one_or_none()
+            if not row:
+                return None
+            return {
+                "session_id": row.session_id,
+                "username": row.username,
+                "token_hash": row.token_hash,
+                "expires_at": row.expires_at.isoformat() if row.expires_at else None,
+                "created_at": row.created_at.isoformat() if row.created_at else None,
+                "last_seen_at": row.last_seen_at.isoformat() if row.last_seen_at else None,
+                "revoked_at": row.revoked_at.isoformat() if row.revoked_at else None,
+            }
+
+    def upsert_auth_session(self, session_data: Dict[str, Any]) -> Dict[str, Any]:
+        with get_session() as session:
+            row = session.query(AuthSession).filter(AuthSession.session_id == session_data["session_id"]).one_or_none()
+            if not row:
+                row = AuthSession(session_id=session_data["session_id"])
+                session.add(row)
+
+            row.username = session_data.get("username") or ""
+            row.token_hash = session_data.get("token_hash") or ""
+            row.expires_at = datetime.fromisoformat(session_data["expires_at"])
+            row.last_seen_at = datetime.fromisoformat(session_data["last_seen_at"])
+            if session_data.get("revoked_at"):
+                row.revoked_at = datetime.fromisoformat(session_data["revoked_at"])
+            else:
+                row.revoked_at = None
+
+            session.flush()
+            return {
+                "session_id": row.session_id,
+                "username": row.username,
+                "token_hash": row.token_hash,
+                "expires_at": row.expires_at.isoformat() if row.expires_at else None,
+                "created_at": row.created_at.isoformat() if row.created_at else None,
+                "last_seen_at": row.last_seen_at.isoformat() if row.last_seen_at else None,
+                "revoked_at": row.revoked_at.isoformat() if row.revoked_at else None,
+            }
+
+    def revoke_auth_session(self, token_hash: str, revoked_at: str) -> bool:
+        with get_session() as session:
+            row = session.query(AuthSession).filter(AuthSession.token_hash == token_hash).one_or_none()
+            if not row:
+                return False
+            row.revoked_at = datetime.fromisoformat(revoked_at)
+            return True
+
+    def touch_auth_session(self, token_hash: str, last_seen_at: str) -> bool:
+        with get_session() as session:
+            row = session.query(AuthSession).filter(AuthSession.token_hash == token_hash).one_or_none()
+            if not row:
+                return False
+            row.last_seen_at = datetime.fromisoformat(last_seen_at)
+            return True
+
 
 def init_storage():
     ensure_data_dir()
@@ -178,6 +363,30 @@ def get_user_event_list(user_id, suffix):
 
 def append_user_event(user_id, suffix, item):
     repo.append_user_event(user_id, suffix, item)
+
+
+def get_auth_user(username):
+    return repo.get_auth_user(username)
+
+
+def upsert_auth_user(user):
+    return repo.upsert_auth_user(user)
+
+
+def get_auth_session_by_token_hash(token_hash):
+    return repo.get_auth_session_by_token_hash(token_hash)
+
+
+def upsert_auth_session(session_data):
+    return repo.upsert_auth_session(session_data)
+
+
+def revoke_auth_session(token_hash, revoked_at):
+    return repo.revoke_auth_session(token_hash, revoked_at)
+
+
+def touch_auth_session(token_hash, last_seen_at):
+    return repo.touch_auth_session(token_hash, last_seen_at)
 
 
 def get_storage_info() -> Dict[str, str]:

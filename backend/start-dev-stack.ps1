@@ -35,6 +35,25 @@ function Is-PortListening([int]$Port) {
   return $null -ne $conn
 }
 
+function Get-PortCommandLine([int]$Port) {
+  $conn = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
+  if (-not $conn) { return "" }
+  $proc = Get-CimInstance Win32_Process -Filter "ProcessId = $($conn.OwningProcess)" -ErrorAction SilentlyContinue
+  return [string]($proc.CommandLine)
+}
+
+function Get-BackendPort {
+  if (Is-PortListening 5000) {
+    $port5000Cmd = Get-PortCommandLine 5000
+    if ($port5000Cmd -match 'backend/app.py') {
+      return 5000
+    }
+    Write-Host "Port 5000 is already occupied, backend will use 5001 to avoid local proxy conflicts" -ForegroundColor Yellow
+    return 5001
+  }
+  return 5000
+}
+
 function Get-EnvValue([string]$Key, [string]$DefaultValue = "") {
   $v = [Environment]::GetEnvironmentVariable($Key, "Process")
   if (-not [string]::IsNullOrWhiteSpace($v)) { return $v }
@@ -173,12 +192,13 @@ if ($redisReady) {
 }
 
 # 3) Flask backend
-if (-not (Is-PortListening 5000)) {
-  $backendCmd = "Set-Location '$projectRoot'; & '$pythonExe' backend/app.py"
+$backendPort = Get-BackendPort
+if (-not (Is-PortListening $backendPort)) {
+  $backendCmd = "Set-Location '$projectRoot'; `$env:BACKEND_PORT='$backendPort'; & '$pythonExe' backend/app.py"
   Start-Process powershell -ArgumentList "-NoExit", "-Command", $backendCmd
-  Write-Host "Backend started on 5000" -ForegroundColor Green
+  Write-Host "Backend started on $backendPort" -ForegroundColor Green
 } else {
-  Write-Host "Backend already running on 5000" -ForegroundColor Yellow
+  Write-Host "Backend already running on $backendPort" -ForegroundColor Yellow
 }
 
 # 4) Frontend static server
@@ -194,7 +214,7 @@ if (-not (Is-PortListening 5501)) {
 $health = $null
 for ($i = 1; $i -le 10; $i++) {
   try {
-    $health = Invoke-RestMethod -Uri "http://127.0.0.1:5000/health" -TimeoutSec 3
+    $health = Invoke-RestMethod -Uri "http://127.0.0.1:$backendPort/health" -TimeoutSec 3
     if ($health -and $health.status -eq "ok") {
       break
     }
@@ -212,6 +232,6 @@ if ($health -and $health.status -eq "ok") {
 
 Write-Host "" 
 Write-Host "Dev stack ready" -ForegroundColor Green
-Write-Host "Backend  : http://127.0.0.1:5000" -ForegroundColor Cyan
+Write-Host "Backend  : http://127.0.0.1:$backendPort" -ForegroundColor Cyan
 Write-Host "Frontend : http://127.0.0.1:5501/index.html" -ForegroundColor Cyan
-Write-Host "Health   : http://127.0.0.1:5000/health" -ForegroundColor Cyan
+Write-Host "Health   : http://127.0.0.1:$backendPort/health" -ForegroundColor Cyan

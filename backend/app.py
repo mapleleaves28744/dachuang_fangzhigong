@@ -9,6 +9,8 @@ import uuid
 import re
 import base64
 import random
+import hashlib
+import secrets
 from knowledge_graph import KnowledgeGraph
 from cognitive_diagnosis import CognitiveDiagnosis
 from neo4j_store import Neo4jGraphStore
@@ -20,6 +22,7 @@ from learning_profile import (
 )
 import logging
 import time
+from werkzeug.security import check_password_hash, generate_password_hash
 
 # 简单日志配置
 logging.basicConfig(level=logging.INFO)
@@ -148,6 +151,151 @@ def error_response(request_id, status_code, error_code, error_message, **data):
     return jsonify(payload), status_code
 
 
+AUTH_TOKEN_TTL_DAYS = max(1, int(os.getenv("AUTH_TOKEN_TTL_DAYS", "14")))
+AUTH_TOUCH_INTERVAL_SECONDS = 300
+
+
+def utcnow():
+    return datetime.utcnow()
+
+
+def iso_now():
+    return utcnow().isoformat()
+
+
+def normalize_auth_username(value):
+    text = str(value or "").strip().lower()
+    if not text:
+        return ""
+    if not re.fullmatch(r"[a-z0-9][a-z0-9_.@-]{2,31}", text):
+        return ""
+    return text
+
+
+def normalize_display_name(value, fallback="同学"):
+    text = str(value or "").strip()
+    if not text:
+        text = str(fallback or "同学").strip() or "同学"
+    return text[:24]
+
+
+def normalize_auth_locale(value):
+    locale = str(value or "").strip().upper()
+    return "EN" if locale == "EN" else "CN"
+
+
+def hash_session_token(token):
+    return hashlib.sha256(str(token or "").encode("utf-8")).hexdigest()
+
+
+def build_public_auth_user(user):
+    if not isinstance(user, dict):
+        return {
+            "user_id": "",
+            "username": "",
+            "display_name": "同学",
+            "locale": "CN",
+        }
+
+    username = str(user.get("username") or "").strip()
+    return {
+        "user_id": username,
+        "username": username,
+        "display_name": normalize_display_name(user.get("display_name"), fallback=username or "同学"),
+        "locale": normalize_auth_locale(user.get("locale")),
+    }
+
+
+def create_auth_session_payload(user):
+    now = utcnow()
+    expires_at = now + timedelta(days=AUTH_TOKEN_TTL_DAYS)
+    raw_token = secrets.token_urlsafe(32)
+    session_data = {
+        "session_id": uuid.uuid4().hex,
+        "username": str(user.get("username") or "").strip(),
+        "token_hash": hash_session_token(raw_token),
+        "expires_at": expires_at.isoformat(),
+        "created_at": now.isoformat(),
+        "last_seen_at": now.isoformat(),
+        "revoked_at": None,
+    }
+    upsert_auth_session(session_data)
+    return {
+        "token": raw_token,
+        "expires_at": session_data["expires_at"],
+        "session_id": session_data["session_id"],
+    }
+
+
+def extract_bearer_token():
+    auth_header = (request.headers.get("Authorization", "") or "").strip()
+    if auth_header.lower().startswith("bearer "):
+        return auth_header[7:].strip()
+
+    token = (request.headers.get("X-Auth-Token", "") or "").strip()
+    if token:
+        return token
+
+    return ""
+
+
+def resolve_auth_context(touch=False):
+    token = extract_bearer_token()
+    if not token:
+        return None
+
+    token_hash = hash_session_token(token)
+    session_data = get_auth_session_by_token_hash(token_hash)
+    if not session_data:
+        return None
+
+    if session_data.get("revoked_at"):
+        return None
+
+    expires_at = session_data.get("expires_at")
+    try:
+        expires_dt = datetime.fromisoformat(expires_at) if expires_at else None
+    except Exception:
+        expires_dt = None
+
+    if not expires_dt or expires_dt <= utcnow():
+        revoke_auth_session(token_hash, iso_now())
+        return None
+
+    user = get_auth_user(session_data.get("username", ""))
+    if not user:
+        return None
+
+    if touch:
+        last_seen = session_data.get("last_seen_at")
+        try:
+            last_seen_dt = datetime.fromisoformat(last_seen) if last_seen else None
+        except Exception:
+            last_seen_dt = None
+        if (not last_seen_dt) or ((utcnow() - last_seen_dt).total_seconds() >= AUTH_TOUCH_INTERVAL_SECONDS):
+            touch_auth_session(token_hash, iso_now())
+
+    return {
+        "token": token,
+        "token_hash": token_hash,
+        "session": session_data,
+        "user": user,
+    }
+
+
+def require_auth_context():
+    auth_context = resolve_auth_context(touch=True)
+    if auth_context:
+        return auth_context, None
+
+    return None, error_response(
+        get_request_id(),
+        401,
+        "AUTH_REQUIRED",
+        "请先登录后再访问",
+    )
+
+
 def load_simple_env_files():
     """读取本地 .env 文件（仅填充尚未设置的环境变量）。"""
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -209,6 +357,8 @@ celery_client = create_celery()
 
 # 学习计划存储（简化版，实际应该用数据库）
 from database import (
+    get_auth_session_by_token_hash,
+    get_auth_user,
     get_user_plans,
     set_user_plans,
     get_user_knowledge,
@@ -220,7 +370,11 @@ from database import (
     get_storage_info,
     init_storage,
     load_json,
+    revoke_auth_session,
     save_json,
+    touch_auth_session,
+    upsert_auth_session,
+    upsert_auth_user,
 )
 
 # 初始化数据目录
@@ -3681,6 +3835,124 @@ def dashboard_summary_api():
         error_message="",
     ))
 
+
+@app.route('/api/auth/register', methods=['POST'])
+def register_auth_user_api():
+    """注册账号并创建登录会话。"""
+    request_id = get_request_id()
+    data = request.get_json(silent=True) or {}
+    username = normalize_auth_username(data.get("username"))
+    password = str(data.get("password") or "")
+    display_name = normalize_display_name(data.get("display_name"), fallback=username or "同学")
+    locale = normalize_auth_locale(data.get("locale"))
+
+    if not username:
+        return error_response(request_id, 400, "INVALID_INPUT", "账号格式不正确，请使用 3-32 位字母、数字或 . _ @ -")
+    if len(password) < 6:
+        return error_response(request_id, 400, "INVALID_INPUT", "密码长度至少需要 6 位")
+    if get_auth_user(username):
+        return error_response(request_id, 409, "AUTH_USER_EXISTS", "该账号已存在，请直接登录")
+
+    now = iso_now()
+    user = {
+        "username": username,
+        "display_name": display_name,
+        "password_hash": generate_password_hash(password),
+        "locale": locale,
+        "created_at": now,
+        "updated_at": now,
+        "last_login_at": now,
+    }
+    saved_user = upsert_auth_user(user)
+    session_bundle = create_auth_session_payload(saved_user)
+
+    return jsonify(success_payload(
+        request_id,
+        message="注册成功",
+        auth={
+            "authenticated": True,
+            "user": build_public_auth_user(saved_user),
+            "token": session_bundle["token"],
+            "expires_at": session_bundle["expires_at"],
+            "session_id": session_bundle["session_id"],
+        },
+        error_code="",
+        error_message="",
+    ))
+
+
+@app.route('/api/auth/login', methods=['POST'])
+def login_auth_user_api():
+    """账号登录并签发 Bearer token。"""
+    request_id = get_request_id()
+    data = request.get_json(silent=True) or {}
+    username = normalize_auth_username(data.get("username"))
+    password = str(data.get("password") or "")
+
+    if not username or not password:
+        return error_response(request_id, 400, "INVALID_INPUT", "请输入账号和密码")
+
+    user = get_auth_user(username)
+    if not user or not check_password_hash(str(user.get("password_hash") or ""), password):
+        return error_response(request_id, 401, "AUTH_INVALID_CREDENTIALS", "账号或密码错误")
+
+    user["last_login_at"] = iso_now()
+    user["updated_at"] = iso_now()
+    saved_user = upsert_auth_user(user)
+    session_bundle = create_auth_session_payload(saved_user)
+
+    return jsonify(success_payload(
+        request_id,
+        message="登录成功",
+        auth={
+            "authenticated": True,
+            "user": build_public_auth_user(saved_user),
+            "token": session_bundle["token"],
+            "expires_at": session_bundle["expires_at"],
+            "session_id": session_bundle["session_id"],
+        },
+        error_code="",
+        error_message="",
+    ))
+
+
+@app.route('/api/auth/me', methods=['GET'])
+def current_auth_user_api():
+    """获取当前登录用户信息。"""
+    request_id = get_request_id()
+    auth_context = resolve_auth_context(touch=True)
+    if not auth_context:
+        return error_response(request_id, 401, "AUTH_REQUIRED", "当前登录状态已失效，请重新登录")
+
+    return jsonify(success_payload(
+        request_id,
+        auth={
+            "authenticated": True,
+            "user": build_public_auth_user(auth_context["user"]),
+            "expires_at": auth_context["session"].get("expires_at"),
+            "session_id": auth_context["session"].get("session_id"),
+        },
+        error_code="",
+        error_message="",
+    ))
+
+
+@app.route('/api/auth/logout', methods=['POST'])
+def logout_auth_user_api():
+    """退出当前登录会话。"""
+    request_id = get_request_id()
+    auth_context = resolve_auth_context(touch=False)
+    if auth_context:
+        revoke_auth_session(auth_context["token_hash"], iso_now())
+
+    return jsonify(success_payload(
+        request_id,
+        message="已退出登录",
+        logged_out=True,
+        error_code="",
+        error_message="",
+    ))
+
 # ===== 辅助函数 =====
 
 def record_learning_behavior(user_id, question, analysis):
@@ -3779,4 +4051,5 @@ def frontend_assets(asset_path):
     return jsonify({"success": False, "message": "Resource not found"}), 404
 
 if __name__ == '__main__':
-    app.run(debug=True, port=5000, host='0.0.0.0')
+    backend_port = int(os.getenv("BACKEND_PORT", "5000"))
+    app.run(debug=True, port=backend_port, host='0.0.0.0')
