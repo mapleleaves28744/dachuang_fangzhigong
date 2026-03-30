@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>坊知工</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;900&family=Noto+Serif+SC:wght@600;700;900&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>520oto+Sans+SC:wght@400;500;700;900&family=Noto+Serif+SC:wght@600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/auth-ui.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
@@ -1823,12 +1823,9 @@
                 </div>
                 <div class="content-grid">
                     <div class="hub-card">
-                        <div class="hub-card-title">学习身份</div>
-                        <div style="display:flex; gap:8px; align-items:center; margin-bottom:10px;">
-                            <input id="user-id-input" type="text" placeholder="输入用户ID（如 student_001）" style="flex:1; padding:10px; border:1px solid #ddd; border-radius:8px;">
-                            <button id="save-user-id-btn" style="padding:10px 12px; border:none; background:#2563eb; color:#fff; border-radius:8px; cursor:pointer;">保存</button>
-                        </div>
-                        <div id="current-user-label" style="font-size:13px; color:#666;">当前用户：-</div>
+                        <div class="hub-card-title">登录身份</div>
+                        <div id="authStatusCard"></div>
+                        <div id="authStatusCardActions" class="auth-status-actions"></div>
                     </div>
 
                     <div class="hub-card">
@@ -1953,6 +1950,7 @@
 
     <script src="js/user-context.js"></script>
     <script src="js/api-utils.js"></script>
+    <script src="js/auth-ui.js"></script>
     <script>
         const API_BASE = window.ApiUtils.getApiBase();
         const CHAT_STORE_KEY = 'fangzhigong_chat_sessions_v1';
@@ -2972,8 +2970,10 @@
 
             const refreshUserName = () => {
                 if (!entryUserName) return;
-                const uid = getUserId();
-                entryUserName.textContent = uid || '同学';
+                const name = (window.UserContext && typeof window.UserContext.getDisplayName === 'function')
+                    ? window.UserContext.getDisplayName()
+                    : getUserId();
+                entryUserName.textContent = name || '同学';
             };
             refreshUserName();
             if (window.UserContext) {
@@ -4103,28 +4103,10 @@
         }
 
         function initUserContextUI() {
-            const input = document.getElementById('user-id-input');
-            const saveBtn = document.getElementById('save-user-id-btn');
-            const label = document.getElementById('current-user-label');
-            if (!input || !saveBtn || !label || !window.UserContext) return;
-
-            const refreshUser = () => {
-                const uid = window.UserContext.getUserId();
-                input.value = uid;
-                label.textContent = `当前用户：${uid}`;
-            };
-
-            refreshUser();
-
-            saveBtn.addEventListener('click', function () {
-                const newUserId = window.UserContext.setUserId(input.value || 'default_user');
-                label.textContent = `当前用户：${newUserId}`;
+            if (!window.UserContext) return;
+            window.UserContext.onChange(function () {
                 initEntrySpacesUI();
-                window.dispatchEvent(new Event('knowledge:updated'));
             });
-
-            window.UserContext.onChange(refreshUser);
-            window.UserContext.onChange(initEntrySpacesUI);
         }
 
         window.addEventListener('knowledge:updated', function () {});

@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>学习仪表盘 - 智能学习伴侣</title>
+    <link rel="stylesheet" href="css/auth-ui.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { font-family: 'Segoe UI', Arial, sans-serif; background: #f5f7fa; }
@@ -332,6 +333,7 @@
     <!-- 动态加载今日任务脚本 -->
     <script src="js/user-context.js"></script>
     <script src="js/api-utils.js"></script>
+    <script src="js/auth-ui.js"></script>
     <script>
         const API_BASE = window.ApiUtils.getApiBase();
         const { parseApiResponse, withSuggestion } = window.ApiUtils;
@@ -514,7 +516,10 @@
     function syncDashboardUserLabel() {
         const label = document.getElementById('dashboard-user-label');
         if (!label || !window.UserContext) return;
-        label.textContent = `当前用户：${window.UserContext.getUserId()}`;
+        const userLabel = typeof window.UserContext.getUserLabel === 'function'
+            ? window.UserContext.getUserLabel()
+            : window.UserContext.getUserId();
+        label.textContent = `当前用户：${userLabel}`;
     }
 
     function initGlobalSidebar() {

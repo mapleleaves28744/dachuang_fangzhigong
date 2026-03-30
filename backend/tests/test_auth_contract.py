@@ -17,6 +17,7 @@ class TestAuthContract(unittest.TestCase):
         self.client = backend_app.app.test_client()
         self.users = {}
         self.sessions = {}
+        self.plan_store = {}
 
     def _patch_auth_storage(self):
         def get_auth_user(username):
@@ -59,6 +60,20 @@ class TestAuthContract(unittest.TestCase):
             upsert_auth_session=upsert_auth_session,
             revoke_auth_session=revoke_auth_session,
             touch_auth_session=touch_auth_session,
+        )
+
+    def _patch_plan_storage(self):
+        def get_user_plans(user_id):
+            item = self.plan_store.get(user_id, [])
+            return copy.deepcopy(item)
+
+        def set_user_plans(user_id, plans):
+            self.plan_store[user_id] = copy.deepcopy(plans)
+
+        return patch.multiple(
+            backend_app,
+            get_user_plans=get_user_plans,
+            set_user_plans=set_user_plans,
         )
 
     def test_register_me_logout_contract(self):
@@ -129,6 +144,46 @@ class TestAuthContract(unittest.TestCase):
             self.assertTrue(ok_data.get("success"))
             self.assertEqual(ok_data.get("auth", {}).get("user", {}).get("locale"), "EN")
             self.assertTrue(ok_data.get("auth", {}).get("token"))
+
+    def test_authenticated_business_request_uses_login_user(self):
+        with self._patch_auth_storage(), self._patch_plan_storage():
+            register_resp = self.client.post("/api/auth/register", json={
+                "username": "student_003",
+                "password": "secret789",
+                "display_name": "测试同学",
+                "locale": "CN",
+            })
+
+            self.assertEqual(register_resp.status_code, 200)
+            token = register_resp.get_json().get("auth", {}).get("token")
+            headers = {"Authorization": f"Bearer {token}"}
+
+            add_resp = self.client.post("/api/plans", headers=headers, json={
+                "user_id": "other_user",
+                "time": "09:30",
+                "task": "复习导数",
+            })
+            self.assertEqual(add_resp.status_code, 200)
+            self.assertIn("student_003", self.plan_store)
+            self.assertNotIn("other_user", self.plan_store)
+            self.assertEqual(self.plan_store["student_003"][0]["task"], "复习导数")
+
+            list_resp = self.client.get("/api/plans?user_id=other_user", headers=headers)
+            self.assertEqual(list_resp.status_code, 200)
+            list_data = list_resp.get_json()
+            self.assertTrue(list_data.get("success"))
+            self.assertEqual(list_data.get("count"), 1)
+            self.assertEqual(list_data.get("plans", [])[0].get("task"), "复习导数")
+
+    def test_invalid_auth_token_blocks_business_request(self):
+        with self._patch_auth_storage():
+            resp = self.client.get("/api/plans?user_id=student_004", headers={
+                "Authorization": "Bearer invalid-token"
+            })
+            self.assertEqual(resp.status_code, 401)
+            data = resp.get_json()
+            self.assertFalse(data.get("success"))
+            self.assertEqual(data.get("error_code"), "AUTH_REQUIRED")
 
 
 if __name__ == "__main__":

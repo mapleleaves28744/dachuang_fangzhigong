@@ -296,6 +296,57 @@ def require_auth_context():
     )
 
 
+def normalize_request_user_id(value, fallback="default_user"):
+    text = str(value or "").strip()
+    return text or str(fallback or "default_user").strip() or "default_user"
+
+
+def resolve_request_user_id(explicit_user_id=None, touch_session=True, fallback="default_user"):
+    token = extract_bearer_token()
+    if token:
+        auth_context = resolve_auth_context(touch=touch_session)
+        if not auth_context:
+            return None, error_response(
+                get_request_id(),
+                401,
+                "AUTH_REQUIRED",
+                "当前登录状态已失效，请重新登录",
+            )
+
+        auth_user_id = normalize_request_user_id(
+            (auth_context.get("user") or {}).get("username"),
+            fallback=fallback,
+        )
+        requested_user_id = normalize_request_user_id(explicit_user_id, fallback=fallback)
+        if requested_user_id != auth_user_id:
+            logger.info(
+                "override request user_id=%s with authenticated user=%s for path=%s",
+                requested_user_id,
+                auth_user_id,
+                request.path,
+            )
+        return auth_user_id, None
+
+    return normalize_request_user_id(explicit_user_id, fallback=fallback), None
+
+
+def resolve_request_user_id_from_args(key="user_id", fallback="default_user", touch_session=True):
+    return resolve_request_user_id(
+        request.args.get(key, fallback),
+        touch_session=touch_session,
+        fallback=fallback,
+    )
+
+
+def resolve_request_user_id_from_json(data=None, key="user_id", fallback="default_user", touch_session=True):
+    body = data if isinstance(data, dict) else {}
+    return resolve_request_user_id(
+        body.get(key, fallback),
+        touch_session=touch_session,
+        fallback=fallback,
+    )
+
+
 def load_simple_env_files():
     """读取本地 .env 文件（仅填充尚未设置的环境变量）。"""
     base_dir = os.path.dirname(os.path.abspath(__file__))
@@ -2430,7 +2481,9 @@ def extract_text_from_image(file_storage):
 def get_plans():
     """获取用户学习计划"""
     request_id = get_request_id()
-    user_id = request.args.get('user_id', 'default_user')
+    user_id, auth_error = resolve_request_user_id_from_args()
+    if auth_error:
+        return auth_error
     plans = get_user_plans(user_id)
     
     return jsonify(success_payload(
@@ -2446,7 +2499,9 @@ def add_plan():
     """添加新学习计划"""
     request_id = get_request_id()
     data = request.json or {}
-    user_id = data.get('user_id', 'default_user')
+    user_id, auth_error = resolve_request_user_id_from_json(data)
+    if auth_error:
+        return auth_error
     time = data.get('time')
     task = data.get('task')
     
@@ -2468,7 +2523,9 @@ def update_plan(plan_id):
     """更新学习计划（如打勾完成）"""
     request_id = get_request_id()
     data = request.json or {}
-    user_id = data.get('user_id', 'default_user')
+    user_id, auth_error = resolve_request_user_id_from_json(data)
+    if auth_error:
+        return auth_error
     
     # 允许更新的字段
     updates = {}
@@ -2499,7 +2556,9 @@ def delete_plan(plan_id):
     """删除学习计划"""
     request_id = get_request_id()
     data = request.json or {}
-    user_id = data.get('user_id', 'default_user')
+    user_id, auth_error = resolve_request_user_id_from_json(data)
+    if auth_error:
+        return auth_error
     
     success = delete_user_plan(user_id, plan_id)
     
@@ -2518,7 +2577,9 @@ def clear_completed_plans():
     """清空已完成的学习计划"""
     request_id = get_request_id()
     data = request.json or {}
-    user_id = data.get('user_id', 'default_user')
+    user_id, auth_error = resolve_request_user_id_from_json(data)
+    if auth_error:
+        return auth_error
     
     plans = get_user_plans(user_id)
 
@@ -2542,7 +2603,9 @@ def analyze():
     request_id = get_request_id()
     data = request.json or {}
     question = data.get('question', '').strip()
-    user_id = data.get('user_id', 'default_user')
+    user_id, auth_error = resolve_request_user_id_from_json(data)
+    if auth_error:
+        return auth_error
     
     if not question:
         return error_response(request_id, 400, "INVALID_INPUT", "问题不能为空")
@@ -2585,10 +2648,12 @@ def ask_question():
     # 兼容 POST(JSON) 与 GET(Query) 两种调用方式，降低前端/代理环境差异带来的 405 风险。
     if request.method == 'GET':
         question = (request.args.get('question', '') or '').strip()
-        user_id = (request.args.get('user_id', 'default_user') or 'default_user').strip() or 'default_user'
+        user_id, auth_error = resolve_request_user_id_from_args()
     else:
         question = (data.get('question', '') or '').strip()
-        user_id = (data.get('user_id', 'default_user') or 'default_user').strip() or 'default_user'
+        user_id, auth_error = resolve_request_user_id_from_json(data)
+    if auth_error:
+        return auth_error
     
     if not question:
         return error_response(request_id, 400, "INVALID_INPUT", "问题不能为空")
@@ -2627,7 +2692,9 @@ def ask_question():
 def draw_question_from_bank_api():
     """题库抽题：按用户知识薄弱点加权抽题并发问。"""
     request_id = get_request_id()
-    user_id = (request.args.get('user_id', 'default_user') or 'default_user').strip() or 'default_user'
+    user_id, auth_error = resolve_request_user_id_from_args()
+    if auth_error:
+        return auth_error
     concept = (request.args.get('concept', '') or '').strip()
     difficulty = (request.args.get('difficulty', '') or '').strip().lower()
     bank_scope = (request.args.get('bank_scope', 'all') or 'all').strip().lower()
@@ -2706,7 +2773,9 @@ def draw_question_from_bank_api():
 def list_question_bank_questions_api():
     """查看题库（默认仅返回当前用户可见题）。"""
     request_id = get_request_id()
-    user_id = (request.args.get('user_id', 'default_user') or 'default_user').strip() or 'default_user'
+    user_id, auth_error = resolve_request_user_id_from_args()
+    if auth_error:
+        return auth_error
     concept = normalize_concept_name(request.args.get('concept', '') or '')
     difficulty = (request.args.get('difficulty', '') or '').strip().lower()
     bank_scope = (request.args.get('bank_scope', 'all') or 'all').strip().lower()
@@ -2754,7 +2823,9 @@ def add_question_bank_question_api():
     """动态新增题目到可扩展题库。"""
     request_id = get_request_id()
     data = request.json or {}
-    user_id = (data.get('user_id', 'default_user') or 'default_user').strip() or 'default_user'
+    user_id, auth_error = resolve_request_user_id_from_json(data)
+    if auth_error:
+        return auth_error
 
     normalized = normalize_question_item(
         raw=data,
@@ -2795,7 +2866,9 @@ def import_question_bank_question_api():
     """粘贴板导题：支持 JSON 或行文本批量导入。"""
     request_id = get_request_id()
     data = request.json or {}
-    user_id = (data.get('user_id', 'default_user') or 'default_user').strip() or 'default_user'
+    user_id, auth_error = resolve_request_user_id_from_json(data)
+    if auth_error:
+        return auth_error
     text = str(data.get('text') or '').strip()
 
     if not text:
@@ -2830,7 +2903,9 @@ def generate_question_bank_question_api():
     """官方题库：通过 AI 批量生题并入库。"""
     request_id = get_request_id()
     data = request.json or {}
-    user_id = (data.get('user_id', 'default_user') or 'default_user').strip() or 'default_user'
+    user_id, auth_error = resolve_request_user_id_from_json(data)
+    if auth_error:
+        return auth_error
     concept = normalize_concept_name(data.get('concept') or '')
     difficulty = (data.get('difficulty', 'medium') or 'medium').strip().lower()
     try:
@@ -2875,7 +2950,9 @@ def answer_question_bank_question_api():
     """提交题库答案并返回判题反馈。"""
     request_id = get_request_id()
     data = request.json or {}
-    user_id = (data.get('user_id', 'default_user') or 'default_user').strip() or 'default_user'
+    user_id, auth_error = resolve_request_user_id_from_json(data)
+    if auth_error:
+        return auth_error
     question_id = str(data.get('question_id') or '').strip()
     user_answer = str(data.get('user_answer') or '').strip()
 
@@ -2975,7 +3052,9 @@ def upload_image():
 def get_knowledge_graph_api():
     """获取用户知识图谱（节点/关系/掌握度）"""
     request_id = get_request_id()
-    user_id = request.args.get('user_id', 'default_user')
+    user_id, auth_error = resolve_request_user_id_from_args()
+    if auth_error:
+        return auth_error
     min_relation_score_raw = request.args.get('min_relation_score', '')
     min_relation_score = None
     if str(min_relation_score_raw).strip() != '':
@@ -2996,7 +3075,9 @@ def update_knowledge_mastery_api():
     """更新某个知识点掌握度"""
     request_id = get_request_id()
     data = request.json or {}
-    user_id = data.get('user_id', 'default_user')
+    user_id, auth_error = resolve_request_user_id_from_json(data)
+    if auth_error:
+        return auth_error
     concept = normalize_concept_name(data.get('concept'))
     mastery = data.get('mastery', None)
 
@@ -3068,7 +3149,9 @@ def delete_knowledge_node_api():
     """删除某个知识点节点（同时移除关联关系）。"""
     request_id = get_request_id()
     data = request.json or {}
-    user_id = data.get('user_id', 'default_user')
+    user_id, auth_error = resolve_request_user_id_from_json(data)
+    if auth_error:
+        return auth_error
     concept = normalize_concept_name(data.get('concept'))
 
     if not concept:
@@ -3115,7 +3198,9 @@ def delete_knowledge_node_api():
 def get_learning_path_api():
     """获取从已掌握知识到目标知识点的学习路径"""
     request_id = get_request_id()
-    user_id = request.args.get('user_id', 'default_user')
+    user_id, auth_error = resolve_request_user_id_from_args()
+    if auth_error:
+        return auth_error
     target = request.args.get('target', '').strip()
 
     if not target:
@@ -3185,7 +3270,9 @@ def extract_knowledge_from_text_api():
     """从文本抽取知识点并写入用户知识图谱。"""
     request_id = get_request_id()
     data = request.json or {}
-    user_id = data.get('user_id', 'default_user')
+    user_id, auth_error = resolve_request_user_id_from_json(data)
+    if auth_error:
+        return auth_error
     text = (data.get('text') or '').strip()
     source = (data.get('source') or 'manual').strip()
 
@@ -3220,7 +3307,9 @@ def extract_knowledge_from_text_api():
 def get_review_reminders_api():
     """根据掌握度和复习记录返回复习提醒。"""
     request_id = get_request_id()
-    user_id = request.args.get('user_id', 'default_user')
+    user_id, auth_error = resolve_request_user_id_from_args()
+    if auth_error:
+        return auth_error
     result = build_review_reminders_response(user_id)
     if isinstance(result, dict):
         result["request_id"] = request_id
@@ -3232,7 +3321,9 @@ def ingest_learning_content_api():
     """多源学习内容录入（笔记/链接/答题记录等）。"""
     request_id = get_request_id()
     data = request.json or {}
-    user_id = data.get('user_id', 'default_user')
+    user_id, auth_error = resolve_request_user_id_from_json(data)
+    if auth_error:
+        return auth_error
     content_type = (data.get('content_type') or 'note').strip().lower()
     content = (data.get('content') or '').strip()
     title = (data.get('title') or '').strip()
@@ -3620,7 +3711,9 @@ def cognitive_diagnosis_api():
     """错题归因分析接口。"""
     request_id = get_request_id()
     data = request.json or {}
-    user_id = data.get('user_id', 'default_user')
+    user_id, auth_error = resolve_request_user_id_from_json(data)
+    if auth_error:
+        return auth_error
     question = (data.get('question') or '').strip()
     correct_answer = (data.get('correct_answer') or '').strip()
     user_answer = (data.get('user_answer') or '').strip()
@@ -3667,7 +3760,9 @@ def ingest_learning_content_async_api():
     """异步内容录入接口（Celery）。"""
     request_id = get_request_id()
     data = request.json or {}
-    user_id = data.get('user_id', 'default_user')
+    user_id, auth_error = resolve_request_user_id_from_json(data)
+    if auth_error:
+        return auth_error
     content_type = (data.get('content_type') or 'note').strip().lower()
     content = (data.get('content') or '').strip()
     title = (data.get('title') or '').strip()
@@ -3744,7 +3839,9 @@ def get_task_status_api(task_id):
 def cognitive_diagnosis_report_api():
     """获取用户诊断统计报告。"""
     request_id = get_request_id()
-    user_id = request.args.get('user_id', 'default_user')
+    user_id, auth_error = resolve_request_user_id_from_args()
+    if auth_error:
+        return auth_error
     result = build_diagnosis_report_response(user_id)
     if isinstance(result, dict):
         result["request_id"] = request_id
@@ -3755,7 +3852,9 @@ def cognitive_diagnosis_report_api():
 def profile_api():
     """获取用户学习画像。"""
     request_id = get_request_id()
-    user_id = request.args.get('user_id', 'default_user')
+    user_id, auth_error = resolve_request_user_id_from_args()
+    if auth_error:
+        return auth_error
     profile = build_learning_profile(user_id)
     return jsonify(success_payload(
         request_id,
@@ -3769,7 +3868,9 @@ def profile_api():
 def recommendations_api():
     """获取个性化学习资源推荐。"""
     request_id = get_request_id()
-    user_id = request.args.get('user_id', 'default_user')
+    user_id, auth_error = resolve_request_user_id_from_args()
+    if auth_error:
+        return auth_error
     limit = int(request.args.get('limit', 6))
     items = build_recommendations(user_id, limit=max(1, min(limit, 12)))
     profile = get_user_profile(user_id) or {}
@@ -3791,7 +3892,9 @@ def recommendations_api():
 def dashboard_summary_api():
     """仪表盘聚合数据接口。"""
     request_id = get_request_id()
-    user_id = request.args.get('user_id', 'default_user')
+    user_id, auth_error = resolve_request_user_id_from_args()
+    if auth_error:
+        return auth_error
 
     graph = build_graph_response(user_id)
     reminders = build_review_reminders_response(user_id)

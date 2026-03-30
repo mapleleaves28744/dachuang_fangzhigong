@@ -95,6 +95,9 @@
     const message = String(rawMessage || '').trim();
     const codeMap = {
       INVALID_INPUT: '请求参数有误，请检查输入后重试',
+      AUTH_REQUIRED: '登录状态已失效，请重新登录',
+      AUTH_INVALID_CREDENTIALS: '账号或密码错误，请重新输入',
+      AUTH_USER_EXISTS: '该账号已存在，请直接登录',
       AI_DISABLED: '智能问答未启用，请联系管理员开启 USE_REAL_AI',
       AI_KEY_MISSING: 'AI服务未配置密钥，请联系管理员',
       AI_UPSTREAM_ERROR: 'AI服务暂时不可用，请稍后重试',
@@ -142,12 +145,82 @@
     return `${prefix}：${reason}。建议：${next}`;
   }
 
+  function requestToUrl(resource) {
+    if (resource instanceof Request) return resource.url || '';
+    return String(resource || '');
+  }
+
+  function isApiRequest(resource) {
+    const raw = requestToUrl(resource);
+    if (!raw) return false;
+    try {
+      const parsed = new URL(raw, window.location.origin);
+      return parsed.pathname.startsWith('/api/');
+    } catch (error) {
+      return raw.indexOf('/api/') >= 0;
+    }
+  }
+
+  function installAuthFetch() {
+    if (window.__fangzhigongAuthFetchInstalled || typeof window.fetch !== 'function') return;
+
+    const nativeFetch = window.fetch.bind(window);
+    window.__fangzhigongNativeFetch = nativeFetch;
+
+    window.fetch = async function (resource, init) {
+      const apiRequest = isApiRequest(resource);
+      const authHeader = (window.UserContext && typeof window.UserContext.getAuthHeaderValue === 'function')
+        ? window.UserContext.getAuthHeaderValue()
+        : '';
+
+      let nextResource = resource;
+      let nextInit = init;
+
+      if (apiRequest && authHeader) {
+        if (resource instanceof Request) {
+          const headers = new Headers(resource.headers || {});
+          if (!headers.has('Authorization')) {
+            headers.set('Authorization', authHeader);
+          }
+          nextResource = new Request(resource, { headers });
+        } else {
+          const headers = new Headers((init && init.headers) || {});
+          if (!headers.has('Authorization')) {
+            headers.set('Authorization', authHeader);
+          }
+          nextInit = { ...(init || {}), headers };
+        }
+      }
+
+      const response = await nativeFetch(nextResource, nextInit);
+
+      if (
+        apiRequest &&
+        response &&
+        response.status === 401 &&
+        window.UserContext &&
+        typeof window.UserContext.isAuthenticated === 'function' &&
+        window.UserContext.isAuthenticated() &&
+        typeof window.UserContext.clearAuth === 'function'
+      ) {
+        window.UserContext.clearAuth({ reason: 'unauthorized' });
+      }
+
+      return response;
+    };
+
+    window.__fangzhigongAuthFetchInstalled = true;
+  }
+
+  installAuthFetch();
+
   window.ApiUtils = {
     getApiBase,
     setApiBase,
     defaultApiBaseCandidates,
     mapApiErrorMessage,
     parseApiResponse,
-    withSuggestion
+    withSuggestion,
+    installAuthFetch
   };
 })();

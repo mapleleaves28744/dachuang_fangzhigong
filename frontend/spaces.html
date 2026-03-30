@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="css/auth-ui.css">
     <style>
         :root {
             --ink: #0f172a;
@@ -343,6 +344,8 @@
     </div>
 
     <script src="js/user-context.js"></script>
+    <script src="js/api-utils.js"></script>
+    <script src="js/auth-ui.js"></script>
     <script>
         let spaces = [];
         let activeSpaceId = null;
@@ -580,7 +583,10 @@
             const label = document.getElementById('spaceUserLabel');
             initGlobalSidebar();
             if (label) {
-                label.textContent = `用户：${getUserId()}`;
+                const userLabel = (window.UserContext && typeof window.UserContext.getUserLabel === 'function')
+                    ? window.UserContext.getUserLabel()
+                    : getUserId();
+                label.textContent = `用户：${userLabel}`;
             }
 
             loadSpaces();
@@ -592,7 +598,10 @@
             if (window.UserContext) {
                 window.UserContext.onChange(function () {
                     if (label) {
-                        label.textContent = `用户：${getUserId()}`;
+                        const userLabel = (window.UserContext && typeof window.UserContext.getUserLabel === 'function')
+                            ? window.UserContext.getUserLabel()
+                            : getUserId();
+                        label.textContent = `用户：${userLabel}`;
                     }
                     loadSpaces();
                     ensureState();

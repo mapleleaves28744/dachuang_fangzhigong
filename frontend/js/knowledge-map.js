@@ -399,7 +399,10 @@
 
   function refreshUserLabel() {
     if (dom.mapUserLabel) {
-      dom.mapUserLabel.textContent = `当前用户：${getUserId()}`;
+      const userLabel = (window.UserContext && typeof window.UserContext.getUserLabel === 'function')
+        ? window.UserContext.getUserLabel()
+        : getUserId();
+      dom.mapUserLabel.textContent = `当前用户：${userLabel}`;
     }
   }
 
