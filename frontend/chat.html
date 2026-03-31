@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能问答 - 坊知工</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Noto+Sans+SC:wght@400;500;700;900&family=Noto+Serif+SC:wght@600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/shared/auth-ui.css">
+    <link rel="stylesheet" href="assets/css/pages/chat-page.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+</head>
+<body>
+    <button class="global-sidebar-toggle" id="globalSidebarToggle" type="button" aria-label="打开侧栏">☰</button>
+    <div class="global-sidebar-backdrop" id="globalSidebarBackdrop"></div>
+    <aside class="global-sidebar" id="globalSidebar">
+        <div class="global-sidebar-scroll">
+            <div class="global-sidebar-logo">坊知工</div>
+            <a class="global-sidebar-link" data-side-link="index.html" href="index.html">+ 添加内容</a>
+            <a class="global-sidebar-link" data-side-link="chat.html" href="chat.html">◎ 智能问答</a>
+            <a class="global-sidebar-link" data-side-link="question-bank.html" href="question-bank.html">◎ 题库练习</a>
+            <a class="global-sidebar-link" data-side-link="dashboard.html" href="dashboard.html">◧ 学习仪表盘</a>
+            <a class="global-sidebar-link" data-side-link="knowledge-map.html" href="knowledge-map.html">◇ 知识图谱</a>
+
+            <div class="global-sidebar-section">空间</div>
+            <a class="global-sidebar-link" data-side-link="spaces.html" href="spaces.html">◻ 我的空间</a>
+
+            <section class="global-sidebar-history" id="sidebarHistorySection">
+                <button class="global-sidebar-history-toggle" id="sidebarHistoryToggle" type="button" aria-expanded="true">
+                    <span class="global-sidebar-history-label">你的聊天</span>
+                    <span class="global-sidebar-history-meta" id="sidebarHistoryCount">0 条</span>
+                    <span class="global-sidebar-history-chevron">›</span>
+                </button>
+                <div class="conversation-list global-sidebar-conversation-list" id="conversationList"></div>
+            </section>
+        </div>
+    </aside>
+
+    <main class="chat-page-shell">
+        <header class="chat-topbar">
+            <div class="chat-topbar-main">
+                <div class="chat-title">智能问答</div>
+                <div class="chat-subtitle">独立问答页与主界面共用同一套 AI 问答能力和会话记录，你可以直接继续之前的讨论。</div>
+                <div class="chat-user-badge" id="chatUserBadge">当前身份：访客</div>
+            </div>
+        </header>
+
+        <section class="chat-layout">
+            <section class="chat-stage">
+                <div class="chat-messages" id="chatMessages"></div>
+
+                <div class="composer-wrap">
+                    <div class="composer-card">
+                        <div class="composer-toolbar">
+                            <div class="composer-toolbar-group">
+                                <div class="chat-status" id="chatAiStatus">
+                                    <span class="status-dot" id="aiStatusDot"></span>
+                                    <span id="aiStatusText">检测中...</span>
+                                </div>
+                                <button class="chat-action-btn primary" id="newChatBtn" type="button">+ 新对话</button>
+                            </div>
+                        </div>
+                        <div class="composer-meta">
+                            <span>和主界面共用同一份问答历史</span>
+                            <span>按 `Enter` 发送，`Shift + Enter` 换行</span>
+                        </div>
+                        <div class="composer-row">
+                            <textarea class="composer-input" id="questionInput" placeholder="学习任何东西"></textarea>
+                            <button class="composer-send-btn" id="askQuestionBtn" type="button" aria-label="发送问题">↑</button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <div class="task-modal" id="taskStatusModal">
+        <div class="task-modal-card">
+            <div class="task-modal-head">
+                <div class="task-modal-title">任务状态详情</div>
+                <div class="task-modal-actions">
+                    <button type="button" class="task-modal-refresh" id="taskModalRefreshBtn">刷新</button>
+                    <button type="button" class="task-modal-refresh" id="taskModalAutoBtn">自动刷新：关</button>
+                    <button type="button" class="task-modal-close" id="taskModalCloseBtn">关闭</button>
+                </div>
+            </div>
+            <div class="task-modal-body" id="taskModalBody">加载中...</div>
+        </div>
+    </div>
+
+    <script src="assets/js/shared/user-context.js?v=20260330-authfix"></script>
+    <script src="assets/js/shared/api-utils.js?v=20260330-authfix"></script>
+    <script src="assets/js/shared/project-local-data.js?v=20260330-authfix"></script>
+    <script src="assets/js/shared/auth-ui.js?v=20260330-authfix"></script>
+    <script src="assets/js/shared/page-shell.js?v=20260331-telemetryfix"></script>
+    <script src="assets/js/pages/chat-page.js?v=20260330-chatpage"></script>
+</body>
+</html>

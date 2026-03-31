@@ -20,6 +20,8 @@ backend/.env
 # Logs
 *.log
 push.log
+backend/logs/*.log
+frontend/logs/*.log
 
 # Runtime data and local artifacts
 backend/dump.rdb
@@ -28,6 +30,9 @@ backend/data/user_*.json
 backend/data/user_plans.json
 backend/data/users.json
 /data/
+backend/run/*.pid
+.run/
+.logs/
 
 # OS files
 .DS_Store
@@ -35,4 +40,5 @@ Thumbs.db
 
 # 忽略数据库文件
 backend/data/fzg.db
+database/*.db
 dump.rdb

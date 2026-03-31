@@ -10,7 +10,7 @@ BACKEND_DIR = Path(__file__).resolve().parent.parent
 if str(BACKEND_DIR) not in sys.path:
     sys.path.insert(0, str(BACKEND_DIR))
 
-from database import (  # noqa: E402
+from app.services.database import (  # noqa: E402
     append_user_event,
     get_user_event_list,
     get_user_knowledge,

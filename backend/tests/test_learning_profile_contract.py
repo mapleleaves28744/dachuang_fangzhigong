@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime
 
-from learning_profile import (
+from app.services.learning_profile import (
     LearningProfileService,
     build_recommendations,
     build_recommendation_context,

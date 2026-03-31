@@ -1,0 +1,31 @@
+{
+  "items": [
+    {
+      "session_id": "a19ed197995b4be4a5965bf12c75464f",
+      "username": "ddl",
+      "token_hash": "d35340d53fee8bb5554188c3d1a80e7167f422558d6cc34368c19e4f2773f46a",
+      "expires_at": "2026-04-13T15:20:10.306863",
+      "created_at": "2026-03-30T15:20:10.306863",
+      "last_seen_at": "2026-03-30T15:20:10.306863",
+      "revoked_at": "2026-03-30T15:20:17.138241"
+    },
+    {
+      "session_id": "0dd7367819034e56af70deca7d0e6e21",
+      "username": "ddl",
+      "token_hash": "9d5b1c34e2a52a49592be0d3c72fdf72696a8c45a04262cfcf0259752e95f419",
+      "expires_at": "2026-04-13T15:20:20.893725",
+      "created_at": "2026-03-30T15:20:20.893725",
+      "last_seen_at": "2026-03-31T02:18:49.455740",
+      "revoked_at": null
+    },
+    {
+      "session_id": "61a82dafb9034410b55a1a43de542666",
+      "username": "ddl",
+      "token_hash": "5111ac6c99907f6e3196696336a3e4a3aa7d66119fd916e59c41472c2f13882b",
+      "expires_at": "2026-04-13T15:29:48.807966",
+      "created_at": "2026-03-30T15:29:48.807966",
+      "last_seen_at": "2026-03-30T16:29:07.057668",
+      "revoked_at": null
+    }
+  ]
+}

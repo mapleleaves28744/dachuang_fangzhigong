@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>题库练习 - 坊知工</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Noto+Sans+SC:wght@400;500;700;900&family=Noto+Serif+SC:wght@600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/shared/auth-ui.css">
+    <link rel="stylesheet" href="assets/css/pages/chat-page.css">
+    <link rel="stylesheet" href="assets/css/pages/question-bank-page.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
+</head>
+<body>
+    <button class="global-sidebar-toggle" id="globalSidebarToggle" type="button" aria-label="打开侧栏">☰</button>
+    <div class="global-sidebar-backdrop" id="globalSidebarBackdrop"></div>
+    <aside class="global-sidebar" id="globalSidebar">
+        <div class="global-sidebar-scroll">
+            <div class="global-sidebar-logo">坊知工</div>
+            <a class="global-sidebar-link" data-side-link="index.html" href="index.html">+ 添加内容</a>
+            <a class="global-sidebar-link" data-side-link="chat.html" href="chat.html">◎ 智能问答</a>
+            <a class="global-sidebar-link" data-side-link="question-bank.html" href="question-bank.html">◎ 题库练习</a>
+            <a class="global-sidebar-link" data-side-link="dashboard.html" href="dashboard.html">◧ 学习仪表盘</a>
+            <a class="global-sidebar-link" data-side-link="knowledge-map.html" href="knowledge-map.html">◇ 知识图谱</a>
+
+            <div class="global-sidebar-section">空间</div>
+            <a class="global-sidebar-link" data-side-link="spaces.html" href="spaces.html">◻ 我的空间</a>
+
+            <section class="global-sidebar-history" id="sidebarHistorySection">
+                <button class="global-sidebar-history-toggle" id="sidebarHistoryToggle" type="button" aria-expanded="true">
+                    <span class="global-sidebar-history-label">练习记录</span>
+                    <span class="global-sidebar-history-meta" id="sidebarHistoryCount">0 条</span>
+                    <span class="global-sidebar-history-chevron">›</span>
+                </button>
+                <div class="conversation-list global-sidebar-conversation-list" id="conversationList"></div>
+            </section>
+        </div>
+    </aside>
+
+    <main class="chat-page-shell">
+        <header class="chat-topbar">
+            <div class="chat-topbar-main">
+                <div class="chat-title">题库练习</div>
+                <div class="chat-subtitle">这里既能自由提问，也能先填写要考察的知识点，再从 AI 题库、我的题库或全部题库中开始练习。</div>
+                <div class="chat-user-badge" id="chatUserBadge">当前身份：访客</div>
+            </div>
+        </header>
+
+        <section class="chat-layout">
+            <section class="chat-stage">
+                <div class="question-mode-banner" id="questionModeBanner" hidden>
+                    <div>
+                        <div class="question-mode-kicker">当前正在答题</div>
+                        <div class="question-mode-title" id="questionModeTitle">等待练习题</div>
+                        <div class="question-mode-subtitle" id="questionModeSubtitle">抽到题目后，这里会提示当前作答状态。</div>
+                    </div>
+                    <div class="question-mode-actions">
+                        <button class="chat-action-btn primary" id="submitAnswerBtn" type="button">提交答案</button>
+                        <button class="chat-action-btn" id="hintQuestionBtn" type="button">问 AI 提示</button>
+                        <button class="chat-action-btn danger" id="endQuestionBtn" type="button">结束本题</button>
+                    </div>
+                </div>
+
+                <div class="chat-messages" id="chatMessages"></div>
+
+                <div class="composer-wrap">
+                    <div class="composer-card">
+                        <div class="composer-toolbar">
+                            <div class="composer-toolbar-group question-bank-toolbar">
+                                <input class="question-bank-toolbar-input" id="questionBankConcept" placeholder="先填写要考察的知识点，如 导数" aria-label="要考察的知识点">
+                                <select class="question-bank-select" id="questionBankScope" aria-label="题库范围">
+                                    <option value="ai">AI题库</option>
+                                    <option value="mine">我的题库</option>
+                                    <option value="both">全部题库</option>
+                                </select>
+                                <button class="chat-action-btn primary" id="drawQuestionBtn" type="button">题库练习</button>
+                                <button class="chat-action-btn" id="manageQuestionBankBtn" type="button">我的题库</button>
+                            </div>
+                            <div class="composer-toolbar-group">
+                                <div class="chat-status" id="chatAiStatus">
+                                    <span class="status-dot" id="aiStatusDot"></span>
+                                    <span id="aiStatusText">检测中...</span>
+                                </div>
+                                <button class="chat-action-btn" id="newChatBtn" type="button">+ 新练习</button>
+                            </div>
+                        </div>
+                        <div class="composer-meta">
+                            <span id="composerModeLabel">当前模式：自由问答</span>
+                            <span id="composerModeNote">按 `Enter` 发送，`Shift + Enter` 换行</span>
+                        </div>
+                        <div class="composer-row">
+                            <textarea class="composer-input" id="questionInput" placeholder="输入你的学习问题，或先填写知识点后点击“题库练习”"></textarea>
+                            <button class="composer-send-btn" id="askQuestionBtn" type="button" aria-label="发送或提交">发送</button>
+                        </div>
+                        <div class="composer-hint-row" id="composerHintRow" hidden>
+                            <div class="composer-hint-text">正在答题时，发送按钮会直接提交答案；如果只想拿一点思路提示，可以点右侧按钮。</div>
+                            <div class="composer-secondary-actions">
+                                <button class="composer-secondary-btn" id="composerHintBtn" type="button">问 AI 提示</button>
+                                <button class="composer-secondary-btn warning" id="composerEndBtn" type="button">结束本题</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </section>
+    </main>
+
+    <div class="task-modal" id="questionBankManageModal">
+        <div class="task-modal-card question-bank-modal-card">
+            <div class="task-modal-head">
+                <div>
+                    <div class="task-modal-title">我的题库</div>
+                    <div class="question-bank-status" id="questionBankModalCount">正在加载题库统计...</div>
+                </div>
+                <div class="task-modal-actions">
+                    <button type="button" class="task-modal-refresh" id="questionBankModalRefreshBtn">刷新</button>
+                    <button type="button" class="task-modal-close" id="questionBankModalCloseBtn">关闭</button>
+                </div>
+            </div>
+            <div class="question-bank-modal-body">
+                <div class="question-bank-modal-column">
+                    <section class="question-bank-panel">
+                        <div class="question-bank-panel-title">最近题目预览</div>
+                        <div class="question-bank-panel-subtitle">这里只展示你自己的题库内容，AI 题库不会出现在这里。</div>
+                        <div class="question-bank-counter" id="questionBankCounter">我的题库 0 题</div>
+                        <div class="question-bank-list" id="questionBankRecentList"></div>
+                    </section>
+
+                    <section class="question-bank-panel">
+                        <div class="question-bank-panel-title">批量导入</div>
+                        <div class="question-bank-panel-subtitle">支持 JSON 数组，或每行一题：concept||difficulty||type||question||options||answer||analysis</div>
+                        <textarea class="question-bank-textarea" id="qbImportText" placeholder="示例：导数||medium||single_choice||导数的几何意义是？||A.切线斜率;B.面积;C.体积||A||导数表示瞬时变化率"></textarea>
+                        <div class="question-bank-form-actions">
+                            <div class="question-bank-help">粘贴后会直接导入到“我的题库”，后续练习可立即使用。</div>
+                            <button class="chat-action-btn primary" id="qbImportBtn" type="button">粘贴导入</button>
+                        </div>
+                    </section>
+                </div>
+
+                <div class="question-bank-modal-column">
+                    <section class="question-bank-panel">
+                        <div class="question-bank-panel-title">手动新增题目</div>
+                        <div class="question-bank-panel-subtitle">第一版支持单选题、简答题和错题重练，新增后只进入你的个人题库。</div>
+                        <div class="question-bank-form-grid">
+                            <input class="question-bank-input" id="qbConcept" placeholder="知识点，例如 导数">
+                            <select class="question-bank-select-field" id="qbDifficulty">
+                                <option value="easy">简单</option>
+                                <option value="medium" selected>中等</option>
+                                <option value="hard">困难</option>
+                            </select>
+                            <select class="question-bank-select-field" id="qbType">
+                                <option value="single_choice" selected>单选题</option>
+                                <option value="short_answer">简答题</option>
+                                <option value="retry">错题重练</option>
+                            </select>
+                            <input class="question-bank-input" id="qbAnswer" placeholder="标准答案，例如 A 或关键要点">
+                        </div>
+                        <textarea class="question-bank-textarea" id="qbQuestion" placeholder="题干"></textarea>
+                        <textarea class="question-bank-textarea" id="qbOptions" placeholder="单选题选项，每行一个，例如：&#10;A. xxx&#10;B. yyy"></textarea>
+                        <textarea class="question-bank-textarea" id="qbAnalysis" placeholder="题目解析（可选）"></textarea>
+                        <div class="question-bank-form-actions">
+                            <div class="question-bank-help">单选题至少填写 2 个选项；非单选题可以留空选项。</div>
+                            <button class="chat-action-btn primary" id="qbAddBtn" type="button">加入题库</button>
+                        </div>
+                    </section>
+
+                    <div class="question-bank-status" id="qbManageStatus"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="assets/js/shared/user-context.js?v=20260330-authfix"></script>
+    <script src="assets/js/shared/api-utils.js?v=20260330-authfix"></script>
+    <script src="assets/js/shared/project-local-data.js?v=20260330-authfix"></script>
+    <script src="assets/js/shared/auth-ui.js?v=20260330-authfix"></script>
+    <script src="assets/js/shared/page-shell.js?v=20260331-telemetryfix"></script>
+    <script src="assets/js/pages/question-bank-page.js?v=20260330-questionbank"></script>
+</body>
+</html>

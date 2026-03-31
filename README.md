@@ -4,7 +4,9 @@
 
 快速入口：
 
-- 云服务器一页启动指南：见 `CLOUD_QUICKSTART.md`
+- 云服务器一页启动指南：见 `docs/CLOUD_QUICKSTART.md`
+- 前端目录约定：见 `frontend/README.md`
+- 项目文档索引：见 `docs/README.md`
 
 ## 1. 第一次启动：需要先配置什么环境
 
@@ -37,7 +39,7 @@ python -m pip install -r requirements.txt
 
 ### 1.4 准备环境变量
 
-在 `backend` 目录创建 `.env`（可从 `.env.example` 复制后修改）。
+在 `backend` 目录创建 `.env`，或在 `backend/config` 目录创建 `.env`（可从 `backend/config/.env.example` 复制后修改）。
 
 推荐“完整功能”配置示例：
 
@@ -83,7 +85,7 @@ GRAPH_SYNC_MODE=auto
 在项目根目录执行：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File backend/start-dev-stack.ps1
+powershell -ExecutionPolicy Bypass -File backend/scripts/start-dev-stack.ps1
 ```
 
 该脚本会尝试启动：
@@ -96,7 +98,7 @@ powershell -ExecutionPolicy Bypass -File backend/start-dev-stack.ps1
 ### 2.2 一键停止
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File backend/stop-dev-stack.ps1
+powershell -ExecutionPolicy Bypass -File backend/scripts/stop-dev-stack.ps1
 ```
 
 ### 2.3 Linux 一键启动（新增）
@@ -104,8 +106,8 @@ powershell -ExecutionPolicy Bypass -File backend/stop-dev-stack.ps1
 在项目根目录执行：
 
 ```bash
-chmod +x start-dev-stack.sh stop-dev-stack.sh
-./start-dev-stack.sh
+chmod +x scripts/start-dev-stack.sh scripts/stop-dev-stack.sh
+./scripts/start-dev-stack.sh
 ```
 
 默认是“单端口模式”（推荐远程开发）：
@@ -117,7 +119,7 @@ chmod +x start-dev-stack.sh stop-dev-stack.sh
 如果你确实需要额外启动前端静态服务 `5501`，可执行：
 
 ```bash
-START_FRONTEND_5501=true ./start-dev-stack.sh
+START_FRONTEND_5501=true ./scripts/start-dev-stack.sh
 ```
 
 Linux 一键脚本会尝试启动：
@@ -130,14 +132,14 @@ Linux 一键脚本会尝试启动：
 停止命令：
 
 ```bash
-./stop-dev-stack.sh
+./scripts/stop-dev-stack.sh
 ```
 
 可选：启动后自动自检（健康检查 + 前端页面 + 问答接口）
 
 ```bash
-chmod +x check-dev-stack.sh
-./check-dev-stack.sh
+chmod +x scripts/check-dev-stack.sh
+./scripts/check-dev-stack.sh
 ```
 
 ### 2.4 手动启动（不使用一键脚本）
@@ -160,7 +162,7 @@ cd ..
 
 步骤 3：准备 `.env`
 
-- 在 `backend` 目录创建 `.env`（可复制 `.env.example` 后修改）。
+- 在 `backend` 目录创建 `.env`，或在 `backend/config` 目录创建 `.env`（可复制 `backend/config/.env.example` 后修改）。
 - 最低可运行建议：`STORAGE_BACKEND=sql`、`DATABASE_URL=sqlite:///data/fzg.db`。
 - 想启用完整功能时，再补充 Neo4j Aura、AI Key、Redis/Celery 相关配置。
 
@@ -179,7 +181,7 @@ tools\redis\redis-server.exe tools\redis\redis.windows.conf --port 6379
 cd backend
 $env:CELERY_BROKER_URL='redis://127.0.0.1:6379/0'
 $env:CELERY_RESULT_BACKEND='redis://127.0.0.1:6379/1'
-python -m celery -A app.celery_client worker -l info -P solo
+python -m celery -A app.server:celery_client worker -l info -P solo
 ```
 
 说明：该命令也会占用当前终端，建议在另一个终端窗口运行。
@@ -187,7 +189,8 @@ python -m celery -A app.celery_client worker -l info -P solo
 步骤 6：启动后端 API
 
 ```powershell
-python backend/app.py
+cd backend
+python -m app.server
 ```
 
 步骤 7：启动前端静态服务（再开一个终端）
@@ -278,14 +281,14 @@ cd ..
 步骤 3：启动（单端口模式）
 
 ```bash
-chmod +x start-dev-stack.sh stop-dev-stack.sh check-dev-stack.sh
-./start-dev-stack.sh
+chmod +x scripts/start-dev-stack.sh scripts/stop-dev-stack.sh scripts/check-dev-stack.sh
+./scripts/start-dev-stack.sh
 ```
 
 步骤 4：执行自检
 
 ```bash
-./check-dev-stack.sh
+./scripts/check-dev-stack.sh
 ```
 
 步骤 5：只转发一个端口到本机
@@ -301,7 +304,7 @@ chmod +x start-dev-stack.sh stop-dev-stack.sh check-dev-stack.sh
 停止命令：
 
 ```bash
-./stop-dev-stack.sh
+./scripts/stop-dev-stack.sh
 ```
 
 ---
@@ -323,18 +326,20 @@ chmod +x start-dev-stack.sh stop-dev-stack.sh check-dev-stack.sh
 
 ```text
 fzg/
-  backend/    # Flask API、任务调度、数据存储、图谱同步
-  frontend/   # 页面与前端脚本
-  data/       # 本地数据文件（历史/导出）
+  backend/    # Flask API 入口、后端包、后端脚本与配置
+  frontend/   # 页面与前端资源
+  docs/       # 项目级文档
+  scripts/    # 项目级脚本
+  data/       # 兼容现有运行方式的本地数据目录
 ```
 
 ## 3.3 后端核心模块
 
-- `backend/app.py`：主 API 服务与业务编排入口
-- `backend/database.py`：JSON/SQL 双存储抽象
-- `backend/neo4j_store.py`：Neo4j Aura 读写
-- `backend/cognitive_diagnosis.py`：错题诊断
-- `backend/learning_profile.py`：学习画像与推荐
+- `backend/app/server.py`：项目级启动入口（包内标准入口）
+- `backend/app/services/database.py`：JSON/SQL 双存储抽象
+- `backend/app/services/neo4j_store.py`：Neo4j Aura 读写
+- `backend/app/services/cognitive_diagnosis.py`：错题诊断
+- `backend/app/services/learning_profile.py`：学习画像与推荐
 - `backend/scripts/sync_local_state_to_neo4j_aura.py`：以本地数据为准同步 Aura
 
 ## 3.4 关键能力说明

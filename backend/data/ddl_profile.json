@@ -1,0 +1,32 @@
+{
+  "user_id": "ddl",
+  "updated_at": "2026-03-31T10:19:40.059028",
+  "learning_style": "visual",
+  "style_scores": {
+    "visual": 0.347,
+    "auditory": 0.345,
+    "kinesthetic": 0.345
+  },
+  "style_method": "kmeans",
+  "style_features": {
+    "image_count": 0,
+    "link_count": 0,
+    "qa_content_count": 0,
+    "note_count": 0,
+    "other_count": 0,
+    "qa_log_count": 0,
+    "concept_count": 0
+  },
+  "interests": [
+    "综合学习"
+  ],
+  "best_time_range": "15:00-17:00",
+  "focus_minutes": 45,
+  "content_type_counter": {
+    "note": 0,
+    "link": 0,
+    "image": 0,
+    "qa": 0,
+    "other": 0
+  }
+}

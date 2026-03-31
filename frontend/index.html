@@ -5,9 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>坊知工</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>520oto+Sans+SC:wght@400;500;700;900&family=Noto+Serif+SC:wght@600;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="css/style.css">
-    <link rel="stylesheet" href="css/auth-ui.css">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Noto+Serif+SC:wght@600;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/pages/home-page.css">
+    <link rel="stylesheet" href="assets/css/shared/auth-ui.css">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
@@ -82,6 +83,13 @@
             padding: 16px 14px;
         }
 
+        .global-sidebar-scroll {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            padding-right: 2px;
+        }
+
         .global-sidebar.open { transform: translateX(0); }
 
         .global-sidebar-logo {
@@ -128,17 +136,40 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 10px 6px;
+            min-height: 82px;
+            padding: 16px 220px 16px 24px;
             margin-bottom: 18px;
             text-align: center;
         }
 
         .logo {
-            font-family: "Noto Serif SC", "Noto Sans SC", "Microsoft YaHei", serif;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            font-family: "Noto Serif SC", "Songti SC", "STSong", "SimSun", serif;
             font-size: 34px;
             font-weight: 900;
-            letter-spacing: 0.8px;
-            color: #0f172a;
+            letter-spacing: 0.6px;
+            color: #16233f;
+            line-height: 1.1;
+            white-space: nowrap;
+        }
+
+        .logo-brand {
+            font-weight: 900;
+        }
+
+        .logo-separator {
+            font-size: 0.6em;
+            font-weight: 700;
+            color: #1f2d4a;
+            transform: translateY(-1px);
+        }
+
+        .logo-tagline {
+            font-weight: 800;
+            color: #16233f;
         }
 
         .nav-links {
@@ -167,7 +198,7 @@
 
         .main-content {
             display: none;
-            grid-template-columns: minmax(0, 1fr) 260px;
+            grid-template-columns: minmax(0, 1fr);
             gap: 18px;
             align-items: start;
         }
@@ -177,7 +208,7 @@
         }
 
         .entry-gateway {
-            max-width: 980px;
+            max-width: 1080px;
             margin: 28px auto 6px;
             padding: 12px 4px;
         }
@@ -210,8 +241,8 @@
 
         .entry-tools-layout {
             display: grid;
-            grid-template-columns: minmax(0, 1fr) 170px;
-            gap: 12px;
+            grid-template-columns: minmax(0, 1fr);
+            gap: 0;
             align-items: start;
             margin-bottom: 14px;
         }
@@ -227,14 +258,6 @@
             grid-template-columns: repeat(4, minmax(0, 1fr));
             gap: 8px;
             margin-bottom: 0;
-        }
-
-        .entry-side-links { position: sticky; top: 10px; }
-        .entry-side-links .nav-links a {
-            text-align: center;
-            padding: 9px 10px;
-            font-size: 14px;
-            border-radius: 10px;
         }
 
         .entry-tool {
@@ -815,6 +838,34 @@
             line-height: 1.55;
         }
 
+        .entry-action-space-box {
+            margin-bottom: 10px;
+            padding: 10px;
+            border: 1px solid #d9e6f6;
+            border-radius: 12px;
+            background: #f8fbff;
+        }
+
+        .entry-action-space-title {
+            font-size: 13px;
+            font-weight: 800;
+            color: #0f172a;
+        }
+
+        .entry-action-space-row {
+            margin-top: 8px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .entry-action-space-hint {
+            margin-top: 6px;
+            font-size: 12px;
+            color: #64748b;
+            line-height: 1.5;
+        }
+
         .entry-action-input,
         .entry-action-textarea,
         .entry-action-file {
@@ -1005,10 +1056,49 @@
             resize: vertical;
         }
 
-        .space-item-audio {
+        .space-item-summary {
+            margin-top: 8px;
+            border: 1px dashed #cdd9ea;
+            border-radius: 10px;
+            background: #f8fbff;
+            padding: 10px;
+            color: #475569;
+            font-size: 12px;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-word;
+            display: none;
+        }
+
+        .space-item-preview {
             width: 100%;
             margin-top: 8px;
             display: none;
+            border: 1px solid #dbe6f4;
+            border-radius: 12px;
+            background: #f8fbff;
+            padding: 10px;
+        }
+
+        .space-item-preview img,
+        .space-item-preview video,
+        .space-item-preview audio {
+            width: 100%;
+            border-radius: 10px;
+        }
+
+        .space-item-preview iframe {
+            width: 100%;
+            min-height: 320px;
+            border: 1px solid #dbe4ef;
+            border-radius: 10px;
+            background: #ffffff;
+        }
+
+        .space-item-preview-note {
+            color: #64748b;
+            font-size: 12px;
+            line-height: 1.6;
         }
 
         .space-item-actions {
@@ -1198,10 +1288,16 @@
             50% { opacity: 1; transform: translateY(-2px); }
         }
 
-        .input-area { display: flex; gap: 10px; margin-top: 14px; }
+        .input-area {
+            display: flex;
+            gap: 10px;
+            margin-top: 14px;
+            flex-wrap: wrap;
+            align-items: stretch;
+        }
 
         .input-area textarea {
-            flex: 1;
+            flex: 1 1 420px;
             padding: 12px 14px;
             border: 1px solid #cdd9ea;
             border-radius: 12px;
@@ -1213,6 +1309,33 @@
         }
 
         .input-area textarea:focus { outline: 2px solid #bfdbfe; border-color: #93c5fd; }
+
+        .input-area .draw-concept-input,
+        .input-area select {
+            min-height: 48px;
+            border: 1px solid #cdd9ea;
+            border-radius: 12px;
+            padding: 0 12px;
+            background: #ffffff;
+            color: #0f172a;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .input-area .draw-concept-input {
+            flex: 0 1 240px;
+            min-width: 220px;
+        }
+
+        .input-area select {
+            flex: 0 0 116px;
+        }
+
+        .input-area .draw-concept-input:focus,
+        .input-area select:focus {
+            outline: 2px solid #bfdbfe;
+            border-color: #93c5fd;
+        }
 
         .input-area button {
             min-width: 104px;
@@ -1280,37 +1403,6 @@
             padding: 18px;
             border: 1px solid #d8e3f1;
             box-shadow: 0 8px 20px rgba(15, 35, 75, 0.08);
-        }
-
-        .quick-sidebar {
-            position: sticky;
-            top: 16px;
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .quick-link {
-            display: block;
-            text-decoration: none;
-            color: #0f172a;
-            background: #ffffff;
-            border: 1px solid #dbe7f7;
-            border-radius: 12px;
-            padding: 12px;
-            box-shadow: 0 6px 16px rgba(15, 35, 75, 0.08);
-        }
-
-        .quick-link-title {
-            font-size: 14px;
-            font-weight: 800;
-            margin-bottom: 4px;
-        }
-
-        .quick-link-desc {
-            font-size: 12px;
-            color: #64748b;
-            line-height: 1.5;
         }
 
         .content-hub {
@@ -1406,7 +1498,6 @@
 
         @media (max-width: 1200px) {
             .main-content { grid-template-columns: 1fr; }
-            .quick-sidebar { position: static; }
             .content-grid { grid-template-columns: 1fr; }
             .entry-tools-layout { grid-template-columns: 1fr; }
             .entry-main-stack { gap: 8px; }
@@ -1441,12 +1532,23 @@
 
         @media (max-width: 720px) {
             .app-container { padding: 14px; }
-            .logo { font-size: 24px; }
-            .navbar { flex-direction: column; align-items: center; gap: 10px; }
+            .logo {
+                gap: 10px;
+                font-size: 24px;
+            }
+            .navbar {
+                flex-direction: column;
+                align-items: center;
+                gap: 10px;
+                min-height: auto;
+                padding: 14px;
+            }
             .nav-links a { margin-right: 0; }
             .chat-header { flex-direction: column; align-items: flex-start; }
             .chat-header-actions { width: 100%; justify-content: space-between; }
             .input-area { flex-direction: column; }
+            .input-area .draw-concept-input,
+            .input-area select,
             .input-area button { height: 46px; }
             .message-bubble { max-width: 100%; }
             .content-grid { grid-template-columns: 1fr; }
@@ -1488,7 +1590,8 @@
 
         .navbar {
             margin-bottom: 20px;
-            padding: 12px 10px;
+            min-height: 82px;
+            padding: 12px 180px 12px 18px;
             border: 1px solid rgba(255, 255, 255, 0.55);
             border-radius: 18px;
             background: linear-gradient(145deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.45));
@@ -1498,11 +1601,9 @@
         }
 
         .logo {
-            font-family: "Noto Serif SC", "Noto Sans SC", "Microsoft YaHei", serif;
             font-size: 36px;
-            letter-spacing: 0.6px;
-            font-weight: 900;
             text-align: center;
+            text-shadow: 0 1px 0 rgba(255, 255, 255, 0.75);
         }
 
         .nav-links { gap: 10px; }
@@ -1648,26 +1749,343 @@
                 padding: 9px 8px;
             }
         }
+
+        .guest-sidebar-panel {
+            display: none;
+        }
+
+        .guest-sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .guest-sidebar-mark {
+            display: inline-flex;
+            align-items: flex-end;
+            gap: 4px;
+            width: 34px;
+            height: 34px;
+        }
+
+        .guest-sidebar-mark span {
+            display: block;
+            width: 8px;
+            border-radius: 999px;
+            background: #111827;
+        }
+
+        .guest-sidebar-mark span:nth-child(1) {
+            height: 28px;
+        }
+
+        .guest-sidebar-mark span:nth-child(2) {
+            height: 22px;
+        }
+
+        .guest-sidebar-mark span:nth-child(3) {
+            height: 12px;
+        }
+
+        .guest-sidebar-brand-text {
+            font-size: 18px;
+            font-weight: 900;
+            color: #111827;
+            letter-spacing: 0.2px;
+        }
+
+        .guest-sidebar-copy {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            color: #334155;
+            line-height: 1.8;
+            font-size: 15px;
+        }
+
+        .guest-sidebar-copy h2 {
+            font-size: 18px;
+            font-weight: 900;
+            color: #0f172a;
+            line-height: 1.35;
+        }
+
+        body.guest-home-layout {
+            background:
+                radial-gradient(circle at top left, rgba(239, 246, 255, 0.92), transparent 38%),
+                linear-gradient(180deg, #fdfefe 0%, #ffffff 62%);
+        }
+
+        body.guest-home-layout .global-sidebar-toggle,
+        body.guest-home-layout .global-sidebar-backdrop {
+            display: none !important;
+        }
+
+        body.guest-home-layout .global-sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 310px;
+            height: 100vh;
+            transform: none;
+            border-right: 1px solid #e5ebf4;
+            background: linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%);
+            box-shadow: none;
+            padding: 28px 18px 18px;
+            z-index: 120;
+        }
+
+        body.guest-home-layout .global-sidebar-scroll {
+            overflow: visible;
+            padding-right: 0;
+            display: flex;
+            flex-direction: column;
+            min-height: 0;
+        }
+
+        body.guest-home-layout .guest-sidebar-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+            min-height: 100%;
+        }
+
+        body.guest-home-layout .global-sidebar-logo,
+        body.guest-home-layout .global-sidebar-link,
+        body.guest-home-layout .global-sidebar-section {
+            display: none;
+        }
+
+        body.guest-home-layout .global-sidebar-auth {
+            padding-top: 18px;
+        }
+
+        body.guest-home-layout .auth-sidebar-button {
+            min-height: 50px;
+            border-radius: 18px;
+            font-size: 18px;
+        }
+
+        body.guest-home-layout .app-container {
+            max-width: none;
+            margin-left: 310px;
+            padding: 18px 30px 40px 34px;
+        }
+
+        body.guest-home-layout .navbar {
+            justify-content: center;
+            min-height: 88px;
+            padding: 10px 160px 0 24px;
+            margin-bottom: 0;
+            border: none;
+            border-radius: 0;
+            background: transparent;
+            box-shadow: none;
+            backdrop-filter: none;
+        }
+
+        body.guest-home-layout .logo {
+            display: inline-flex;
+        }
+
+        body.guest-home-layout .auth-top-slot {
+            width: auto;
+            justify-content: flex-end;
+        }
+
+        body.guest-home-layout .entry-gateway {
+            max-width: 980px;
+            margin: 42px auto 0;
+            padding: 0 0 24px;
+        }
+
+        body.guest-home-layout .entry-heading {
+            font-size: clamp(44px, 5vw, 60px);
+            font-weight: 900;
+            margin-bottom: 16px;
+        }
+
+        body.guest-home-layout .entry-subheading {
+            font-size: 16px;
+            margin-bottom: 28px;
+        }
+
+        body.guest-home-layout .entry-tools {
+            gap: 14px;
+        }
+
+        body.guest-home-layout .entry-tool {
+            min-height: 136px;
+            padding: 18px;
+            border-radius: 24px;
+            box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
+        }
+
+        body.guest-home-layout .entry-tool-icon {
+            width: 46px;
+            height: 46px;
+            margin-bottom: 12px;
+            border-radius: 14px;
+        }
+
+        body.guest-home-layout .entry-tool-icon svg {
+            width: 21px;
+            height: 21px;
+        }
+
+        body.guest-home-layout .entry-tool-title {
+            font-size: 20px;
+            margin-bottom: 6px;
+        }
+
+        body.guest-home-layout .entry-tool-desc {
+            font-size: 14px;
+        }
+
+        body.guest-home-layout .entry-input-wrap {
+            max-width: 840px;
+            margin: 6px auto 0;
+            min-height: 62px;
+            padding: 8px 8px 8px 22px;
+            box-shadow: 0 16px 34px rgba(15, 23, 42, 0.08);
+        }
+
+        body.guest-home-layout .entry-input {
+            font-size: 18px;
+        }
+
+        body.guest-home-layout .entry-send-btn {
+            width: 46px;
+            height: 46px;
+            background: #171717;
+            font-size: 20px;
+        }
+
+        body.guest-home-layout .entry-workbench-grid {
+            display: none;
+        }
+
+        @media (max-width: 1100px) {
+            body.guest-home-layout .global-sidebar {
+                width: 280px;
+            }
+
+            body.guest-home-layout .app-container {
+                margin-left: 280px;
+                padding: 18px 22px 32px 26px;
+            }
+        }
+
+        @media (max-width: 860px) {
+            body.guest-home-layout .global-sidebar {
+                position: relative;
+                width: calc(100% - 24px);
+                height: auto;
+                margin: 12px;
+                border: 1px solid #e5ebf4;
+                border-radius: 22px;
+                box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
+            }
+
+            body.guest-home-layout .app-container {
+                margin-left: 0;
+                padding: 0 14px 28px;
+            }
+
+            body.guest-home-layout .navbar {
+                min-height: auto;
+                padding: 8px 0 0;
+            }
+
+            body.guest-home-layout .logo {
+                font-size: 30px;
+            }
+
+            body.guest-home-layout .auth-top-slot {
+                right: 0;
+            }
+
+            body.guest-home-layout .entry-gateway {
+                margin: 26px auto 0;
+            }
+        }
+
+        @media (max-width: 640px) {
+            body.guest-home-layout .navbar {
+                flex-direction: column;
+                align-items: center;
+                gap: 12px;
+                padding-top: 10px;
+            }
+
+            body.guest-home-layout .auth-top-slot {
+                position: static;
+                transform: none;
+                width: 100%;
+                justify-content: center;
+            }
+
+            body.guest-home-layout .global-sidebar {
+                width: calc(100% - 16px);
+                margin: 8px;
+                padding: 20px 16px 16px;
+            }
+
+            body.guest-home-layout .entry-heading {
+                font-size: 34px;
+            }
+
+            body.guest-home-layout .entry-subheading {
+                font-size: 15px;
+            }
+        }
     </style>
 </head>
 <body>
     <button class="global-sidebar-toggle" id="globalSidebarToggle" type="button" aria-label="打开侧栏">☰</button>
     <div class="global-sidebar-backdrop" id="globalSidebarBackdrop"></div>
     <aside class="global-sidebar" id="globalSidebar">
-        <div class="global-sidebar-logo">坊知工</div>
-        <a class="global-sidebar-link" data-side-link="index.html" href="index.html">+ 添加内容</a>
-        <div class="global-sidebar-section">空间</div>
-        <a class="global-sidebar-link" data-side-link="spaces.html" href="spaces.html">◻ 我的空间</a>
+        <div class="global-sidebar-scroll">
+            <div class="guest-sidebar-panel">
+                <div class="guest-sidebar-brand">
+                    <div class="guest-sidebar-mark" aria-hidden="true">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <div class="guest-sidebar-brand-text">坊知工</div>
+                </div>
+                <div class="guest-sidebar-copy">
+                    <h2>欢迎访问坊知工</h2>
+                    <p>为您量身定制的个性化学习平台。</p>
+                    <p>坊知工将学习材料转化为简明的笔记、互动讲解和个性化练习。</p>
+                    <p>我们正在不断改进平台，欢迎您的反馈。</p>
+                </div>
+            </div>
+            <div class="global-sidebar-logo">坊知工</div>
+            <a class="global-sidebar-link" data-side-link="index.html" href="index.html">+ 添加内容</a>
+            <a class="global-sidebar-link" data-side-link="chat.html" href="chat.html">◎ 智能问答</a>
+            <a class="global-sidebar-link" data-side-link="question-bank.html" href="question-bank.html">◎ 题库练习</a>
+            <a class="global-sidebar-link" data-side-link="dashboard.html" href="dashboard.html">◧ 学习仪表盘</a>
+            <a class="global-sidebar-link" data-side-link="knowledge-map.html" href="knowledge-map.html">◇ 知识图谱</a>
+            <div class="global-sidebar-section">空间</div>
+            <a class="global-sidebar-link" data-side-link="spaces.html" href="spaces.html">◻ 我的空间</a>
+        </div>
     </aside>
 
     <div class="app-container">
         <!-- 顶部导航 -->
         <nav class="navbar">
-            <div class="logo">坊知工 · 智能学习伴侣</div>
+            <div class="logo" aria-label="坊知工 智能学习伴侣">
+                <span class="logo-brand">坊知工</span>
+                <span class="logo-separator" aria-hidden="true">•</span>
+                <span class="logo-tagline">智能学习伴侣</span>
+            </div>
+            <div id="authTopSlot" class="auth-top-slot"></div>
         </nav>
         
         <section class="entry-gateway" id="entryGateway">
-            <div class="entry-heading">是时候学习了，<span id="entryUserName">同学</span></div>
+            <div class="entry-heading"><span id="entryHeadingText">你想学什么？</span><span id="entryUserName" hidden>同学</span></div>
             <div class="entry-subheading">上传、链接、粘贴、记录都可以作为学习输入</div>
 
             <div class="entry-tools-layout">
@@ -1726,25 +2144,55 @@
                         <button id="entrySendBtn" class="entry-send-btn" type="button">&#8593;</button>
                     </div>
                 </div>
-                <div class="nav-links entry-side-links">
-                    <a href="#" class="active">智能问答</a>
-                    <a href="dashboard.html">学习仪表盘</a>
-                    <a href="knowledge-map.html">知识图谱</a>
-                </div>
             </div>
 
-            <div class="entry-spaces" id="entrySpacesSection">
-                <div class="entry-spaces-head">
-                    <div>
-                        <div class="entry-spaces-title">空间</div>
-                        <div class="entry-spaces-subtitle">你的上传文件会保存在当前空间中</div>
+            <div class="entry-workbench-grid">
+                <div class="entry-spaces" id="entrySpacesSection">
+                    <div class="entry-spaces-head">
+                        <div>
+                            <div class="entry-spaces-title">空间</div>
+                            <div class="entry-spaces-subtitle">上传时可选择已有空间，也可以直接新建空间</div>
+                        </div>
+                        <button type="button" class="entry-space-add-btn" id="entryAddSpaceBtn">+ 新空间</button>
                     </div>
-                    <button type="button" class="entry-space-add-btn" id="entryAddSpaceBtn">+ 新空间</button>
+                    <div class="entry-space-grid" id="entrySpaceGrid"></div>
+                    <div class="entry-space-files">
+                        <div class="entry-space-files-title" id="entrySpaceFilesTitle">当前空间文件</div>
+                        <div class="entry-space-file-list" id="entrySpaceFileList"></div>
+                    </div>
                 </div>
-                <div class="entry-space-grid" id="entrySpaceGrid"></div>
-                <div class="entry-space-files">
-                    <div class="entry-space-files-title" id="entrySpaceFilesTitle">当前空间文件</div>
-                    <div class="entry-space-file-list" id="entrySpaceFileList"></div>
+
+                <div class="entry-plan-board" id="entryPlanBoard">
+                    <div class="entry-plan-head">
+                        <div>
+                            <div class="entry-plan-title">学习计划</div>
+                            <div class="entry-plan-subtitle">把今天要完成的内容拆成清晰的时间块</div>
+                        </div>
+                        <div class="entry-plan-chip">今日安排</div>
+                    </div>
+
+                    <div class="entry-plan-note">
+                        建议先排 2 到 4 个最重要的小任务，做完后直接勾选，右下方会同步提示需要优先复习的知识点。
+                    </div>
+
+                    <div class="add-plan entry-plan-form">
+                        <input id="new-plan-time" type="time" aria-label="计划时间">
+                        <input id="new-plan-task" type="text" placeholder="例如：19:30 整理纺织材料性能笔记" aria-label="学习任务">
+                        <button id="add-plan-btn" type="button">添加计划</button>
+                    </div>
+
+                    <div class="entry-plan-section-label">今日任务</div>
+                    <div class="entry-plan-list" id="plan-list" aria-live="polite">
+                        <div class="review-reminder-loading">加载中...</div>
+                    </div>
+
+                    <div class="entry-plan-reminders">
+                        <div class="entry-plan-reminders-title">复习提醒</div>
+                        <div class="entry-plan-reminders-subtitle">结合掌握度，把今天更该回看的内容先排出来</div>
+                        <div class="entry-plan-reminder-list" id="review-reminder-list">
+                            <div class="review-reminder-loading">加载中...</div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>
@@ -1761,7 +2209,7 @@
                     </div>
                     <div class="chat-header-actions">
                         <button class="new-chat-btn" id="newChatBtn" type="button">+ 新对话</button>
-                        <button class="draw-question-header-btn" type="button" onclick="drawQuestionAndAsk()">题库抽题</button>
+                        <button class="draw-question-header-btn" type="button" onclick="drawQuestionAndAsk()">题库练习</button>
                         <button class="rename-chat-btn" id="renameChatBtn" type="button">重命名</button>
                         <button class="clear-chat-btn" id="clearChatBtn" type="button">清空当前</button>
                         <div class="chat-status" id="chatAiStatus">
@@ -1782,12 +2230,13 @@
 
                         <div class="input-area">
                             <textarea id="questionInput" placeholder="输入你的学习问题（如：什么是导数？）"></textarea>
+                            <input id="qb-draw-concept" class="draw-concept-input" placeholder="先填写考察知识点，如 导数" aria-label="要考察的知识点">
                             <select id="qb-draw-scope" style="min-width:106px; border:1px solid #cdd9ea; border-radius:12px; padding:8px; background:#fff; color:#0f172a; font-weight:600;">
                                 <option value="all" selected>总题库</option>
                                 <option value="official">官方题库</option>
                                 <option value="mine">我的题库</option>
                             </select>
-                            <button type="button" class="draw-question-btn" onclick="drawQuestionAndAsk()">题库抽题</button>
+                            <button type="button" class="draw-question-btn" onclick="drawQuestionAndAsk()">题库练习</button>
                             <button onclick="askQuestion()">发送</button>
                         </div>
                     </div>
@@ -1871,20 +2320,6 @@
             </div>
             </div>
 
-            <aside class="quick-sidebar">
-                <a class="quick-link" href="dashboard.html">
-                    <div class="quick-link-title">学习仪表盘</div>
-                    <div class="quick-link-desc">知识掌握热力图、学习画像、推荐与学习计划</div>
-                </a>
-                <a class="quick-link" href="knowledge-map.html">
-                    <div class="quick-link-title">知识图谱</div>
-                    <div class="quick-link-desc">查看知识点关系、学习路径与掌握状态</div>
-                </a>
-                <a class="quick-link" href="dashboard.html">
-                    <div class="quick-link-title">复习与诊断</div>
-                    <div class="quick-link-desc">到期复习提醒、错题统计与阶段性建议</div>
-                </a>
-            </aside>
             </div>
         </div>
     </div>
@@ -1910,6 +2345,14 @@
                 <button type="button" class="entry-action-close" id="entryActionCloseBtn">关闭</button>
             </div>
             <div class="entry-action-desc" id="entryActionDesc">请输入内容后提交。</div>
+            <div class="entry-action-space-box">
+                <div class="entry-action-space-title">保存到空间</div>
+                <div class="entry-action-space-row">
+                    <select id="entryActionSpaceSelect" class="entry-action-input" aria-label="保存到空间"></select>
+                    <input id="entryActionNewSpaceInput" class="entry-action-input" type="text" placeholder="输入新空间名称，例如 高数期末复习" style="display:none;">
+                </div>
+                <div class="entry-action-space-hint" id="entryActionSpaceHint">可直接保存到已有空间，或在本次提交时新建空间。</div>
+            </div>
             <input id="entryActionSubject" class="entry-action-input" type="text" placeholder="标题（可选）">
             <textarea id="entryActionContent" class="entry-action-textarea" placeholder="请输入内容"></textarea>
             <div class="entry-record-controls" id="entryRecordControls">
@@ -1920,8 +2363,8 @@
                 </div>
                 <audio id="entryRecordAudio" class="entry-record-audio" controls></audio>
             </div>
-            <input id="entryActionFile" class="entry-action-file" type="file" accept="image/*,application/pdf,.pdf,.doc,.docx,.txt,.ppt,.pptx,.xls,.xlsx,audio/*" multiple>
-            <div class="entry-action-file-hint" id="entryActionFileHint">支持图片、文档、PDF、音频。图片会走识别接口，其他文件先按元数据入库。</div>
+            <input id="entryActionFile" class="entry-action-file" type="file" accept="image/*,video/*,application/pdf,.pdf,.doc,.docx,.txt,.md,.markdown,.json,.csv,.tsv,.ppt,.pptx,.xls,.xlsx,audio/*" multiple>
+            <div class="entry-action-file-hint" id="entryActionFileHint">支持图片、文本、文档、PDF、音频、视频。文本会尽量保留正文，音视频会保留可预览文件。</div>
             <div class="entry-action-result" id="entryActionResult"></div>
             <div class="entry-action-footer">
                 <button type="button" class="entry-action-btn" id="entryActionCancelBtn">取消</button>
@@ -1939,7 +2382,8 @@
             <div class="space-item-meta" id="spaceItemMeta">-</div>
             <input id="spaceItemNameInput" class="space-item-input" type="text" placeholder="名称">
             <textarea id="spaceItemContentInput" class="space-item-textarea" placeholder="内容或备注"></textarea>
-            <audio id="spaceItemAudio" class="space-item-audio" controls></audio>
+            <div class="space-item-summary" id="spaceItemSummary"></div>
+            <div class="space-item-preview" id="spaceItemPreview"></div>
             <div class="space-item-status" id="spaceItemStatus"></div>
             <div class="space-item-actions">
                 <button type="button" class="space-item-btn" id="spaceItemCancelBtn">取消</button>
@@ -1948,13 +2392,16 @@
         </div>
     </div>
 
-    <script src="js/user-context.js"></script>
-    <script src="js/api-utils.js"></script>
-    <script src="js/auth-ui.js"></script>
+    <script src="assets/js/shared/user-context.js?v=20260330-authfix"></script>
+    <script src="assets/js/shared/api-utils.js?v=20260330-authfix"></script>
+    <script src="assets/js/shared/project-local-data.js?v=20260330-authfix"></script>
+    <script src="assets/js/shared/space-cloud-store.js?v=20260330-spacecloud"></script>
+    <script src="assets/js/shared/auth-ui.js?v=20260330-authfix"></script>
+    <script src="assets/js/shared/page-shell.js?v=20260331-telemetryfix"></script>
     <script>
         const API_BASE = window.ApiUtils.getApiBase();
-        const CHAT_STORE_KEY = 'fangzhigong_chat_sessions_v1';
         const MAX_CHAT_SESSIONS = 20;
+        const DRAW_CONCEPT_STORE_KEY = 'fangzhigong_home_draw_concept_v1';
         const { parseApiResponse, withSuggestion } = window.ApiUtils;
 
         let chatSessions = [];
@@ -1975,6 +2422,8 @@
         let activeSpaceItemRef = null;
         let aiContextItems = [];
         let aiPendingExternalFiles = [];
+        const ENTRY_ACTION_CREATE_SPACE_VALUE = '__create_new_space__';
+        const TEXT_FILE_EXTENSIONS = ['.txt', '.md', '.markdown', '.json', '.csv', '.tsv', '.js', '.ts', '.py', '.java', '.c', '.cpp', '.html', '.htm', '.css', '.xml'];
 
         function nowLabel(date) {
             const d = date instanceof Date ? date : new Date(date || Date.now());
@@ -1993,9 +2442,16 @@
             };
         }
 
+        function getChatStoreKey() {
+            if (window.ProjectLocalData && typeof window.ProjectLocalData.getChatStoreKey === 'function') {
+                return window.ProjectLocalData.getChatStoreKey(getUserId());
+            }
+            return 'fangzhigong_chat_sessions_v1';
+        }
+
         function saveSessionsToLocal() {
             try {
-                localStorage.setItem(CHAT_STORE_KEY, JSON.stringify({
+                localStorage.setItem(getChatStoreKey(), JSON.stringify({
                     activeSessionId,
                     sessions: chatSessions.slice(0, MAX_CHAT_SESSIONS)
                 }));
@@ -2006,7 +2462,10 @@
 
         function loadSessionsFromLocal() {
             try {
-                const raw = localStorage.getItem(CHAT_STORE_KEY);
+                if (window.ProjectLocalData && typeof window.ProjectLocalData.ensureChatStoreForUser === 'function') {
+                    window.ProjectLocalData.ensureChatStoreForUser(getUserId(), MAX_CHAT_SESSIONS);
+                }
+                const raw = localStorage.getItem(getChatStoreKey());
                 if (!raw) return;
                 const parsed = JSON.parse(raw);
                 if (parsed && Array.isArray(parsed.sessions)) {
@@ -2225,18 +2684,21 @@
             }
 
             const btn = document.getElementById('newChatBtn');
-            if (btn) {
+            if (btn && !btn.dataset.bound) {
                 btn.addEventListener('click', createNewSession);
+                btn.dataset.bound = '1';
             }
 
             const renameBtn = document.getElementById('renameChatBtn');
-            if (renameBtn) {
+            if (renameBtn && !renameBtn.dataset.bound) {
                 renameBtn.addEventListener('click', renameActiveSession);
+                renameBtn.dataset.bound = '1';
             }
 
             const clearBtn = document.getElementById('clearChatBtn');
-            if (clearBtn) {
+            if (clearBtn && !clearBtn.dataset.bound) {
                 clearBtn.addEventListener('click', clearActiveSessionMessages);
+                clearBtn.dataset.bound = '1';
             }
         }
 
@@ -2244,69 +2706,97 @@
             return window.UserContext ? window.UserContext.getUserId() : 'default_user';
         }
 
-        function getEntrySpaceStoreKey() {
-            return `fangzhigong_entry_spaces_${getUserId()}`;
+        function normalizeDrawConcept(value) {
+            return String(value || '').replace(/\s+/g, ' ').trim();
         }
 
-        function createEntrySpace(name) {
-            const ts = Date.now();
-            return {
-                id: `space_${ts}_${Math.random().toString(36).slice(2, 7)}`,
-                name: (name || '新空间').trim() || '新空间',
-                createdAt: ts,
-                items: []
-            };
+        function getDrawQuestionConcept() {
+            const input = document.getElementById('qb-draw-concept');
+            return normalizeDrawConcept(input ? input.value : '');
         }
 
-        function loadEntrySpacesFromLocal() {
-            entrySpaces = [];
-            activeEntrySpaceId = null;
-
+        function saveDrawQuestionConcept(value) {
             try {
-                const raw = localStorage.getItem(getEntrySpaceStoreKey());
-                if (!raw) return;
-                const parsed = JSON.parse(raw);
-                if (parsed && Array.isArray(parsed.spaces)) {
-                    entrySpaces = parsed.spaces.map(space => ({
-                        id: String(space.id || ''),
-                        name: String(space.name || '新空间'),
-                        createdAt: Number(space.createdAt || Date.now()),
-                        items: Array.isArray(space.items) ? space.items : []
-                    })).filter(space => !!space.id);
-                }
-                if (parsed && parsed.activeEntrySpaceId) {
-                    activeEntrySpaceId = String(parsed.activeEntrySpaceId);
-                }
+                localStorage.setItem(DRAW_CONCEPT_STORE_KEY, normalizeDrawConcept(value));
             } catch (error) {
-                console.warn('读取空间失败:', error);
-                entrySpaces = [];
-                activeEntrySpaceId = null;
+                console.warn('保存首页抽题知识点失败:', error);
             }
         }
 
-        function saveEntrySpacesToLocal() {
+        function restoreDrawQuestionConcept() {
+            let concept = '';
             try {
-                localStorage.setItem(getEntrySpaceStoreKey(), JSON.stringify({
-                    activeEntrySpaceId,
-                    spaces: entrySpaces
-                }));
+                concept = normalizeDrawConcept(localStorage.getItem(DRAW_CONCEPT_STORE_KEY) || '');
             } catch (error) {
-                console.warn('保存空间失败:', error);
+                concept = '';
+            }
+
+            const input = document.getElementById('qb-draw-concept');
+            if (input) {
+                input.value = concept;
+            }
+        }
+
+        function getSpaceApi() {
+            return window.SpaceCloudStore || null;
+        }
+
+        function normalizeEntrySpaceName(value, fallbackName) {
+            const normalized = String(value || '').replace(/\s+/g, ' ').trim();
+            return normalized || (fallbackName || '新空间');
+        }
+
+        function isTextLikeUpload(mime, lowerName) {
+            if (String(mime || '').startsWith('text/')) return true;
+            return TEXT_FILE_EXTENSIONS.some(ext => String(lowerName || '').endsWith(ext));
+        }
+
+        function inferEntryUploadKind(mime, lowerName) {
+            const mimeText = String(mime || '').toLowerCase();
+            const fileName = String(lowerName || '').toLowerCase();
+            if (mimeText.startsWith('image/')) return 'image';
+            if (mimeText.startsWith('audio/')) return 'audio';
+            if (mimeText.startsWith('video/')) return 'video';
+            if (mimeText.includes('pdf') || fileName.endsWith('.pdf')) return 'pdf';
+            if (isTextLikeUpload(mimeText, fileName)) return 'note';
+            return 'document';
+        }
+
+        async function readFileAsText(file) {
+            if (!file || typeof file.text !== 'function') return '';
+            const text = await file.text();
+            return String(text || '').replace(/\u0000/g, '').slice(0, 120000);
+        }
+
+        function getEntryActionSpaceInputState() {
+            const select = document.getElementById('entryActionSpaceSelect');
+            const newInput = document.getElementById('entryActionNewSpaceInput');
+            const hint = document.getElementById('entryActionSpaceHint');
+            return { select, newInput, hint };
+        }
+
+        function toggleEntryActionNewSpaceInput(shouldShow) {
+            const { newInput, hint } = getEntryActionSpaceInputState();
+            if (newInput) {
+                newInput.style.display = shouldShow ? 'block' : 'none';
+                if (!shouldShow) {
+                    newInput.value = '';
+                }
+            }
+            if (hint) {
+                hint.textContent = shouldShow
+                    ? '新空间会在本次提交时创建到云端，并自动绑定当前账号。'
+                    : '可直接保存到已有空间，或在本次提交时新建空间。';
             }
         }
 
         function ensureEntrySpacesState() {
             if (!entrySpaces.length) {
-                const defaultName = `${getUserId()}的空间`;
-                const space = createEntrySpace(defaultName);
-                entrySpaces = [space];
-                activeEntrySpaceId = space.id;
-                saveEntrySpacesToLocal();
+                activeEntrySpaceId = null;
                 return;
             }
             if (!entrySpaces.find(space => space.id === activeEntrySpaceId)) {
                 activeEntrySpaceId = entrySpaces[0].id;
-                saveEntrySpacesToLocal();
             }
         }
 
@@ -2314,23 +2804,92 @@
             return entrySpaces.find(space => space.id === activeEntrySpaceId) || null;
         }
 
+        function getEntrySpaceById(spaceId) {
+            return entrySpaces.find(space => space.id === spaceId) || null;
+        }
+
+        function replaceEntrySpace(space) {
+            if (!space || !space.id) return;
+            entrySpaces = [space].concat(entrySpaces.filter(item => item.id !== space.id));
+            ensureEntrySpacesState();
+        }
+
         function buildNextEntrySpaceName() {
             const count = entrySpaces.length + 1;
             return `新空间 ${count}`;
         }
 
-        function addEntrySpace() {
-            const space = createEntrySpace(buildNextEntrySpaceName());
-            entrySpaces.unshift(space);
+        async function loadEntrySpacesFromCloud() {
+            const api = getSpaceApi();
+            if (!api || typeof api.listSpaces !== 'function') {
+                entrySpaces = [];
+                activeEntrySpaceId = null;
+                return;
+            }
+            try {
+                const data = await api.listSpaces(getUserId());
+                entrySpaces = Array.isArray(data.spaces) ? data.spaces : [];
+                if (data.activeEntrySpaceId && entrySpaces.some(space => space.id === data.activeEntrySpaceId)) {
+                    activeEntrySpaceId = data.activeEntrySpaceId;
+                }
+                ensureEntrySpacesState();
+            } catch (error) {
+                console.warn('读取云端空间失败:', error);
+                entrySpaces = [];
+                activeEntrySpaceId = null;
+            }
+        }
+
+        function renderEntryActionSpaceOptions(selectedSpaceId) {
+            const { select } = getEntryActionSpaceInputState();
+            if (!select) return;
+
+            const activeId = String(selectedSpaceId || activeEntrySpaceId || '');
+            const options = entrySpaces.slice()
+                .sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0))
+                .map(space => `<option value="${escapeHtml(space.id)}">${escapeHtml(space.name || '新空间')}</option>`);
+
+            options.push(`<option value="${ENTRY_ACTION_CREATE_SPACE_VALUE}">+ 新建空间</option>`);
+            select.innerHTML = options.join('');
+            select.value = entrySpaces.find(space => space.id === activeId)
+                ? activeId
+                : (entrySpaces[0] ? entrySpaces[0].id : ENTRY_ACTION_CREATE_SPACE_VALUE);
+            toggleEntryActionNewSpaceInput(select.value === ENTRY_ACTION_CREATE_SPACE_VALUE);
+        }
+
+        async function createEntrySpaceAndPersist(name) {
+            const api = getSpaceApi();
+            if (!api || typeof api.createSpace !== 'function') {
+                throw new Error('空间服务未初始化');
+            }
+
+            const fallbackName = buildNextEntrySpaceName();
+            const created = await api.createSpace(getUserId(), normalizeEntrySpaceName(name, fallbackName));
+            const space = created && created.space ? created.space : null;
+            if (!space) {
+                throw new Error('空间创建失败');
+            }
+
+            replaceEntrySpace(space);
             activeEntrySpaceId = space.id;
-            saveEntrySpacesToLocal();
             renderEntrySpacesSection();
+            renderAiSpaceItemOptions();
+            return space;
+        }
+
+        async function addEntrySpace() {
+            try {
+                await createEntrySpaceAndPersist(buildNextEntrySpaceName());
+            } catch (error) {
+                alert((window.SpaceCloudStore && window.SpaceCloudStore.withSuggestion)
+                    ? window.SpaceCloudStore.withSuggestion('新空间创建失败', error, '请检查网络或稍后重试')
+                    : '新空间创建失败，请稍后重试。');
+            }
         }
 
         function setActiveEntrySpace(spaceId) {
             if (!spaceId || !entrySpaces.find(space => space.id === spaceId)) return;
             activeEntrySpaceId = spaceId;
-            saveEntrySpacesToLocal();
             renderEntrySpacesSection();
             renderAiSpaceItemOptions();
         }
@@ -2341,8 +2900,44 @@
             window.location.href = `spaces.html?space_id=${encodeURIComponent(spaceId)}`;
         }
 
-        function getEntrySpaceById(spaceId) {
-            return entrySpaces.find(space => space.id === spaceId) || null;
+        async function resolveEntryActionTargetSpace() {
+            const { select, newInput } = getEntryActionSpaceInputState();
+
+            if (!select) {
+                const activeSpace = getActiveEntrySpace();
+                return activeSpace
+                    ? { ok: true, space: activeSpace, created: false }
+                    : { ok: false, message: '未找到可用空间，请先创建空间。' };
+            }
+
+            const selectedValue = String(select.value || '').trim();
+            if (selectedValue === ENTRY_ACTION_CREATE_SPACE_VALUE) {
+                const nextName = normalizeEntrySpaceName(newInput ? newInput.value : '', '');
+                if (!nextName) {
+                    return { ok: false, message: '请输入新空间名称。' };
+                }
+                try {
+                    const createdSpace = await createEntrySpaceAndPersist(nextName);
+                    renderEntryActionSpaceOptions(createdSpace.id);
+                    return { ok: true, space: createdSpace, created: true };
+                } catch (error) {
+                    return {
+                        ok: false,
+                        message: (window.SpaceCloudStore && window.SpaceCloudStore.withSuggestion)
+                            ? window.SpaceCloudStore.withSuggestion('新空间创建失败', error, '请稍后重试')
+                            : '新空间创建失败，请稍后重试。'
+                    };
+                }
+            }
+
+            const targetSpace = getEntrySpaceById(selectedValue) || getActiveEntrySpace();
+            if (!targetSpace) {
+                return { ok: false, message: '未找到目标空间，请刷新后重试。' };
+            }
+            if (targetSpace.id !== activeEntrySpaceId) {
+                activeEntrySpaceId = targetSpace.id;
+            }
+            return { ok: true, space: targetSpace, created: false };
         }
 
         function findSpaceItemRef(itemId) {
@@ -2363,17 +2958,42 @@
             return space.items.find(item => item.id === ref.itemId) || null;
         }
 
-        function updateSpaceItemByRef(ref, updates) {
-            const space = getEntrySpaceById(ref && ref.spaceId);
-            if (!space || !Array.isArray(space.items)) return false;
-            const idx = space.items.findIndex(item => item.id === ref.itemId);
-            if (idx < 0) return false;
-            space.items[idx] = {
-                ...space.items[idx],
-                ...(updates || {}),
-                updatedAt: Date.now()
-            };
-            saveEntrySpacesToLocal();
+        function getSpaceItemPreviewHtml(item) {
+            const api = getSpaceApi();
+            if (api && typeof api.buildItemPreviewHtml === 'function') {
+                return api.buildItemPreviewHtml(item);
+            }
+            return '';
+        }
+
+        async function refreshSpaceItemDetail(ref) {
+            const api = getSpaceApi();
+            if (!api || typeof api.getItem !== 'function' || !ref || !ref.itemId) {
+                return getSpaceItemByRef(ref);
+            }
+            const result = await api.getItem(getUserId(), ref.itemId);
+            const item = result && result.item ? result.item : null;
+            if (!item) return getSpaceItemByRef(ref);
+
+            const targetSpace = getEntrySpaceById(ref.spaceId);
+            if (targetSpace && Array.isArray(targetSpace.items)) {
+                targetSpace.items = [item].concat(targetSpace.items.filter(existing => existing.id !== item.id));
+            }
+            return item;
+        }
+
+        async function updateSpaceItemByRef(ref, updates) {
+            const api = getSpaceApi();
+            if (!api || typeof api.updateItem !== 'function' || !ref || !ref.itemId) return false;
+            const targetSpace = getEntrySpaceById(ref.spaceId);
+            if (!targetSpace || !Array.isArray(targetSpace.items)) return false;
+
+            const updated = await api.updateItem(getUserId(), ref.itemId, updates || {});
+            const item = updated && updated.item ? updated.item : null;
+            if (!item) return false;
+
+            targetSpace.items = [item].concat(targetSpace.items.filter(existing => existing.id !== item.id));
+            targetSpace.updatedAt = item.updatedAt || Date.now();
             renderEntrySpacesSection();
             return true;
         }
@@ -2381,67 +3001,94 @@
         function closeSpaceItemModal() {
             const modal = document.getElementById('spaceItemModal');
             const status = document.getElementById('spaceItemStatus');
-            const audioEl = document.getElementById('spaceItemAudio');
-            if (audioEl) {
-                audioEl.pause();
-                audioEl.removeAttribute('src');
-                audioEl.style.display = 'none';
+            const summaryEl = document.getElementById('spaceItemSummary');
+            const previewEl = document.getElementById('spaceItemPreview');
+            if (summaryEl) {
+                summaryEl.textContent = '';
+                summaryEl.style.display = 'none';
+            }
+            if (previewEl) {
+                previewEl.innerHTML = '';
+                previewEl.style.display = 'none';
             }
             if (status) status.textContent = '';
             if (modal) modal.classList.remove('show');
             activeSpaceItemRef = null;
         }
 
-        function openSpaceItemModalById(itemId) {
+        async function openSpaceItemModalById(itemId) {
             const ref = findSpaceItemRef(itemId);
             if (!ref) return;
-            const item = getSpaceItemByRef(ref);
             const space = getEntrySpaceById(ref.spaceId);
-            if (!item || !space) return;
+            if (!space) return;
 
             const modal = document.getElementById('spaceItemModal');
             const meta = document.getElementById('spaceItemMeta');
             const nameInput = document.getElementById('spaceItemNameInput');
             const contentInput = document.getElementById('spaceItemContentInput');
-            const audioEl = document.getElementById('spaceItemAudio');
+            const summaryEl = document.getElementById('spaceItemSummary');
+            const previewEl = document.getElementById('spaceItemPreview');
             const status = document.getElementById('spaceItemStatus');
-            if (!modal || !meta || !nameInput || !contentInput || !audioEl || !status) return;
+            if (!modal || !meta || !nameInput || !contentInput || !summaryEl || !previewEl || !status) return;
 
             activeSpaceItemRef = ref;
-            nameInput.value = item.name || '';
-            contentInput.value = item.content || '';
-            status.textContent = '';
+            status.textContent = '加载预览中...';
 
-            const sizeKb = Math.max(1, Math.round((Number(item.size) || 0) / 1024));
-            meta.textContent = `${space.name || '空间'} · ${item.kind || 'document'} · ${sizeKb} KB`;
+            try {
+                const item = await refreshSpaceItemDetail(ref);
+                if (!item) {
+                    status.textContent = '条目不存在或已被删除';
+                    return;
+                }
 
-            if ((item.kind === 'audio' || String(item.mime || '').startsWith('audio/')) && item.audioDataUrl) {
-                audioEl.src = item.audioDataUrl;
-                audioEl.style.display = 'block';
-            } else {
-                audioEl.pause();
-                audioEl.removeAttribute('src');
-                audioEl.style.display = 'none';
+                nameInput.value = item.name || '';
+                contentInput.value = item.content || '';
+                const sizeKb = Math.max(1, Math.round((Number(item.size) || 0) / 1024));
+                meta.textContent = `${space.name || '空间'} · ${item.kind || 'document'} · ${sizeKb} KB`;
+
+                summaryEl.textContent = item.summary || '';
+                summaryEl.style.display = item.summary ? 'block' : 'none';
+
+                const previewHtml = getSpaceItemPreviewHtml(item);
+                if (previewHtml) {
+                    previewEl.innerHTML = previewHtml;
+                    previewEl.style.display = 'block';
+                } else {
+                    previewEl.innerHTML = '<div class="space-item-preview-note">当前条目暂无可视化预览，但已保存分析摘要。</div>';
+                    previewEl.style.display = 'block';
+                }
+
+                status.textContent = '已加载云端预览';
+                modal.classList.add('show');
+            } catch (error) {
+                status.textContent = (window.SpaceCloudStore && window.SpaceCloudStore.withSuggestion)
+                    ? window.SpaceCloudStore.withSuggestion('预览加载失败', error, '稍后重试')
+                    : '预览加载失败，请稍后重试';
+                modal.classList.add('show');
             }
-
-            modal.classList.add('show');
         }
 
-        function saveSpaceItemModalChanges() {
+        async function saveSpaceItemModalChanges() {
             const nameInput = document.getElementById('spaceItemNameInput');
             const contentInput = document.getElementById('spaceItemContentInput');
             const status = document.getElementById('spaceItemStatus');
             if (!nameInput || !contentInput || !status || !activeSpaceItemRef) return;
 
-            const ok = updateSpaceItemByRef(activeSpaceItemRef, {
-                name: (nameInput.value || '').trim() || '未命名文件',
-                content: (contentInput.value || '').trim()
-            });
-
-            status.textContent = ok ? '已保存修改' : '保存失败，请重试';
-            if (ok) {
-                renderAiSpaceItemOptions();
-                setTimeout(closeSpaceItemModal, 450);
+            status.textContent = '保存中...';
+            try {
+                const ok = await updateSpaceItemByRef(activeSpaceItemRef, {
+                    name: (nameInput.value || '').trim() || '未命名文件',
+                    content: (contentInput.value || '').trim()
+                });
+                status.textContent = ok ? '已保存修改' : '保存失败，请重试';
+                if (ok) {
+                    renderAiSpaceItemOptions();
+                    setTimeout(closeSpaceItemModal, 450);
+                }
+            } catch (error) {
+                status.textContent = (window.SpaceCloudStore && window.SpaceCloudStore.withSuggestion)
+                    ? window.SpaceCloudStore.withSuggestion('保存失败', error, '请稍后重试')
+                    : '保存失败，请稍后重试';
             }
         }
 
@@ -2494,7 +3141,7 @@
             if (!aiContextItems.length) return '';
             const lines = aiContextItems.slice(0, 10).map((item, index) => {
                 const type = item.kind || 'document';
-                const content = (item.content || '').trim();
+                const content = (item.content || item.summary || '').trim();
                 const contentBrief = content ? content.slice(0, 240) : '无正文，仅有文件信息';
                 return `${index + 1}. ${item.name || '未命名资料'} [${type}]\n${contentBrief}`;
             });
@@ -2511,28 +3158,40 @@
             });
         }
 
-        function appendFileToActiveSpace(fileInfo) {
-            const activeSpace = getActiveEntrySpace();
-            if (!activeSpace) return;
+        function getEntrySpaceItemSnippet(item) {
+            const api = getSpaceApi();
+            if (api && typeof api.getItemSnippet === 'function') {
+                return api.getItemSnippet(item, 54);
+            }
+            return '点击即可直接预览分析';
+        }
 
-            activeSpace.items = Array.isArray(activeSpace.items) ? activeSpace.items : [];
-            activeSpace.items.unshift({
-                id: `item_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
-                name: String(fileInfo && fileInfo.name ? fileInfo.name : '未命名文件'),
-                kind: String(fileInfo && fileInfo.kind ? fileInfo.kind : 'document'),
-                mime: String(fileInfo && fileInfo.mime ? fileInfo.mime : ''),
-                size: Number(fileInfo && fileInfo.size ? fileInfo.size : 0),
-                source: String(fileInfo && fileInfo.source ? fileInfo.source : 'entry_upload'),
-                content: String(fileInfo && fileInfo.content ? fileInfo.content : ''),
-                audioDataUrl: String(fileInfo && fileInfo.audioDataUrl ? fileInfo.audioDataUrl : ''),
-                fileDataUrl: String(fileInfo && fileInfo.fileDataUrl ? fileInfo.fileDataUrl : ''),
-                addedAt: Date.now()
-            });
+        async function appendFilesToEntrySpace(fileInfos, targetSpaceId) {
+            const api = getSpaceApi();
+            const targetSpace = getEntrySpaceById(targetSpaceId) || getActiveEntrySpace();
+            if (!api || typeof api.addItems !== 'function' || !targetSpace) {
+                return { ok: false, message: '未找到目标空间，请刷新后重试。' };
+            }
 
-            activeSpace.items = activeSpace.items.slice(0, 100);
-            saveEntrySpacesToLocal();
-            renderEntrySpacesSection();
-            renderAiSpaceItemOptions();
+            try {
+                const saved = await api.addItems(getUserId(), targetSpace.id, Array.isArray(fileInfos) ? fileInfos : []);
+                const space = saved && saved.space ? saved.space : null;
+                if (!space) {
+                    return { ok: false, message: '云端保存未返回空间信息。' };
+                }
+                replaceEntrySpace(space);
+                activeEntrySpaceId = space.id;
+                renderEntrySpacesSection();
+                renderAiSpaceItemOptions();
+                return { ok: true, space, count: Array.isArray(saved.items) ? saved.items.length : 0 };
+            } catch (error) {
+                return {
+                    ok: false,
+                    message: (window.SpaceCloudStore && window.SpaceCloudStore.withSuggestion)
+                        ? window.SpaceCloudStore.withSuggestion('云端保存失败', error, '请检查网络后重试')
+                        : '云端保存失败，请稍后重试。'
+                };
+            }
         }
 
         function renderEntrySpacesSection() {
@@ -2543,9 +3202,16 @@
 
             ensureEntrySpacesState();
 
+            if (!entrySpaces.length) {
+                grid.innerHTML = '<div class="entry-space-card"><div class="entry-space-name">暂无空间</div><div class="entry-space-meta">点击右上角新建空间，或在上传时直接创建</div></div>';
+                fileTitle.textContent = '当前空间 · 文件';
+                fileList.innerHTML = '<div class="entry-space-file-item"><div class="entry-space-file-name">暂无文件</div><div class="entry-space-file-meta">文件会保存在云端，并与当前账号绑定</div></div>';
+                return;
+            }
+
             const sortedSpaces = [...entrySpaces].sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
             grid.innerHTML = sortedSpaces.map(space => {
-                const itemCount = Array.isArray(space.items) ? space.items.length : 0;
+                const itemCount = Array.isArray(space.items) ? space.items.length : (Number(space.itemCount) || 0);
                 const activeClass = space.id === activeEntrySpaceId ? 'active' : '';
                 return `<button type="button" class="entry-space-card ${activeClass}" data-space-id="${escapeHtml(space.id)}"><div class="entry-space-name">${escapeHtml(space.name || '新空间')}</div><div class="entry-space-meta">${itemCount} 内容</div></button>`;
             }).join('');
@@ -2561,7 +3227,7 @@
             fileTitle.textContent = `${activeSpace ? activeSpace.name : '当前空间'} · 文件`;
 
             if (!activeItems.length) {
-                fileList.innerHTML = '<div class="entry-space-file-item"><div class="entry-space-file-name">暂无文件</div><div class="entry-space-file-meta">上传文件后会出现在这里</div></div>';
+                fileList.innerHTML = '<div class="entry-space-file-item"><div class="entry-space-file-name">暂无文件</div><div class="entry-space-file-meta">上传文件后会直接同步到云端空间</div></div>';
                 return;
             }
 
@@ -2569,7 +3235,8 @@
                 const sizeKb = Math.max(1, Math.round((Number(item.size) || 0) / 1024));
                 const timeLabel = nowLabel(item.addedAt);
                 const typeLabel = String(item.kind || 'document');
-                return `<button type="button" class="entry-space-file-item clickable" data-space-item-id="${escapeHtml(item.id)}"><div class="entry-space-file-name">${escapeHtml(item.name || '未命名文件')}</div><div class="entry-space-file-meta">${escapeHtml(typeLabel)} · ${sizeKb} KB · ${timeLabel}</div></button>`;
+                const snippet = getEntrySpaceItemSnippet(item);
+                return `<button type="button" class="entry-space-file-item clickable" data-space-item-id="${escapeHtml(item.id)}"><div class="entry-space-file-name">${escapeHtml(item.name || '未命名文件')}</div><div class="entry-space-file-meta">${escapeHtml(typeLabel)} · ${sizeKb} KB · ${timeLabel}</div><div class="entry-space-file-meta">${escapeHtml(snippet)}</div></button>`;
             }).join('');
 
             fileList.querySelectorAll('[data-space-item-id]').forEach(btn => {
@@ -2579,20 +3246,31 @@
             });
         }
 
-        function initEntrySpacesUI() {
+        async function initEntrySpacesUI() {
             const addBtn = document.getElementById('entryAddSpaceBtn');
             const section = document.getElementById('entrySpacesSection');
+            const { select } = getEntryActionSpaceInputState();
             if (!section || !addBtn) return;
 
-            loadEntrySpacesFromLocal();
+            await loadEntrySpacesFromCloud();
             ensureEntrySpacesState();
             renderEntrySpacesSection();
             renderAiSpaceItemOptions();
             renderAiContextList();
+            renderEntryActionSpaceOptions(activeEntrySpaceId);
 
             if (!addBtn.dataset.bound) {
-                addBtn.addEventListener('click', addEntrySpace);
+                addBtn.addEventListener('click', function () {
+                    addEntrySpace();
+                });
                 addBtn.dataset.bound = '1';
+            }
+
+            if (select && !select.dataset.bound) {
+                select.addEventListener('change', function () {
+                    toggleEntryActionNewSpaceInput(this.value === ENTRY_ACTION_CREATE_SPACE_VALUE);
+                });
+                select.dataset.bound = '1';
             }
         }
 
@@ -2702,6 +3380,7 @@
             const recordControls = document.getElementById('entryRecordControls');
             const result = document.getElementById('entryActionResult');
             const submitBtn = document.getElementById('entryActionSubmitBtn');
+            const { select, newInput } = getEntryActionSpaceInputState();
             if (entryMediaRecorder && entryMediaRecorder.state === 'recording') {
                 entryMediaRecorder.stop();
             }
@@ -2717,6 +3396,14 @@
                 submitBtn.disabled = false;
                 submitBtn.textContent = '提交';
             }
+            if (select) {
+                select.value = activeEntrySpaceId || '';
+            }
+            if (newInput) {
+                newInput.value = '';
+                newInput.style.display = 'none';
+            }
+            toggleEntryActionNewSpaceInput(false);
             entryActionMode = '';
         }
 
@@ -2742,10 +3429,11 @@
             result.textContent = '';
             submitBtn.disabled = false;
             submitBtn.textContent = '提交';
+            renderEntryActionSpaceOptions(activeEntrySpaceId);
 
             if (mode === 'upload') {
                 titleEl.textContent = '上传学习资料';
-                descEl.textContent = '支持图片、文档、PDF、音频。图片会直接识别，其他文件先按元数据入库。';
+                descEl.textContent = '支持图片、文本、文档、PDF、音频、视频。文本会尽量保留正文，音视频会保留可预览文件。';
                 subject.style.display = 'none';
                 content.style.display = 'none';
                 fileInput.style.display = 'block';
@@ -2798,6 +3486,15 @@
             submitBtn.textContent = '处理中...';
 
             try {
+                const targetResult = await resolveEntryActionTargetSpace();
+                if (!targetResult.ok) {
+                    result.textContent = targetResult.message;
+                    return;
+                }
+
+                const targetSpace = targetResult.space;
+                const targetSpaceName = targetSpace && targetSpace.name ? targetSpace.name : '当前空间';
+
                 if (entryActionMode === 'upload') {
                     const files = Array.from(fileInput.files || []);
                     if (!files.length) {
@@ -2807,10 +3504,12 @@
 
                     let imageCount = 0;
                     let otherCount = 0;
+                    const uploadItems = [];
                     for (const file of files) {
                         const mime = String(file.type || '').toLowerCase();
                         const lowerName = String(file.name || '').toLowerCase();
-                        const isImage = mime.startsWith('image/');
+                        const contentType = inferEntryUploadKind(mime, lowerName);
+                        const isImage = contentType === 'image';
                         let fileDataUrl = '';
                         try {
                             fileDataUrl = await readFileAsDataUrl(file);
@@ -2818,14 +3517,19 @@
                             fileDataUrl = '';
                         }
 
-                        let contentType = 'document';
+                        let textContent = '';
+                        if (contentType === 'note') {
+                            try {
+                                textContent = await readFileAsText(file);
+                            } catch (error) {
+                                textContent = '';
+                            }
+                        }
+
                         if (isImage) {
-                            contentType = 'image';
                             imageCount += 1;
-                        } else if (mime.startsWith('audio/')) {
-                            contentType = 'audio';
-                        } else if (mime.includes('pdf') || lowerName.endsWith('.pdf')) {
-                            contentType = 'pdf';
+                        } else {
+                            otherCount += 1;
                         }
 
                         const sizeKb = Math.max(1, Math.round((Number(file.size) || 0) / 1024));
@@ -2833,24 +3537,30 @@
                             `文件名: ${file.name || 'unknown'}`,
                             `MIME: ${mime || 'unknown'}`,
                             `大小: ${sizeKb} KB`,
-                            '说明: 前端已接入该文件类型，后端可按 content_type 分流处理'
+                            `类型: ${contentType}`,
+                            '说明: 已保存原始文件预览和基础元信息'
                         ].join('\n');
 
-                        appendFileToActiveSpace({
+                        uploadItems.push({
                             name: file.name,
                             kind: contentType,
                             mime: mime,
                             size: file.size,
                             source: 'entry_upload',
-                            content: metaText,
+                            content: textContent,
+                            summary: metaText,
+                            audioDataUrl: contentType === 'audio' ? fileDataUrl : '',
                             fileDataUrl
                         });
-                        if (contentType !== 'image') {
-                            otherCount += 1;
-                        }
                     }
 
-                    result.textContent = `已保存到我的空间：图片 ${imageCount} 个，其他文件 ${otherCount} 个。`;
+                    const uploadSave = await appendFilesToEntrySpace(uploadItems, targetSpace.id);
+                    if (!uploadSave.ok) {
+                        result.textContent = uploadSave.message;
+                        return;
+                    }
+
+                    result.textContent = `已保存到「${targetSpaceName}」：图片 ${imageCount} 个，其他文件 ${otherCount} 个。`;
                     setTimeout(closeEntryActionModal, 450);
                     return;
                 }
@@ -2862,15 +3572,20 @@
                         result.textContent = '请输入内容后再提交。';
                         return;
                     }
-                    appendFileToActiveSpace({
+                    const linkSave = await appendFilesToEntrySpace([{
                         name: title || '入口链接',
                         kind: 'link',
                         mime: 'text/uri-list',
                         size: Number(payloadText.length) || 0,
                         source: 'entry_link',
-                        content: payloadText
-                    });
-                    result.textContent = '链接已保存到我的空间。';
+                        content: payloadText,
+                        summary: '链接内容已保存，可直接用于后续问答参考。'
+                    }], targetSpace.id);
+                    if (!linkSave.ok) {
+                        result.textContent = linkSave.message;
+                        return;
+                    }
+                    result.textContent = `链接已保存到「${targetSpaceName}」。`;
                     setTimeout(closeEntryActionModal, 450);
                     return;
                 }
@@ -2883,6 +3598,7 @@
                         return;
                     }
 
+                    const recordItems = [];
                     if (hasAudio) {
                         const sizeBytes = Number(entryRecordedBlob.size) || 0;
                         const audioMeta = [
@@ -2904,29 +3620,37 @@
                             audioDataUrl = '';
                         }
 
-                        appendFileToActiveSpace({
+                        recordItems.push({
                             name: `${title || '入口录音'}.webm`,
                             kind: 'audio',
                             mime: entryRecordedMime || 'audio/webm',
                             size: sizeBytes,
                             source: 'entry_record_modal',
-                            content: audioMeta,
+                            content: payloadText,
+                            summary: audioMeta,
                             audioDataUrl
                         });
-                    }
-
-                    if (payloadText) {
-                        appendFileToActiveSpace({
+                    } else if (payloadText) {
+                        recordItems.push({
                             name: title || '入口记录',
                             kind: 'note',
                             mime: 'text/plain',
                             size: Number(payloadText.length) || 0,
                             source: 'entry_record_note',
-                            content: payloadText
+                            content: payloadText,
+                            summary: '课堂记录文本已保存。'
                         });
                     }
 
-                    result.textContent = hasAudio ? '录音与记录已保存到我的空间。' : '讲座记录已保存到我的空间。';
+                    const recordSave = await appendFilesToEntrySpace(recordItems, targetSpace.id);
+                    if (!recordSave.ok) {
+                        result.textContent = recordSave.message;
+                        return;
+                    }
+
+                    result.textContent = hasAudio
+                        ? `录音${payloadText ? '与文字记录' : ''}已保存到「${targetSpaceName}」。`
+                        : `讲座记录已保存到「${targetSpaceName}」。`;
                     setTimeout(closeEntryActionModal, 450);
                     return;
                 }
@@ -2936,15 +3660,20 @@
                     result.textContent = '请输入内容后再提交。';
                     return;
                 }
-                appendFileToActiveSpace({
+                const noteSave = await appendFilesToEntrySpace([{
                     name: title || '入口粘贴',
                     kind: 'note',
                     mime: 'text/plain',
                     size: Number(payloadText.length) || 0,
                     source: 'entry_paste',
-                    content: payloadText
-                });
-                result.textContent = '粘贴内容已保存到我的空间。';
+                    content: payloadText,
+                    summary: '粘贴文本已保存，可用于后续问答和练习。'
+                }], targetSpace.id);
+                if (!noteSave.ok) {
+                    result.textContent = noteSave.message;
+                    return;
+                }
+                result.textContent = `粘贴内容已保存到「${targetSpaceName}」。`;
                 setTimeout(closeEntryActionModal, 450);
             } catch (error) {
                 result.textContent = withSuggestion('提交失败', error, '请稍后重试');
@@ -2957,6 +3686,7 @@
         function initEntryGateway() {
             const entryInput = document.getElementById('entryQuestionInput');
             const entrySendBtn = document.getElementById('entrySendBtn');
+            const entryHeadingText = document.getElementById('entryHeadingText');
             const entryUserName = document.getElementById('entryUserName');
             const entryUploadTool = document.getElementById('entryToolUpload');
             const entryLinkTool = document.getElementById('entryToolLink');
@@ -2969,12 +3699,40 @@
             }
 
             const refreshUserName = () => {
-                if (!entryUserName) return;
+                const isAuthenticated = window.UserContext && typeof window.UserContext.isAuthenticated === 'function'
+                    ? window.UserContext.isAuthenticated()
+                    : false;
                 const name = (window.UserContext && typeof window.UserContext.getDisplayName === 'function')
                     ? window.UserContext.getDisplayName()
                     : getUserId();
-                entryUserName.textContent = name || '同学';
+
+                if (entryHeadingText) {
+                    entryHeadingText.textContent = isAuthenticated ? '是时候学习了，' : '你想学什么？';
+                }
+
+                if (entryUserName) {
+                    entryUserName.hidden = !isAuthenticated;
+                    entryUserName.textContent = isAuthenticated ? (name || '同学') : '';
+                }
+
+                if (entryInput) {
+                    entryInput.placeholder = isAuthenticated ? '继续你的学习问题或任务' : '输入你想学的内容';
+                }
             };
+
+            const buildChatPageHref = (questionText) => {
+                const target = new URL('chat.html', window.location.href);
+                const current = new URL(window.location.href);
+                const apiBase = current.searchParams.get('api_base');
+                if (apiBase) {
+                    target.searchParams.set('api_base', apiBase);
+                }
+                if (questionText) {
+                    target.searchParams.set('q', questionText);
+                }
+                return target.toString();
+            };
+
             refreshUserName();
             if (window.UserContext) {
                 window.UserContext.onChange(refreshUserName);
@@ -2983,13 +3741,8 @@
             const submitEntryQuestion = () => {
                 const q = entryInput.value.trim();
                 if (!q) return;
-
-                const params = new URLSearchParams(window.location.search || '');
-                params.set('view', 'chat');
-                params.set('q', q);
-                window.history.replaceState({}, '', `${window.location.pathname}?${params.toString()}`);
-                openChatWorkspace(q);
                 entryInput.value = '';
+                window.location.href = buildChatPageHref(q);
             };
 
             entrySendBtn.addEventListener('click', submitEntryQuestion);
@@ -3682,10 +4435,18 @@
                     removeTypingMessage();
 
                     const scorePct = Math.round(Number(answerData.score || 0) * 100);
+                    const mastery = answerData.mastery_assessment || {};
+                    const advice = answerData.learning_advice || {};
+                    const diagnosis = answerData.diagnosis || {};
+                    const masteryPct = Math.round(Number(mastery['掌握度'] || 0) * 100);
                     const feedbackText = [
                         `判题结果：${answerData.is_correct ? '正确' : '待改进'}（${scorePct}分）`,
                         answerData.feedback || '',
-                        answerData.next_action || '可继续点击题库抽题。'
+                        mastery['知识点'] ? `知识掌握：${mastery['知识点']} · ${masteryPct}%（${mastery['状态'] || '一般'}）` : '',
+                        diagnosis.error_type ? `错误归因：${diagnosis.error_type}` : '',
+                        advice['建议'] ? `学习建议：${advice['建议']}` : '',
+                        Array.isArray(advice['推荐行动']) && advice['推荐行动'].length ? `推荐行动：${advice['推荐行动'].join('、')}` : '',
+                        answerData.next_action || '可继续点击题库练习。'
                     ].filter(Boolean).join('\n');
 
                     addMessage(feedbackText, 'ai', {
@@ -3751,12 +4512,31 @@
         }
 
         async function drawQuestionAndAsk() {
+            const conceptInput = document.getElementById('qb-draw-concept');
+            const concept = getDrawQuestionConcept();
+            if (!concept) {
+                addMessage('开始题库练习前，请先填写要考察的知识点，例如“导数”。', 'ai', {
+                    source: 'question_bank',
+                    aiUsed: false,
+                    error: 'concept_required'
+                });
+                if (conceptInput) {
+                    conceptInput.focus();
+                }
+                return;
+            }
+
+            if (conceptInput) {
+                conceptInput.value = concept;
+            }
+            saveDrawQuestionConcept(concept);
+
             addTypingMessage();
             try {
                 const userId = getUserId();
                 const scopeEl = document.getElementById('qb-draw-scope');
                 const scope = scopeEl ? (scopeEl.value || 'all') : 'all';
-                const response = await fetch(`${API_BASE}/api/question_bank/draw?user_id=${encodeURIComponent(userId)}&bank_scope=${encodeURIComponent(scope)}`);
+                const response = await fetch(`${API_BASE}/api/question_bank/draw?user_id=${encodeURIComponent(userId)}&bank_scope=${encodeURIComponent(scope)}&concept=${encodeURIComponent(concept)}`);
                 const data = await parseApiResponse(response);
                 removeTypingMessage();
 
@@ -3787,6 +4567,7 @@
         function initQuestionBankUI() {
             const importTextEl = document.getElementById('qb-import-text');
             const importBtn = document.getElementById('qb-import-btn');
+            const drawConceptEl = document.getElementById('qb-draw-concept');
 
             const conceptEl = document.getElementById('qb-concept');
             const difficultyEl = document.getElementById('qb-difficulty');
@@ -3800,6 +4581,20 @@
 
             if (!conceptEl || !difficultyEl || !typeEl || !questionEl || !optionsEl || !answerEl || !analysisEl || !addBtn || !resultEl || !importTextEl || !importBtn) {
                 return;
+            }
+
+            restoreDrawQuestionConcept();
+            if (drawConceptEl && !drawConceptEl.dataset.bound) {
+                drawConceptEl.addEventListener('input', function () {
+                    saveDrawQuestionConcept(this.value || '');
+                });
+                drawConceptEl.addEventListener('keydown', function (event) {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        drawQuestionAndAsk();
+                    }
+                });
+                drawConceptEl.dataset.bound = '1';
             }
 
             importBtn.addEventListener('click', async function () {
@@ -4105,42 +4900,19 @@
         function initUserContextUI() {
             if (!window.UserContext) return;
             window.UserContext.onChange(function () {
+                initConversationUI();
                 initEntrySpacesUI();
+                loadHomeProfileAndGraph();
+                loadRecommendations();
             });
         }
 
         window.addEventListener('knowledge:updated', function () {});
 
         function initGlobalSidebar() {
-            const toggle = document.getElementById('globalSidebarToggle');
-            const drawer = document.getElementById('globalSidebar');
-            const backdrop = document.getElementById('globalSidebarBackdrop');
-            if (!toggle || !drawer || !backdrop) return;
-
-            const openDrawer = () => {
-                drawer.classList.add('open');
-                backdrop.classList.add('show');
-                document.body.classList.add('sidebar-open');
-            };
-            const closeDrawer = () => {
-                drawer.classList.remove('open');
-                backdrop.classList.remove('show');
-                document.body.classList.remove('sidebar-open');
-            };
-
-            toggle.addEventListener('click', openDrawer);
-            backdrop.addEventListener('click', closeDrawer);
-            document.addEventListener('keydown', function (e) {
-                if (e.key === 'Escape') closeDrawer();
-            });
-
-            const path = (window.location.pathname || '').replace(/\\/g, '/');
-            document.querySelectorAll('[data-side-link]').forEach(link => {
-                const target = String(link.getAttribute('data-side-link') || '');
-                if (target && (path.endsWith('/' + target) || path.endsWith(target))) {
-                    link.classList.add('active');
-                }
-            });
+            if (window.PageShell && typeof window.PageShell.initGlobalSidebar === 'function') {
+                window.PageShell.initGlobalSidebar();
+            }
         }
 
         const taskModal = document.getElementById('taskStatusModal');
@@ -4222,9 +4994,11 @@
         initAiFileTools();
         initEntryGateway();
         initGlobalSidebar();
+        loadHomeProfileAndGraph();
+        loadRecommendations();
         refreshAiStatus();
     </script>
     <!-- 添加学习计划功能脚本 -->
-    <script src="js/main.js"></script>
+    <script src="assets/js/pages/home-plan-widget.js"></script>
 </body>
 </html>

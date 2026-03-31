@@ -3,10 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <title>学习仪表盘 - 智能学习伴侣</title>
-    <link rel="stylesheet" href="css/auth-ui.css">
+    <link rel="stylesheet" href="assets/css/shared/auth-ui.css">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Arial, sans-serif; background: #f5f7fa; }
+        body {
+            font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background:
+                radial-gradient(circle at top left, rgba(71, 112, 255, 0.10), transparent 24%),
+                radial-gradient(circle at top right, rgba(15, 118, 110, 0.10), transparent 20%),
+                #f4f7fb;
+            color: #10243e;
+        }
 
         .global-sidebar-toggle {
             position: fixed;
@@ -56,6 +63,13 @@
             padding: 16px 14px;
         }
 
+        .global-sidebar-scroll {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            padding-right: 2px;
+        }
+
         .global-sidebar.open { transform: translateX(0); }
 
         .global-sidebar-logo {
@@ -95,82 +109,1444 @@
             color: #64748b;
             font-weight: 700;
         }
-        
-        .dashboard-container { max-width: 1400px; margin: 0 auto; padding: 20px; }
-        
-        /* 头部 */
-        .dashboard-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
-        .dashboard-title { font-size: 32px; color: #333; }
-        .back-link { color: #667eea; text-decoration: none; font-weight: bold; }
-        
-        /* 数据卡片网格 */
-        .cards-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin-bottom: 30px; }
-        .card { background: white; border-radius: 15px; padding: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
-        .card-title { font-size: 20px; font-weight: bold; margin-bottom: 20px; color: #333; border-bottom: 2px solid #667eea; padding-bottom: 10px; }
-        
-        /* 热力图图表 */
-        .heatmap-chart { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; }
-        .heatmap-day { aspect-ratio: 1; border-radius: 3px; display: flex; align-items: center; justify-content: center; font-size: 12px; cursor: pointer; }
-        .heatmap-day:hover { transform: scale(1.1); transition: transform 0.2s; }
-        
-        /* 雷达图 */
-        .radar-container { width: 100%; height: 300px; }
-        
-        /* 进度条 */
-        .progress-item { margin: 15px 0; }
-        .progress-label { display: flex; justify-content: space-between; margin-bottom: 5px; }
-        .progress-bar { height: 10px; background: #e0e0e0; border-radius: 5px; overflow: hidden; }
-        .progress-fill { height: 100%; background: linear-gradient(to right, #667eea, #764ba2); border-radius: 5px; }
-        
-        /* 错误分类 */
-        .error-category { padding: 10px; margin: 8px 0; border-radius: 5px; display: flex; justify-content: space-between; }
-        .knowledge-error { background: #ffeaea; }
-        .skill-error { background: #fff4e6; }
-        .habit-error { background: #e8f5e8; }
 
-        .status-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
-        .status-item { padding: 10px; border-radius: 8px; background: #f8fafc; border: 1px solid #e2e8f0; }
-        .status-label { font-size: 12px; color: #64748b; margin-bottom: 5px; }
-        .status-value { font-size: 14px; font-weight: 700; color: #1f2937; }
+        .dashboard-container {
+            max-width: 1420px;
+            margin: 0 auto;
+            padding: 24px 22px 42px;
+        }
 
-        .status-badge {
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 18px;
+            margin-bottom: 24px;
+            padding-top: 10px;
+        }
+
+        .dashboard-title {
+            font-size: 34px;
+            font-weight: 900;
+            color: #13253f;
+            letter-spacing: 0.5px;
+        }
+
+        .dashboard-subtitle {
+            margin-top: 8px;
+            max-width: 760px;
+            line-height: 1.7;
+            color: #5f6f84;
+            font-size: 15px;
+        }
+
+        .dashboard-actions {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 14px;
+        }
+
+        .back-link {
+            color: #3159d5;
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        .dashboard-hero {
+            background:
+                linear-gradient(135deg, rgba(21, 54, 150, 0.96), rgba(22, 115, 147, 0.94)),
+                linear-gradient(135deg, #153696, #167393);
+            border-radius: 28px;
+            padding: 28px;
+            color: #f8fbff;
+            box-shadow: 0 22px 60px rgba(21, 54, 150, 0.22);
+            margin-bottom: 24px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .dashboard-hero::after {
+            content: "";
+            position: absolute;
+            right: -60px;
+            top: -40px;
+            width: 220px;
+            height: 220px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .hero-top-row {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 24px;
+        }
+
+        .hero-copy {
+            flex: 1;
+            min-width: 0;
+            max-width: 780px;
+        }
+
+        .hero-kicker {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
-            padding: 2px 8px;
+            padding: 6px 12px;
             border-radius: 999px;
-            border: 1px solid #cbd5e1;
-            background: #f8fafc;
-            margin-right: 6px;
-            margin-bottom: 4px;
+            background: rgba(255, 255, 255, 0.13);
+            border: 1px solid rgba(255, 255, 255, 0.20);
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.8px;
+        }
+
+        .dashboard-hero h2 {
+            position: relative;
+            z-index: 1;
+            margin-top: 16px;
+            font-size: 30px;
+            line-height: 1.35;
+            max-width: 760px;
+        }
+
+        .dashboard-hero p {
+            position: relative;
+            z-index: 1;
+            margin-top: 14px;
+            max-width: 760px;
+            line-height: 1.8;
+            color: rgba(248, 251, 255, 0.85);
+        }
+
+        .hero-metrics {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+            margin-top: 24px;
+        }
+
+        .hero-metric {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 18px;
+            padding: 16px;
+            min-height: 106px;
+            backdrop-filter: blur(8px);
+        }
+
+        .hero-metric-label {
+            font-size: 12px;
+            color: rgba(248, 251, 255, 0.78);
+            margin-bottom: 10px;
+            line-height: 1.5;
+        }
+
+        .hero-metric-value {
+            font-size: 30px;
+            font-weight: 900;
+            line-height: 1.2;
+        }
+
+        .hero-metric-note {
+            margin-top: 8px;
+            font-size: 12px;
+            color: rgba(248, 251, 255, 0.72);
+        }
+
+        .hero-pills {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 18px;
+        }
+
+        .hero-pill {
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.16);
             font-size: 12px;
         }
 
-        .status-badge .dot {
-            width: 8px;
+        .hero-drawer-launchers {
+            width: min(312px, 100%);
+            display: grid;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .hero-drawer-launcher {
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            background: rgba(255, 255, 255, 0.10);
+            border-radius: 16px;
+            padding: 12px 14px;
+            color: #f8fbff;
+            cursor: pointer;
+            text-align: left;
+            backdrop-filter: blur(10px);
+            transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease;
+        }
+
+        .hero-drawer-launcher:hover {
+            transform: translateY(-1px);
+            background: rgba(255, 255, 255, 0.14);
+            border-color: rgba(255, 255, 255, 0.30);
+        }
+
+        .hero-drawer-launcher.active {
+            background: rgba(255, 255, 255, 0.18);
+            border-color: rgba(255, 255, 255, 0.40);
+            box-shadow: 0 14px 32px rgba(15, 23, 42, 0.16);
+        }
+
+        .hero-drawer-launcher-label {
+            display: inline-flex;
+            align-items: center;
+            padding: 4px 9px;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.16);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            color: rgba(248, 251, 255, 0.92);
+            font-size: 10px;
+            font-weight: 800;
+            letter-spacing: 0.3px;
+        }
+
+        .hero-drawer-launcher-body {
+            margin-top: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .hero-drawer-launcher-title {
+            font-size: 14px;
+            font-weight: 800;
+            line-height: 1.4;
+            color: #ffffff;
+        }
+
+        .hero-drawer-launcher-arrow {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            color: #ffffff;
+            flex-shrink: 0;
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .cards-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+            gap: 22px;
+            align-items: start;
+        }
+
+        .dashboard-focus-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.1fr) minmax(0, 0.9fr);
+            gap: 22px;
+            align-items: start;
+        }
+
+        .dashboard-secondary-stack {
+            display: grid;
+            gap: 18px;
+            margin-top: 22px;
+        }
+
+        .dashboard-drawer-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.36);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.22s ease;
+            z-index: 1410;
+        }
+
+        .dashboard-drawer-backdrop.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .dashboard-drawer {
+            position: fixed;
+            top: 0;
+            right: 0;
+            height: 100vh;
+            width: min(560px, calc(100vw - 18px));
+            padding: 16px 0 16px 16px;
+            transform: translateX(100%);
+            transition: transform 0.24s ease;
+            z-index: 1420;
+            pointer-events: none;
+        }
+
+        .dashboard-drawer.open {
+            transform: translateX(0);
+            pointer-events: auto;
+        }
+
+        .dashboard-drawer-shell {
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            background: rgba(255, 255, 255, 0.98);
+            border: 1px solid #d8e4f3;
+            border-right: none;
+            border-radius: 28px 0 0 28px;
+            box-shadow: -24px 0 60px rgba(15, 23, 42, 0.20);
+            overflow: hidden;
+        }
+
+        .dashboard-drawer-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 14px;
+            padding: 22px 22px 18px;
+            border-bottom: 1px solid #e2ebf5;
+            background:
+                linear-gradient(135deg, rgba(233, 243, 255, 0.9), rgba(241, 247, 255, 0.96)),
+                #f7fbff;
+        }
+
+        .dashboard-drawer-kicker {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: #ecf3ff;
+            border: 1px solid #d9e6f8;
+            color: #2d4ebd;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .dashboard-drawer-title {
+            margin-top: 14px;
+            font-size: 28px;
+            line-height: 1.35;
+            color: #123458;
+        }
+
+        .dashboard-drawer-desc {
+            margin-top: 10px;
+            color: #607186;
+            font-size: 14px;
+            line-height: 1.8;
+            max-width: 380px;
+        }
+
+        .dashboard-drawer-close {
+            border: 1px solid #d9e6f7;
+            background: #ffffff;
+            color: #24425f;
+            border-radius: 999px;
+            padding: 10px 14px;
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+
+        .dashboard-drawer-close:hover {
+            background: #f7fbff;
+        }
+
+        .dashboard-drawer-body {
+            flex: 1;
+            min-height: 0;
+            overflow-y: auto;
+            padding: 22px;
+        }
+
+        .dashboard-drawer-panel[hidden] {
+            display: none !important;
+        }
+
+        .dashboard-drawer-panel .action-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .dashboard-drawer-panel .action-column {
+            gap: 12px;
+        }
+
+        .dashboard-drawer-panel .action-panel {
+            padding: 16px;
+        }
+
+        .dashboard-drawer-open {
+            overflow: hidden;
+        }
+
+        .card-column {
+            display: grid;
+            gap: 22px;
+            align-content: start;
+            min-width: 0;
+        }
+
+        .card-column .card {
+            min-width: 0;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.96);
+            border: 1px solid rgba(214, 226, 243, 0.95);
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: 0 18px 45px rgba(15, 23, 42, 0.06);
+        }
+
+        .card-focus {
+            background:
+                linear-gradient(180deg, rgba(248, 251, 255, 0.98), rgba(255, 255, 255, 0.98)),
+                #ffffff;
+            border-color: #d9e6f7;
+            box-shadow: 0 22px 55px rgba(15, 23, 42, 0.08);
+        }
+
+        .card-focus-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .card-focus-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: #e9f7f6;
+            border: 1px solid #cdeeed;
+            color: #0f766e;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.2px;
+        }
+
+        .card-disclosure {
+            padding: 22px 24px;
+            transition: box-shadow 0.2s ease, border-color 0.2s ease, transform 0.2s ease;
+        }
+
+        .card-disclosure:hover {
+            border-color: #cddcf1;
+            box-shadow: 0 20px 50px rgba(15, 23, 42, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .card-disclosure[open] {
+            border-color: #c8d8f1;
+            box-shadow: 0 24px 58px rgba(15, 23, 42, 0.09);
+        }
+
+        .card-disclosure-summary {
+            list-style: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 18px;
+        }
+
+        .card-disclosure-summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .card-disclosure-main {
+            display: block;
+            flex: 1;
+            min-width: 0;
+        }
+
+        .card-disclosure-summary .card-title,
+        .card-disclosure-summary .card-desc {
+            display: block;
+        }
+
+        .card-disclosure-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+            padding: 10px 14px;
+            border-radius: 999px;
+            background: #f4f8ff;
+            border: 1px solid #dce8f8;
+            color: #32516f;
+        }
+
+        .card-disclosure-indicator-label {
+            font-size: 13px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .card-disclosure-indicator-open {
+            display: none;
+        }
+
+        .card-disclosure[open] .card-disclosure-indicator-open {
+            display: inline;
+        }
+
+        .card-disclosure[open] .card-disclosure-indicator-closed {
+            display: none;
+        }
+
+        .card-disclosure-arrow {
+            width: 30px;
+            height: 30px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            background: #ffffff;
+            border: 1px solid #d9e6f7;
+            color: #3159d5;
+            font-size: 16px;
+            font-weight: 900;
+            transition: transform 0.2s ease;
+        }
+
+        .card-disclosure[open] .card-disclosure-arrow {
+            transform: rotate(180deg);
+        }
+
+        .card-disclosure-body {
+            margin-top: 18px;
+            padding-top: 20px;
+            border-top: 1px solid #e1e9f4;
+        }
+
+        .card-disclosure-body .action-grid {
+            margin-top: 0;
+        }
+
+        .card-kicker {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: #eef4ff;
+            color: #2d4ebd;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .card-title {
+            margin-top: 16px;
+            font-size: 24px;
+            line-height: 1.4;
+            color: #13253f;
+        }
+
+        .card-desc {
+            margin-top: 10px;
+            color: #607186;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .metric-row {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .metric-tile {
+            padding: 16px;
+            background: #f7faff;
+            border: 1px solid #deebfa;
+            border-radius: 18px;
+        }
+
+        .metric-tile-label {
+            color: #58708d;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .metric-tile-value {
+            margin-top: 8px;
+            font-size: 28px;
+            font-weight: 900;
+            color: #123458;
+            line-height: 1.15;
+        }
+
+        .metric-tile-note {
+            margin-top: 8px;
+            color: #7a8ca1;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .section-label {
+            margin-top: 20px;
+            font-size: 12px;
+            font-weight: 800;
+            letter-spacing: 0.4px;
+            color: #51657d;
+        }
+
+        .detail-text {
+            margin-top: 10px;
+            color: #607186;
+            line-height: 1.8;
+            font-size: 14px;
+        }
+
+        .pill-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 7px 12px;
+            border-radius: 999px;
+            border: 1px solid #d7e4f7;
+            background: #f4f8ff;
+            color: #33516e;
+            font-size: 12px;
+            line-height: 1.4;
+        }
+
+        .pill.muted {
+            border-color: #dbe5ef;
+            background: #f8fafc;
+            color: #7c8da2;
+        }
+
+        .profile-summary {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .score-list {
+            display: grid;
+            gap: 12px;
+            margin-top: 14px;
+        }
+
+        .score-item {
+            padding: 14px;
+            background: #f8fafc;
+            border: 1px solid #e3ebf3;
+            border-radius: 16px;
+        }
+
+        .score-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            font-size: 13px;
+            color: #30465f;
+            font-weight: 700;
+        }
+
+        .score-bar {
             height: 8px;
             border-radius: 999px;
-            background: #94a3b8;
+            background: #dce6f2;
+            overflow: hidden;
+            margin-top: 10px;
         }
 
-        .status-badge.on {
-            border-color: #86efac;
-            background: #f0fdf4;
-            color: #166534;
+        .score-fill {
+            height: 100%;
+            width: 0;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #3159d5, #10a0aa);
         }
 
-        .status-badge.on .dot { background: #22c55e; }
-
-        .status-badge.off {
-            border-color: #fecaca;
-            background: #fef2f2;
-            color: #991b1b;
+        .diagnosis-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 20px;
         }
 
-        .status-badge.off .dot { background: #ef4444; }
+        .diagnosis-card {
+            border-radius: 18px;
+            padding: 16px;
+            border: 1px solid transparent;
+        }
+
+        .diagnosis-card.knowledge {
+            background: #fff3f2;
+            border-color: #ffd8d5;
+        }
+
+        .diagnosis-card.skill {
+            background: #fff8ee;
+            border-color: #fde3b3;
+        }
+
+        .diagnosis-card.habit {
+            background: #f2fbf5;
+            border-color: #ccefd7;
+        }
+
+        .diagnosis-card-label {
+            color: #53697f;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .diagnosis-card-value {
+            margin-top: 8px;
+            font-size: 28px;
+            font-weight: 900;
+            color: #15304d;
+        }
+
+        .mini-list {
+            display: grid;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .mini-item {
+            padding: 14px 16px;
+            border-radius: 16px;
+            background: #f8fafc;
+            border: 1px solid #e3ebf3;
+        }
+
+        .mini-item-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .mini-item-title {
+            color: #143252;
+            font-weight: 800;
+            line-height: 1.5;
+        }
+
+        .mini-item-desc {
+            margin-top: 10px;
+            color: #5f738a;
+            font-size: 13px;
+            line-height: 1.7;
+        }
+
+        .mini-item-meta {
+            margin-top: 10px;
+            color: #6d8199;
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        .mini-bar {
+            height: 8px;
+            border-radius: 999px;
+            background: #dce6f2;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .mini-bar-fill {
+            height: 100%;
+            width: 0;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #3159d5, #10a0aa);
+        }
+
+        .mastery-heatmap {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .mastery-chip {
+            padding: 14px 16px;
+            border-radius: 18px;
+            border: 1px solid transparent;
+        }
+
+        .mastery-chip.good {
+            background: #f1fbf4;
+            border-color: #cbeed6;
+        }
+
+        .mastery-chip.warn {
+            background: #fff8ef;
+            border-color: #f8ddb2;
+        }
+
+        .mastery-chip.weak {
+            background: #fff3f2;
+            border-color: #ffd6d2;
+        }
+
+        .mastery-chip-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            color: #123558;
+            font-weight: 800;
+        }
+
+        .mastery-chip-note {
+            margin-top: 10px;
+            color: #64778d;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .insight-duo {
+            display: grid;
+            grid-template-columns: 1.2fr 0.8fr;
+            gap: 12px;
+            margin-top: 20px;
+        }
+
+        .insight-panel {
+            padding: 16px;
+            border-radius: 20px;
+            border: 1px solid #e1e9f4;
+            background:
+                linear-gradient(180deg, rgba(247, 250, 255, 0.98), rgba(255, 255, 255, 0.98)),
+                #ffffff;
+        }
+
+        .insight-panel-title {
+            font-size: 13px;
+            font-weight: 800;
+            color: #223f5d;
+            letter-spacing: 0.2px;
+        }
+
+        .insight-panel-note {
+            margin-top: 6px;
+            font-size: 12px;
+            line-height: 1.7;
+            color: #72859b;
+        }
+
+        .spectrum-bar {
+            display: flex;
+            width: 100%;
+            height: 14px;
+            overflow: hidden;
+            border-radius: 999px;
+            background: #e5edf6;
+            margin-top: 14px;
+        }
+
+        .spectrum-segment {
+            height: 100%;
+            min-width: 0;
+        }
+
+        .spectrum-segment.weak {
+            background: linear-gradient(90deg, #f97316, #ef4444);
+        }
+
+        .spectrum-segment.medium {
+            background: linear-gradient(90deg, #f59e0b, #facc15);
+        }
+
+        .spectrum-segment.strong {
+            background: linear-gradient(90deg, #10b981, #059669);
+        }
+
+        .spectrum-legend {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .spectrum-legend-item {
+            padding: 12px;
+            border-radius: 16px;
+            background: #f8fafc;
+            border: 1px solid #e3ebf3;
+        }
+
+        .spectrum-legend-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #53697f;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .spectrum-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .spectrum-dot.weak { background: #ef4444; }
+        .spectrum-dot.medium { background: #f59e0b; }
+        .spectrum-dot.strong { background: #059669; }
+
+        .spectrum-legend-value {
+            margin-top: 8px;
+            font-size: 22px;
+            font-weight: 900;
+            color: #10243e;
+        }
+
+        .forecast-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .forecast-card {
+            padding: 14px 12px;
+            border-radius: 16px;
+            background: #f7fbff;
+            border: 1px solid #dfebf8;
+        }
+
+        .forecast-card-label {
+            color: #62768d;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .forecast-card-value {
+            margin-top: 8px;
+            font-size: 24px;
+            font-weight: 900;
+            color: #143252;
+        }
+
+        .forecast-card-note {
+            margin-top: 8px;
+            color: #70849a;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .mastery-heatmap {
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+        }
+
+        .mastery-cell {
+            padding: 16px;
+            border-radius: 20px;
+            border: 1px solid transparent;
+            min-height: 162px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .mastery-cell::after {
+            content: "";
+            position: absolute;
+            right: -14px;
+            top: -14px;
+            width: 76px;
+            height: 76px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.16);
+        }
+
+        .mastery-cell.good {
+            background: linear-gradient(180deg, #ecfdf3, #f6fffa);
+            border-color: #ccefd7;
+        }
+
+        .mastery-cell.warn {
+            background: linear-gradient(180deg, #fff9ed, #fffcf5);
+            border-color: #f5ddb2;
+        }
+
+        .mastery-cell.weak {
+            background: linear-gradient(180deg, #fff3f2, #fff9f8);
+            border-color: #ffd6d2;
+        }
+
+        .mastery-cell-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            align-items: flex-start;
+            position: relative;
+            z-index: 1;
+        }
+
+        .mastery-cell-title {
+            font-weight: 900;
+            color: #133454;
+            line-height: 1.5;
+        }
+
+        .mastery-cell-score {
+            font-size: 22px;
+            font-weight: 900;
+            color: #10243e;
+            white-space: nowrap;
+        }
+
+        .mastery-cell-body {
+            position: relative;
+            z-index: 1;
+            margin-top: 12px;
+        }
+
+        .mastery-cell-meta {
+            color: #64778d;
+            font-size: 12px;
+            line-height: 1.7;
+        }
+
+        .mastery-cell-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .mini-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 5px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 700;
+            background: rgba(255, 255, 255, 0.7);
+            border: 1px solid rgba(203, 213, 225, 0.9);
+            color: #33516e;
+        }
+
+        .mastery-story {
+            margin-top: 14px;
+            padding: 12px 14px;
+            border-radius: 14px;
+            background: #f8fbff;
+            border: 1px solid #dfebf8;
+            color: #51657d;
+            font-size: 13px;
+            line-height: 1.75;
+        }
+
+        .persona-stage {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 22px;
+            border: 1px solid #dfe9f6;
+            background:
+                radial-gradient(circle at top right, rgba(37, 99, 235, 0.12), transparent 34%),
+                linear-gradient(135deg, rgba(240, 247, 255, 0.95), rgba(255, 255, 255, 0.98)),
+                #ffffff;
+        }
+
+        .persona-kicker {
+            display: inline-flex;
+            align-items: center;
+            padding: 6px 12px;
+            border-radius: 999px;
+            background: #ecf3ff;
+            color: #2d4ebd;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        .persona-title {
+            margin-top: 14px;
+            font-size: 24px;
+            font-weight: 900;
+            line-height: 1.4;
+            color: #123458;
+        }
+
+        .persona-desc {
+            margin-top: 10px;
+            color: #607186;
+            font-size: 14px;
+            line-height: 1.8;
+        }
+
+        .persona-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .persona-metric {
+            padding: 14px;
+            border-radius: 18px;
+            background: rgba(255, 255, 255, 0.85);
+            border: 1px solid #dce7f4;
+        }
+
+        .persona-metric-label {
+            color: #698099;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .persona-metric-value {
+            margin-top: 8px;
+            color: #123458;
+            font-size: 22px;
+            font-weight: 900;
+            line-height: 1.25;
+        }
+
+        .persona-metric-note {
+            margin-top: 8px;
+            color: #70849a;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .interest-cloud {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .interest-bubble {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 14px;
+            border-radius: 999px;
+            background: linear-gradient(135deg, #f3f8ff, #eef7ff);
+            border: 1px solid #d7e6fb;
+            color: #24425f;
+            font-weight: 700;
+            line-height: 1.4;
+        }
+
+        .interest-bubble small {
+            color: #6d8198;
+            font-weight: 600;
+            font-size: 11px;
+        }
+
+        .diagnosis-balance {
+            margin-top: 12px;
+        }
+
+        .diagnosis-balance-bar {
+            display: flex;
+            width: 100%;
+            height: 16px;
+            overflow: hidden;
+            border-radius: 999px;
+            background: #e5edf6;
+        }
+
+        .diagnosis-balance-segment {
+            height: 100%;
+            min-width: 0;
+        }
+
+        .diagnosis-balance-segment.knowledge {
+            background: linear-gradient(90deg, #fb7185, #ef4444);
+        }
+
+        .diagnosis-balance-segment.skill {
+            background: linear-gradient(90deg, #f59e0b, #f97316);
+        }
+
+        .diagnosis-balance-segment.habit {
+            background: linear-gradient(90deg, #34d399, #10b981);
+        }
+
+        .diagnosis-legend {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .diagnosis-legend-item {
+            padding: 12px;
+            border-radius: 14px;
+            background: #f8fafc;
+            border: 1px solid #e3ebf3;
+            color: #4d637a;
+            font-size: 12px;
+            line-height: 1.6;
+        }
+
+        .diagnosis-legend-item strong {
+            display: block;
+            color: #133454;
+            font-size: 18px;
+            line-height: 1.2;
+            margin-top: 6px;
+        }
+
+        .timeline-list {
+            display: grid;
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .timeline-item {
+            padding: 14px 16px;
+            border-radius: 16px;
+            background: #f8fafc;
+            border: 1px solid #e3ebf3;
+            color: #173355;
+        }
+
+        .timeline-route {
+            font-weight: 800;
+            line-height: 1.6;
+        }
+
+        .timeline-arrow {
+            color: #3159d5;
+            padding: 0 8px;
+        }
+
+        .timeline-meta {
+            margin-top: 8px;
+            font-size: 12px;
+            color: #6e8096;
+            line-height: 1.7;
+        }
+
+        .intervention-list {
+            display: grid;
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .intervention-item {
+            padding: 14px 16px;
+            border-left: 4px solid #3159d5;
+            border-radius: 14px;
+            background: #f6f9ff;
+            color: #2a4462;
+            line-height: 1.8;
+            font-size: 14px;
+        }
+
+        .dashboard-action-card {
+            margin-top: 22px;
+        }
+
+        .action-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.95fr);
+            gap: 18px;
+            margin-top: 20px;
+            align-items: start;
+        }
+
+        .action-column {
+            display: grid;
+            gap: 18px;
+            align-content: start;
+        }
+
+        .action-panel {
+            padding: 18px;
+            border-radius: 20px;
+            border: 1px solid #dfebf8;
+            background:
+                linear-gradient(180deg, rgba(246, 250, 255, 0.95), rgba(250, 252, 255, 0.98)),
+                #f7fbff;
+        }
+
+        .action-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+
+        .action-header h3 {
+            font-size: 18px;
+            color: #143252;
+        }
+
+        .filter-wrap {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: #5e7187;
+            font-size: 12px;
+        }
+
+        .filter-wrap select {
+            padding: 6px 8px;
+            border: 1px solid #d4e2f3;
+            border-radius: 8px;
+            background: white;
+            color: #23425f;
+            font-size: 12px;
+        }
+
+        .task-card,
+        .review-card {
+            padding: 14px 16px;
+            border-radius: 16px;
+            background: #ffffff;
+            border: 1px solid #e3ebf3;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+        }
+
+        .dashboard-inline-btn {
+            flex-shrink: 0;
+            border: none;
+            border-radius: 999px;
+            background: #ef6d6d;
+            color: white;
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 700;
+        }
+
+        .dashboard-inline-btn:hover {
+            background: #dc5f5f;
+        }
+
+        .empty-state {
+            color: #7d8da1;
+            font-size: 14px;
+            line-height: 1.8;
+            padding: 6px 0;
+        }
+
+        @media (max-width: 1200px) {
+            .cards-grid,
+            .dashboard-focus-grid,
+            .action-grid,
+            .hero-metrics {
+                grid-template-columns: 1fr;
+            }
+
+            .insight-duo,
+            .persona-grid,
+            .forecast-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero-top-row {
+                flex-direction: column;
+            }
+
+            .hero-drawer-launchers {
+                width: 100%;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+        }
 
         @media (max-width: 900px) {
-            .status-grid { grid-template-columns: 1fr; }
+            .profile-summary,
+            .metric-row,
+            .diagnosis-grid,
+            .mastery-heatmap,
+            .spectrum-legend,
+            .diagnosis-legend {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .dashboard-actions {
+                justify-content: flex-start;
+            }
+
+            .hero-drawer-launchers {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-drawer {
+                width: 100vw;
+                padding-left: 0;
+            }
+
+            .dashboard-drawer-shell {
+                border-radius: 24px 0 0 24px;
+            }
+        }
+
+        @media (max-width: 720px) {
+            .dashboard-container {
+                padding: 70px 14px 30px;
+            }
+
+            .dashboard-title {
+                font-size: 28px;
+            }
+
+            .dashboard-hero,
+            .card {
+                padding: 18px;
+                border-radius: 20px;
+            }
+
+            .dashboard-hero h2 {
+                font-size: 24px;
+            }
+
+            .mastery-heatmap {
+                grid-template-columns: 1fr;
+            }
+
+            .dashboard-drawer-header,
+            .dashboard-drawer-body {
+                padding-left: 16px;
+                padding-right: 16px;
+            }
+
+            .dashboard-drawer-title {
+                font-size: 24px;
+            }
         }
     </style>
 </head>
@@ -178,410 +1554,337 @@
     <button class="global-sidebar-toggle" id="globalSidebarToggle" type="button" aria-label="打开侧栏">☰</button>
     <div class="global-sidebar-backdrop" id="globalSidebarBackdrop"></div>
     <aside class="global-sidebar" id="globalSidebar">
-        <div class="global-sidebar-logo">坊知工</div>
-        <a class="global-sidebar-link" data-side-link="index.html" href="index.html">+ 添加内容</a>
-        <div class="global-sidebar-section">空间</div>
-        <a class="global-sidebar-link" data-side-link="spaces.html" href="spaces.html">◻ 我的空间</a>
+        <div class="global-sidebar-scroll">
+            <div class="global-sidebar-logo">坊知工</div>
+            <a class="global-sidebar-link" data-side-link="index.html" href="index.html">+ 添加内容</a>
+            <a class="global-sidebar-link" data-side-link="chat.html" href="chat.html">◎ 智能问答</a>
+            <a class="global-sidebar-link" data-side-link="question-bank.html" href="question-bank.html">◎ 题库练习</a>
+            <a class="global-sidebar-link" data-side-link="dashboard.html" href="dashboard.html">◧ 学习仪表盘</a>
+            <a class="global-sidebar-link" data-side-link="knowledge-map.html" href="knowledge-map.html">◇ 知识图谱</a>
+            <div class="global-sidebar-section">空间</div>
+            <a class="global-sidebar-link" data-side-link="spaces.html" href="spaces.html">◻ 我的空间</a>
+        </div>
     </aside>
 
     <div class="dashboard-container">
-        <!-- 头部 -->
         <div class="dashboard-header">
-            <h1 class="dashboard-title">📊 学习仪表盘</h1>
             <div>
-                <span id="dashboard-user-label" style="margin-right:12px; color:#6b7280; font-size:14px;"></span>
-                <a href="knowledge-map.html" class="back-link" style="margin-right:14px;">🗺️ 知识图谱</a>
-                <a href="index.html" class="back-link">← 返回主界面</a>
+                <h1 class="dashboard-title">学习仪表盘</h1>
+                <p class="dashboard-subtitle">围绕多源学习数据、动态知识图谱、学习者画像与认知诊断构建全过程学习闭环，持续跟踪理解、评估、推理与个性化干预效果。</p>
+            </div>
+            <div class="dashboard-actions">
+                <span id="dashboard-user-label" style="color:#6b7280; font-size:14px;"></span>
+                <a href="knowledge-map.html" class="back-link">知识图谱</a>
+                <a href="index.html" class="back-link">返回主界面</a>
             </div>
         </div>
-        
-        <!-- 数据卡片 -->
-        <div class="cards-grid">
-            <!-- 学习概况卡片 -->
-            <div class="card">
-                <h2 class="card-title">📈 学习概况</h2>
-                <div style="text-align: center;">
-                    <div id="overall-mastery" style="font-size: 48px; color: #667eea; font-weight: bold;">--</div>
-                    <div style="color: #666; margin-top: 10px;">整体掌握程度</div>
-                </div>
-                <div style="margin-top: 20px;">
-                    <div class="progress-item">
-                        <div class="progress-label">图谱节点 <span id="graph-node-count">0</span></div>
-                        <div class="progress-bar"><div id="graph-node-bar" class="progress-fill" style="width: 0%"></div></div>
-                    </div>
-                    <div class="progress-item">
-                        <div class="progress-label">到期复习项 <span id="due-count">0</span></div>
-                        <div class="progress-bar"><div id="due-bar" class="progress-fill" style="width: 0%"></div></div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- 认知诊断卡片 -->
-            <div class="card">
-                <h2 class="card-title">🔍 认知诊断报告</h2>
-                <div style="margin-top: 20px;">
-                    <div class="error-category knowledge-error">
-                        <span>知识性错误</span>
-                        <strong id="diag-knowledge">0次</strong>
-                    </div>
-                    <div class="error-category skill-error">
-                        <span>技能性错误</span>
-                        <strong id="diag-skill">0次</strong>
-                    </div>
-                    <div class="error-category habit-error">
-                        <span>习惯性错误</span>
-                        <strong id="diag-habit">0次</strong>
-                    </div>
-                </div>
-                <div style="margin-top: 20px; padding: 15px; background: #f8f9fa; border-radius: 8px;">
-                    <strong>💡 改进建议：</strong>
-                    <ul id="dashboard-suggestions" style="margin-top: 10px; padding-left: 20px;">
-                        <li>加载中...</li>
-                    </ul>
-                </div>
-            </div>
-            
-            <!-- 学习画像卡片 -->
-            <div class="card">
-                <h2 class="card-title">👤 学习画像</h2>
-                <div style="margin-top: 20px;">
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-                        <div style="width: 12px; height: 12px; background: #667eea; border-radius: 50%;"></div>
-                        <span id="dashboard-style">加载中...</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-                        <div style="width: 12px; height: 12px; background: #17a2b8; border-radius: 50%;"></div>
-                        <span id="dashboard-style-method">画像推断方式: --</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-                        <div style="width: 12px; height: 12px; background: #28a745; border-radius: 50%;"></div>
-                        <span id="dashboard-best-time">最佳学习时段: --</span>
-                    </div>
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-                        <div style="width: 12px; height: 12px; background: #ffc107; border-radius: 50%;"></div>
-                        <span id="dashboard-focus">注意力集中时间: --</span>
-                    </div>
-                </div>
-            </div>
 
-            <!-- 系统状态卡片 -->
-            <div class="card">
-                <h2 class="card-title">🧭 系统状态</h2>
-                <div class="status-grid">
-                    <div class="status-item">
-                        <div class="status-label">存储后端</div>
-                        <div class="status-value" id="sys-storage">--</div>
-                    </div>
-                    <div class="status-item">
-                        <div class="status-label">数据库协议</div>
-                        <div class="status-value" id="sys-db-scheme">--</div>
-                    </div>
-                    <div class="status-item">
-                        <div class="status-label">图谱读取策略</div>
-                        <div class="status-value" id="sys-graph-primary">--</div>
-                    </div>
-                    <div class="status-item">
-                        <div class="status-label">图谱写回策略</div>
-                        <div class="status-value" id="sys-graph-sync">--</div>
-                    </div>
-                    <div class="status-item">
-                        <div class="status-label">Neo4j / Celery</div>
-                        <div class="status-value" id="sys-infra">--</div>
-                    </div>
-                    <div class="status-item">
-                        <div class="status-label">AI 状态</div>
-                        <div class="status-value" id="sys-ai">--</div>
-                    </div>
+        <section class="dashboard-hero">
+            <div class="hero-top-row">
+                <div class="hero-copy">
+                    <span class="hero-kicker">知识融合智能学伴</span>
+                    <h2>把学习行为、知识关系和精准教学干预放进同一个仪表盘</h2>
+                    <p>系统基于截图识别、学习内容录入、题目作答与错题归因，持续更新学生中心知识网络，生成学习画像、认知判断与个性化补救建议。</p>
+                </div>
+                <div class="hero-drawer-launchers" role="group" aria-label="按需查看模块">
+                    <button class="hero-drawer-launcher" type="button" data-drawer-target="data" aria-controls="dashboardDrawer">
+                        <span class="hero-drawer-launcher-label">按需查看 01</span>
+                        <span class="hero-drawer-launcher-body">
+                            <span class="hero-drawer-launcher-title">多源学习数据</span>
+                            <span class="hero-drawer-launcher-arrow" aria-hidden="true">›</span>
+                        </span>
+                    </button>
+                    <button class="hero-drawer-launcher" type="button" data-drawer-target="diagnosis" aria-controls="dashboardDrawer">
+                        <span class="hero-drawer-launcher-label">按需查看 02</span>
+                        <span class="hero-drawer-launcher-body">
+                            <span class="hero-drawer-launcher-title">认知诊断与个性化干预政策</span>
+                            <span class="hero-drawer-launcher-arrow" aria-hidden="true">›</span>
+                        </span>
+                    </button>
+                    <button class="hero-drawer-launcher" type="button" data-drawer-target="plan" aria-controls="dashboardDrawer">
+                        <span class="hero-drawer-launcher-label">按需查看 03</span>
+                        <span class="hero-drawer-launcher-body">
+                            <span class="hero-drawer-launcher-title">个性化学习计划与复习编排</span>
+                            <span class="hero-drawer-launcher-arrow" aria-hidden="true">›</span>
+                        </span>
+                    </button>
                 </div>
             </div>
-        </div>
-        
-        <!-- 学习计划卡片 -->
-        <div class="card" style="grid-column: span 2;">
-            <h2 class="card-title">📅 个性化学习计划</h2>
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-top: 20px;">
-                <div style="padding: 20px; background: #e3f2fd; border-radius: 10px;">
-                    <h3 style="margin-bottom: 10px;">🎯 本周目标</h3>
-                    <div style="margin-bottom: 8px; display:flex; align-items:center; gap:8px; font-size:12px; color:#64748b;">
-                        <span>推荐视图</span>
-                        <select id="dashboard-rec-style-filter" style="padding:4px 6px; border:1px solid #dbe5f2; border-radius:6px; font-size:12px; color:#334155;">
-                            <option value="all">全部</option>
-                            <option value="visual">视觉型</option>
-                            <option value="auditory">听觉型</option>
-                            <option value="kinesthetic">动觉型</option>
-                        </select>
-                    </div>
-                    <ul id="dashboard-recommendations" style="padding-left: 20px;">
-                        <li>加载中...</li>
-                    </ul>
+            <div class="hero-metrics">
+                <div class="hero-metric">
+                    <div class="hero-metric-label">当前整体掌握度</div>
+                    <div id="overall-mastery" class="hero-metric-value">--</div>
+                    <div class="hero-metric-note">由知识点掌握度与复习状态综合评估</div>
                 </div>
-                <div style="padding: 20px; background: #f3e5f5; border-radius: 10px;">
-                    <h3 style="margin-bottom: 10px;">⏰ 今日任务</h3>
-                    <div id="dashboard-today-tasks" style="margin-top: 10px;">
-                        <!-- 动态加载今日任务 -->
-                    </div>
+                <div class="hero-metric">
+                    <div class="hero-metric-label">已接入多源学习记录</div>
+                    <div id="data-source-total" class="hero-metric-value">0</div>
+                    <div class="hero-metric-note">截图、链接、笔记、作答等统一进入数据池</div>
                 </div>
-                <div style="padding: 20px; background: #e8f5e8; border-radius: 10px;">
-                    <h3 style="margin-bottom: 10px;">🔄 复习安排</h3>
-                    <div id="dashboard-review-reminders" style="margin-top: 10px;">
-                        <div style="color:#888;">加载中...</div>
-                    </div>
+                <div class="hero-metric">
+                    <div class="hero-metric-label">学生知识图谱节点 / 关系</div>
+                    <div class="hero-metric-value"><span id="graph-node-count">0</span> / <span id="graph-edge-count">0</span></div>
+                    <div class="hero-metric-note">支持掌握热力图与依赖链追溯</div>
+                </div>
+                <div class="hero-metric">
+                    <div class="hero-metric-label">待执行个性化干预</div>
+                    <div id="dashboard-active-interventions" class="hero-metric-value">0</div>
+                    <div class="hero-metric-note">推荐资源与到期复习会联动生成行动建议</div>
                 </div>
             </div>
+            <div class="hero-pills">
+                <span class="hero-pill">截图 / OCR识别</span>
+                <span class="hero-pill">知识图谱动态更新</span>
+                <span class="hero-pill">KMeans学习画像</span>
+                <span class="hero-pill">错题语义归因</span>
+                <span class="hero-pill">遗忘曲线复习提醒</span>
+            </div>
+        </section>
+
+        <div class="dashboard-focus-grid">
+            <section class="card card-focus">
+                <div class="card-focus-head">
+                    <span class="card-kicker">核心模块 01</span>
+                    <span class="card-focus-badge">主展示</span>
+                </div>
+                <h2 class="card-title">动态知识图谱与认知判断</h2>
+                <p class="card-desc">以学生为中心组织知识点来源、依赖关系与掌握水平，并结合遗忘曲线动态规划复习节点，支持知识掌握热力图和依赖链追溯。</p>
+                <div class="metric-row">
+                    <div class="metric-tile">
+                        <div class="metric-tile-label">掌握度热力评分</div>
+                        <div id="kg-overall-mastery" class="metric-tile-value">--</div>
+                        <div class="metric-tile-note">根据已记录知识点掌握度实时更新</div>
+                    </div>
+                    <div class="metric-tile">
+                        <div class="metric-tile-label">知识点 / 关系数量</div>
+                        <div class="metric-tile-value"><span id="kg-node-count">0</span> / <span id="kg-edge-count">0</span></div>
+                        <div class="metric-tile-note">跟踪概念间的前置与相关关系</div>
+                    </div>
+                    <div class="metric-tile">
+                        <div class="metric-tile-label">今日到期复习节点</div>
+                        <div id="kg-due-count" class="metric-tile-value">0</div>
+                        <div class="metric-tile-note">优先推送薄弱且到期的知识点</div>
+                    </div>
+                    <div class="metric-tile">
+                        <div class="metric-tile-label">后续待规划复习</div>
+                        <div id="kg-upcoming-count" class="metric-tile-value">0</div>
+                        <div class="metric-tile-note">面向长期记忆的节奏化安排</div>
+                    </div>
+                </div>
+                <div class="insight-duo">
+                    <div class="insight-panel">
+                        <div class="insight-panel-title">掌握分层概览</div>
+                        <div class="insight-panel-note">用颜色和数量快速定位薄弱区、过渡区和稳定掌握区。</div>
+                        <div id="dashboard-mastery-spectrum" class="empty-state">加载中...</div>
+                        <div id="dashboard-mastery-story" class="mastery-story">加载中...</div>
+                    </div>
+                    <div class="insight-panel">
+                        <div class="insight-panel-title">复习压力预警</div>
+                        <div class="insight-panel-note">把今天需要处理的复习量、后续待安排量和薄弱点放到一眼就能看到的位置。</div>
+                        <div id="dashboard-review-forecast" class="forecast-grid">
+                            <div class="empty-state">加载中...</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="section-label">知识掌握热力图快照</div>
+                <div id="dashboard-mastery-heatmap" class="mastery-heatmap">
+                    <div class="empty-state">加载中...</div>
+                </div>
+                <div class="section-label">知识依赖链追溯</div>
+                <div id="dashboard-dependency-chain" class="timeline-list">
+                    <div class="empty-state">加载中...</div>
+                </div>
+                <div class="section-label">知识来源追踪</div>
+                <div id="dashboard-concept-source-trace" class="mini-list">
+                    <div class="empty-state">加载中...</div>
+                </div>
+            </section>
+
+            <section class="card card-focus">
+                <div class="card-focus-head">
+                    <span class="card-kicker">核心模块 02</span>
+                    <span class="card-focus-badge">主展示</span>
+                </div>
+                <h2 class="card-title">学习者画像构建与兴趣挖掘</h2>
+                <p class="card-desc">结合显性与隐性反馈识别学生在不同媒介上的互动偏好，推断学习风格、最佳学习时段和潜在兴趣领域，为内容推荐与路径调整提供依据。</p>
+                <div id="dashboard-persona-stage" class="persona-stage">
+                    <div class="empty-state">加载中...</div>
+                </div>
+                <div class="profile-summary">
+                    <div class="metric-tile">
+                        <div class="metric-tile-label">学习风格</div>
+                        <div id="dashboard-style" class="metric-tile-value" style="font-size:22px;">加载中...</div>
+                        <div id="dashboard-style-method" class="metric-tile-note">画像推断方式: --</div>
+                    </div>
+                    <div class="metric-tile">
+                        <div class="metric-tile-label">学习节奏</div>
+                        <div id="dashboard-best-time" class="metric-tile-value" style="font-size:20px;">最佳学习时段: --</div>
+                        <div id="dashboard-focus" class="metric-tile-note">注意力集中时间: --</div>
+                    </div>
+                </div>
+                <div class="section-label">学习风格强度</div>
+                <div class="score-list">
+                    <div class="score-item">
+                        <div class="score-head"><span>视觉型偏好</span><span id="style-score-visual">0%</span></div>
+                        <div class="score-bar"><div id="style-bar-visual" class="score-fill"></div></div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-head"><span>听觉型偏好</span><span id="style-score-auditory">0%</span></div>
+                        <div class="score-bar"><div id="style-bar-auditory" class="score-fill"></div></div>
+                    </div>
+                    <div class="score-item">
+                        <div class="score-head"><span>动觉型偏好</span><span id="style-score-kinesthetic">0%</span></div>
+                        <div class="score-bar"><div id="style-bar-kinesthetic" class="score-fill"></div></div>
+                    </div>
+                </div>
+                <div class="section-label">潜在兴趣领域</div>
+                <div id="dashboard-interests" class="pill-list">
+                    <span class="pill muted">暂无兴趣特征</span>
+                </div>
+                <div class="section-label">兴趣热区</div>
+                <div id="dashboard-interest-cloud" class="interest-cloud">
+                    <span class="pill muted">加载中...</span>
+                </div>
+                <div class="section-label">内容交互偏好</div>
+                <div id="dashboard-media-preferences" class="mini-list">
+                    <div class="empty-state">加载中...</div>
+                </div>
+                <div class="section-label">画像证据</div>
+                <div id="dashboard-profile-traits" class="intervention-list">
+                    <div class="empty-state">加载中...</div>
+                </div>
+            </section>
         </div>
     </div>
-    <!-- 动态加载今日任务脚本 -->
-    <script src="js/user-context.js"></script>
-    <script src="js/api-utils.js"></script>
-    <script src="js/auth-ui.js"></script>
-    <script>
-        const API_BASE = window.ApiUtils.getApiBase();
-        const { parseApiResponse, withSuggestion } = window.ApiUtils;
 
-    function getUserId() {
-        return window.UserContext ? window.UserContext.getUserId() : 'default_user';
-    }
+    <div class="dashboard-drawer-backdrop" id="dashboardDrawerBackdrop"></div>
+    <aside class="dashboard-drawer" id="dashboardDrawer" aria-hidden="true" aria-labelledby="dashboardDrawerTitle">
+        <div class="dashboard-drawer-shell">
+            <div class="dashboard-drawer-header">
+                <div>
+                    <div id="dashboardDrawerKicker" class="dashboard-drawer-kicker">按需查看</div>
+                    <h2 id="dashboardDrawerTitle" class="dashboard-drawer-title">请选择一个模块</h2>
+                    <p id="dashboardDrawerDesc" class="dashboard-drawer-desc">从头图右上角点击对应入口后，会在这里展示详细内容。</p>
+                </div>
+                <button class="dashboard-drawer-close" id="dashboardDrawerClose" type="button" aria-label="关闭右侧栏">关闭</button>
+            </div>
+            <div class="dashboard-drawer-body">
+                <section class="dashboard-drawer-panel" data-panel="data" data-kicker="按需查看 01" data-title="多源学习数据" data-desc="把学习内容、作答样本、高频主题和活跃时段集中放进右侧栏，需要时再展开查看。">
+                    <div class="metric-row">
+                        <div class="metric-tile">
+                            <div class="metric-tile-label">学习内容（记录 / 内容）</div>
+                            <div id="data-learning-content" class="metric-tile-value">0条 / 0份</div>
+                            <div id="data-learning-content-note" class="metric-tile-note">已从空间读取并分析学习内容</div>
+                        </div>
+                        <div class="metric-tile">
+                            <div class="metric-tile-label">习题作答与诊断样本 / 错题数</div>
+                            <div id="data-qa-count" class="metric-tile-value">0</div>
+                            <div id="data-qa-note" class="metric-tile-note">累计作答与诊断样本 0 条</div>
+                        </div>
+                        <div class="metric-tile">
+                            <div class="metric-tile-label">活跃学习天数</div>
+                            <div id="data-active-days" class="metric-tile-value">0</div>
+                            <div class="metric-tile-note">记录连续使用天数，间断超过 1 天自动重置</div>
+                        </div>
+                        <div class="metric-tile">
+                            <div class="metric-tile-label">互动时长</div>
+                            <div id="data-stay-minutes" class="metric-tile-value">0</div>
+                            <div class="metric-tile-note">仅统计当天使用时长，次日自动刷新</div>
+                        </div>
+                    </div>
+                    <div class="section-label">高频主题</div>
+                    <div id="dashboard-topics" class="pill-list">
+                        <span class="pill muted">等待主题沉淀</span>
+                    </div>
+                    <div class="section-label">活跃学习时段</div>
+                    <div id="dashboard-study-windows" class="pill-list">
+                        <span class="pill muted">等待行为数据</span>
+                    </div>
+                </section>
 
-    async function loadDashboardSummary() {
-        const userId = getUserId();
-        try {
-            const resp = await fetch(`${API_BASE}/api/dashboard/summary?user_id=${userId}`);
-            const data = await parseApiResponse(resp);
+                <section class="dashboard-drawer-panel" data-panel="diagnosis" data-kicker="按需查看 02" data-title="认知诊断与个性化干预政策" data-desc="诊断结构、最近样本、补救措施与资源匹配在右侧栏集中查看，主界面继续聚焦知识状态与学习画像。" hidden>
+                    <div class="diagnosis-grid">
+                        <div class="diagnosis-card knowledge">
+                            <div class="diagnosis-card-label">知识性错误</div>
+                            <div id="diag-knowledge" class="diagnosis-card-value">0次</div>
+                        </div>
+                        <div class="diagnosis-card skill">
+                            <div class="diagnosis-card-label">技能性错误</div>
+                            <div id="diag-skill" class="diagnosis-card-value">0次</div>
+                        </div>
+                        <div class="diagnosis-card habit">
+                            <div class="diagnosis-card-label">习惯性错误</div>
+                            <div id="diag-habit" class="diagnosis-card-value">0次</div>
+                        </div>
+                    </div>
+                    <div class="section-label">错误结构分布</div>
+                    <div id="dashboard-diagnosis-balance" class="diagnosis-balance">
+                        <div class="empty-state">加载中...</div>
+                    </div>
+                    <div class="section-label">最近诊断样本</div>
+                    <div id="dashboard-diagnosis-latest" class="mini-list">
+                        <div class="empty-state">加载中...</div>
+                    </div>
+                    <div class="section-label">针对性补救措施</div>
+                    <div id="dashboard-suggestions" class="intervention-list">
+                        <div class="empty-state">加载中...</div>
+                    </div>
+                    <div class="section-label">资源匹配</div>
+                    <div id="dashboard-resource-mix" class="pill-list">
+                        <span class="pill muted">等待诊断数据</span>
+                    </div>
+                </section>
 
-            const overall = Math.round((data.overall_mastery || 0) * 100);
-            document.getElementById('overall-mastery').textContent = `${overall}%`;
+                <section class="dashboard-drawer-panel" data-panel="plan" data-kicker="按需查看 03" data-title="个性化学习计划与复习编排" data-desc="把推荐资源、今日任务和遗忘曲线复习安排放到右侧执行栏里，点击入口后即可查看和处理。" hidden>
+                    <div class="action-grid">
+                        <div class="action-panel">
+                            <div class="action-header">
+                                <h3>推荐资源与补救路径</h3>
+                                <div class="filter-wrap">
+                                    <span>推荐视图</span>
+                                    <select id="dashboard-rec-style-filter">
+                                        <option value="all">全部</option>
+                                        <option value="visual">视觉型</option>
+                                        <option value="auditory">听觉型</option>
+                                        <option value="kinesthetic">动觉型</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div id="dashboard-recommendations" class="mini-list">
+                                <div class="empty-state">加载中...</div>
+                            </div>
+                        </div>
 
-            const nodeCount = data.graph?.node_count || 0;
-            document.getElementById('graph-node-count').textContent = nodeCount;
-            document.getElementById('graph-node-bar').style.width = `${Math.min(100, nodeCount * 10)}%`;
+                        <div class="action-column">
+                            <div class="action-panel">
+                                <div class="action-header">
+                                    <h3>今日任务</h3>
+                                    <span id="diag-total" class="pill muted">0 条诊断</span>
+                                </div>
+                                <div id="dashboard-today-tasks" class="mini-list"></div>
+                            </div>
 
-            const dueCount = data.review?.due_count || 0;
-            document.getElementById('due-count').textContent = dueCount;
-            document.getElementById('due-bar').style.width = `${Math.min(100, dueCount * 20)}%`;
+                            <div class="action-panel">
+                                <div class="action-header">
+                                    <h3>复习安排</h3>
+                                    <span class="pill muted">遗忘曲线</span>
+                                </div>
+                                <div id="dashboard-review-reminders" class="mini-list">
+                                    <div class="empty-state">加载中...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </aside>
 
-            const diag = data.diagnosis?.category_count || {};
-            document.getElementById('diag-knowledge').textContent = `${diag.knowledge || 0}次`;
-            document.getElementById('diag-skill').textContent = `${diag.skill || 0}次`;
-            document.getElementById('diag-habit').textContent = `${diag.habit || 0}次`;
-
-            const profile = data.profile || {};
-            const styleMap = { visual: '视觉型学习者', auditory: '听觉型学习者', kinesthetic: '动觉型学习者' };
-            const methodMap = { kmeans: 'KMeans聚类', rule: '规则推断', rule_fallback: '规则回退' };
-            document.getElementById('dashboard-style').textContent = styleMap[profile.learning_style] || '综合型学习者';
-            document.getElementById('dashboard-style-method').textContent = `画像推断方式: ${methodMap[profile.style_method] || (profile.style_method || '--')}`;
-            document.getElementById('dashboard-best-time').textContent = `最佳学习时段: ${profile.best_time_range || '--'}`;
-            document.getElementById('dashboard-focus').textContent = `注意力集中时间: ${profile.focus_minutes || 45}分钟`;
-
-            const recBox = document.getElementById('dashboard-recommendations');
-            const recItems = data.recommendations || [];
-            const recFilterEl = document.getElementById('dashboard-rec-style-filter');
-            const activeStyle = recFilterEl ? (recFilterEl.value || 'all') : 'all';
-            const filteredRecItems = recItems.filter(item => {
-                if (activeStyle === 'all') return true;
-                const tags = Array.isArray(item.strategy_tags) ? item.strategy_tags : [];
-                return tags.some(tag => String(tag).trim() === `style:${activeStyle}`);
-            });
-
-            const styleLabelMap = {
-                visual: '视觉型',
-                auditory: '听觉型',
-                kinesthetic: '动觉型',
-            };
-            const channelLabelMap = {
-                visual: '图文通道',
-                auditory: '听讲通道',
-                kinesthetic: '练习通道',
-            };
-            const methodLabelMap = {
-                kmeans: '聚类画像',
-                rule: '规则画像',
-                rule_fallback: '回退画像',
-            };
-            const formatTag = (tag) => {
-                const raw = String(tag || '');
-                const parts = raw.split(':');
-                if (parts.length !== 2) return raw;
-                const k = parts[0];
-                const v = parts[1];
-                if (k === 'style') return styleLabelMap[v] ? `风格:${styleLabelMap[v]}` : `风格:${v}`;
-                if (k === 'channel') return channelLabelMap[v] ? `通道:${channelLabelMap[v]}` : `通道:${v}`;
-                if (k === 'method') return methodLabelMap[v] ? `画像:${methodLabelMap[v]}` : `画像:${v}`;
-                return raw;
-            };
-
-            recBox.innerHTML = filteredRecItems.length
-                ? filteredRecItems.map(item => {
-                    const t = item.recommend_time || '--';
-                    const tags = Array.isArray(item.strategy_tags) ? item.strategy_tags.slice(0, 3).map(formatTag).join(' / ') : '';
-                    const evidence = item.evidence_brief ? `<br><span style="color:#0f766e; font-size:12px;">证据：${item.evidence_brief}</span>` : '';
-                    return `<li><strong>${item.title}</strong><br><span style="color:#6b7280;">${item.reason || ''}</span>${evidence}<br><span style="color:#64748b; font-size:12px;">建议时段：${t}${tags ? `｜${tags}` : ''}</span></li>`;
-                }).join('')
-                : '<li>当前筛选条件下暂无推荐</li>';
-
-            const sugBox = document.getElementById('dashboard-suggestions');
-            const suggestions = recItems.slice(0, 3).map(item => item.reason);
-            sugBox.innerHTML = suggestions.length
-                ? suggestions.map(s => `<li>${s}</li>`).join('')
-                : '<li>保持当前节奏，持续复习。</li>';
-
-            const system = data.system || {};
-            const setText = (id, val) => {
-                const el = document.getElementById(id);
-                if (el) el.textContent = val || '--';
-            };
-            const setHtml = (id, val) => {
-                const el = document.getElementById(id);
-                if (el) el.innerHTML = val || '--';
-            };
-            const statusBadge = (name, on) => {
-                const cls = on ? 'on' : 'off';
-                return `<span class="status-badge ${cls}"><span class="dot"></span>${name}</span>`;
-            };
-            setText('sys-storage', system.storage_backend || '--');
-            setText('sys-db-scheme', system.database_scheme || '--');
-            setText('sys-graph-primary', system.graph_primary || '--');
-            setText('sys-graph-sync', system.graph_sync_mode || '--');
-            setHtml('sys-infra', `${statusBadge('Neo4j', !!system.neo4j_enabled)}${statusBadge('Celery', !!system.celery_enabled)}`);
-            setHtml('sys-ai', `${statusBadge('AI', !!system.ai_enabled)}<span style="font-size:12px;color:#64748b;">${system.ai_provider || 'mock'}</span>`);
-        } catch (e) {
-            console.warn('仪表盘汇总加载失败:', e);
-        }
-    }
-
-    // 获取今日任务并渲染
-    async function loadDashboardTodayTasks() {
-        const USER_ID = getUserId();
-        try {
-            const response = await fetch(`${API_BASE}/api/plans?user_id=${USER_ID}`);
-            const data = await parseApiResponse(response);
-            const tasksDiv = document.getElementById('dashboard-today-tasks');
-            if (!tasksDiv) return;
-            if (!data.plans || data.plans.length === 0) {
-                tasksDiv.innerHTML = '<div style="color:#888;">暂无今日任务</div>';
-                return;
-            }
-            tasksDiv.innerHTML = data.plans.map(plan => {
-                return `<div style="padding:8px; background:white; border-radius:5px; margin-bottom:5px;">
-                    ${plan.completed ? '✓' : '⏰'} ${plan.time} ${plan.task}
-                    <button style="float:right; background:#e57373; color:white; border:none; border-radius:3px; padding:2px 8px; cursor:pointer;" onclick="deleteDashboardTask('${plan.id}')">删除</button>
-                </div>`;
-            }).join('');
-        } catch (e) {
-            const tasksDiv = document.getElementById('dashboard-today-tasks');
-            if (tasksDiv) tasksDiv.innerHTML = `<div style="color:#888;">${withSuggestion('任务加载失败', e, '刷新页面或稍后重试')}</div>`;
-        }
-    }
-    // 删除任务
-    async function deleteDashboardTask(planId) {
-        const USER_ID = getUserId();
-        if (!confirm('确定要删除这个任务吗？')) return;
-        try {
-            const resp = await fetch(`${API_BASE}/api/plans/${planId}`, {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ user_id: USER_ID })
-            });
-            await parseApiResponse(resp);
-            loadDashboardTodayTasks();
-        } catch (e) {
-            alert(withSuggestion('删除任务失败', e, '确认网络正常后再试'));
-        }
-    }
-
-    async function loadDashboardReviewReminders() {
-        const USER_ID = getUserId();
-        const container = document.getElementById('dashboard-review-reminders');
-        if (!container) return;
-
-        try {
-            const resp = await fetch(`${API_BASE}/api/review/reminders?user_id=${USER_ID}`);
-            const data = await parseApiResponse(resp);
-
-            if (!data.due_items || data.due_items.length === 0) {
-                container.innerHTML = '<div>暂无到期复习任务</div>';
-                return;
-            }
-
-            container.innerHTML = data.due_items.slice(0, 5).map(item => {
-                const pct = Math.round((item.mastery || 0) * 100);
-                return `<div style="padding:7px; background:white; border-radius:6px; margin-bottom:6px;">
-                    ${item.concept} · 掌握度 ${pct}%
-                </div>`;
-            }).join('');
-        } catch (e) {
-            container.innerHTML = `<div style="color:#888;">${withSuggestion('复习提醒加载失败', e, '刷新页面或稍后重试')}</div>`;
-        }
-    }
-
-    function syncDashboardUserLabel() {
-        const label = document.getElementById('dashboard-user-label');
-        if (!label || !window.UserContext) return;
-        const userLabel = typeof window.UserContext.getUserLabel === 'function'
-            ? window.UserContext.getUserLabel()
-            : window.UserContext.getUserId();
-        label.textContent = `当前用户：${userLabel}`;
-    }
-
-    function initGlobalSidebar() {
-        const toggle = document.getElementById('globalSidebarToggle');
-        const drawer = document.getElementById('globalSidebar');
-        const backdrop = document.getElementById('globalSidebarBackdrop');
-        if (!toggle || !drawer || !backdrop) return;
-
-        const openDrawer = () => {
-            drawer.classList.add('open');
-            backdrop.classList.add('show');
-            document.body.classList.add('sidebar-open');
-        };
-        const closeDrawer = () => {
-            drawer.classList.remove('open');
-            backdrop.classList.remove('show');
-            document.body.classList.remove('sidebar-open');
-        };
-
-        toggle.addEventListener('click', openDrawer);
-        backdrop.addEventListener('click', closeDrawer);
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape') closeDrawer();
-        });
-
-        const path = (window.location.pathname || '').replace(/\\/g, '/');
-        document.querySelectorAll('[data-side-link]').forEach(link => {
-            const target = String(link.getAttribute('data-side-link') || '');
-            if (target && (path.endsWith('/' + target) || path.endsWith(target))) {
-                link.classList.add('active');
-            }
-        });
-    }
-
-    // 页面加载时自动刷新
-    window.addEventListener('DOMContentLoaded', function() {
-        initGlobalSidebar();
-        syncDashboardUserLabel();
-        loadDashboardTodayTasks();
-        loadDashboardReviewReminders();
-        loadDashboardSummary();
-
-        const recFilter = document.getElementById('dashboard-rec-style-filter');
-        if (recFilter) {
-            recFilter.addEventListener('change', loadDashboardSummary);
-        }
-
-        window.addEventListener('knowledge:updated', function() {
-            loadDashboardTodayTasks();
-            loadDashboardReviewReminders();
-            loadDashboardSummary();
-        });
-
-        if (window.UserContext) {
-            window.UserContext.onChange(function() {
-                syncDashboardUserLabel();
-                loadDashboardTodayTasks();
-                loadDashboardReviewReminders();
-                loadDashboardSummary();
-            });
-        }
-    });
-    </script>
+    <script src="assets/js/shared/user-context.js?v=20260330-authfix"></script>
+    <script src="assets/js/shared/api-utils.js?v=20260330-authfix"></script>
+    <script src="assets/js/shared/project-local-data.js?v=20260330-authfix"></script>
+    <script src="assets/js/shared/auth-ui.js?v=20260330-authfix"></script>
+    <script src="assets/js/shared/page-shell.js?v=20260331-telemetryfix"></script>
+    <script src="assets/js/pages/dashboard-page.js?v=20260331-drawerpanel"></script>
 </body>
 </html>
