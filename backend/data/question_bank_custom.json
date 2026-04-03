@@ -1,4 +1,33 @@
 {
-  "items": [],
-  "updated_at": "2026-03-29T12:25:41.757597"
+  "items": [
+    {
+      "id": "qb-custom-a938a31f81c1",
+      "concept": "小学数学",
+      "difficulty": "easy",
+      "question_type": "short_answer",
+      "question": "一个文具店卖出 15 支铅笔 和 8 本笔记本。铅笔每支 2 元，笔记本每本 5 元。\n请问一共收入多少元？",
+      "options": [],
+      "answer": "70元",
+      "analysis": "铅笔收入：\n15×2=30 元\n笔记本收入：\n8×5=40 元\n总收入：\n30+40=70 元",
+      "created_at": "2026-04-02T19:34:12.007048",
+      "created_by": "stu_001",
+      "is_public": false,
+      "bank_source": "user_custom"
+    },
+    {
+      "id": "qb-custom-22963ba159c9",
+      "concept": "历史",
+      "difficulty": "hard",
+      "question_type": "short_answer",
+      "question": "我国哪一年取得抗日胜利",
+      "options": [],
+      "answer": "1945年",
+      "analysis": "1945年日本宣布无条件投降",
+      "created_at": "2026-04-02T19:36:45.525462",
+      "created_by": "stu_001",
+      "is_public": false,
+      "bank_source": "user_custom"
+    }
+  ],
+  "updated_at": "2026-04-02T19:36:45.525589"
 }

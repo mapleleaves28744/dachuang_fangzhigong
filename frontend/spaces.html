@@ -6,39 +6,84 @@
     <title>我的空间</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/shared/auth-ui.css">
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=Noto+Sans+SC:wght@400;500;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/shared/auth-ui.css?v=20260403-space-root-nav">
     <style>
         :root {
             --ink: #0f172a;
-            --muted: #64748b;
-            --line: #dbe4ef;
+            --muted: #667085;
+            --line: #e5e7eb;
+            --soft-line: #eef2f7;
             --panel: #ffffff;
-            --brand: #0f5bd8;
+            --panel-soft: #f8fafc;
+            --brand: #111111;
+            --danger: #c62828;
+            --shadow-lg: 0 24px 70px rgba(15, 23, 42, 0.08);
+            --shadow-md: 0 16px 34px rgba(15, 23, 42, 0.08);
+            --shadow-sm: 0 10px 24px rgba(15, 23, 42, 0.06);
         }
 
         * { box-sizing: border-box; margin: 0; padding: 0; }
 
         body {
             font-family: "Manrope", "Noto Sans SC", "Microsoft YaHei", sans-serif;
-            background: #ffffff;
+            background: radial-gradient(circle at top left, rgba(245, 247, 250, 0.95), rgba(255, 255, 255, 0.98) 30%) fixed;
             color: var(--ink);
+            min-height: 100vh;
+            font-size: 15px;
+        }
+
+        body.space-modal-open {
+            overflow: hidden;
         }
 
         .global-sidebar-toggle {
             position: fixed;
-            left: 12px;
-            top: 12px;
-            width: 42px;
-            height: 42px;
-            border: 1px solid #d8e2f1;
-            background: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+            left: 18px;
+            top: 16px;
+            width: 52px;
+            height: 52px;
+            border: 1px solid #dde4ef;
+            background: rgba(255, 255, 255, 0.94);
+            border-radius: 18px;
+            box-shadow: 0 16px 32px rgba(15, 23, 42, 0.12);
             color: #0f172a;
-            font-size: 20px;
             cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
             z-index: 1400;
+        }
+
+        .global-sidebar-toggle-icon {
+            width: 21px;
+            height: 16px;
+            display: inline-flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .global-sidebar-toggle-icon span {
+            display: block;
+            width: 100%;
+            height: 2.4px;
+            border-radius: 999px;
+            background: #1f2937;
+            transform-origin: center;
+            transition: transform 0.18s ease, opacity 0.18s ease;
+        }
+
+        .global-sidebar-toggle[aria-expanded="true"] .global-sidebar-toggle-icon span:nth-child(1) {
+            transform: translateY(6.8px) rotate(45deg);
+        }
+
+        .global-sidebar-toggle[aria-expanded="true"] .global-sidebar-toggle-icon span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .global-sidebar-toggle[aria-expanded="true"] .global-sidebar-toggle-icon span:nth-child(3) {
+            transform: translateY(-6.8px) rotate(-45deg);
         }
 
         body.sidebar-open .global-sidebar-toggle {
@@ -60,7 +105,7 @@
             position: fixed;
             left: 0;
             top: 0;
-            width: 280px;
+            width: 260px;
             height: 100vh;
             background: #f8fafd;
             border-right: 1px solid #dbe4ef;
@@ -73,14 +118,14 @@
             padding: 16px 14px;
         }
 
+        .global-sidebar.open { transform: translateX(0); }
+
         .global-sidebar-scroll {
             flex: 1;
             min-height: 0;
             overflow-y: auto;
             padding-right: 2px;
         }
-
-        .global-sidebar.open { transform: translateX(0); }
 
         .global-sidebar-logo {
             font-size: 26px;
@@ -120,248 +165,1191 @@
             font-weight: 700;
         }
 
-        .wrap {
-            max-width: 1320px;
-            margin: 0 auto;
-            padding: 20px;
-        }
-
-        .topbar {
+        .space-shell-topbar {
+            position: sticky;
+            top: 0;
+            z-index: 1200;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 12px;
-            margin-bottom: 14px;
+            gap: 18px;
+            padding: 18px 28px 14px 88px;
+            background: rgba(255, 255, 255, 0.92);
+            backdrop-filter: blur(14px);
         }
 
-        .topbar-actions {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-            justify-content: flex-end;
-        }
-
-        .title {
-            font-size: 28px;
-            font-weight: 900;
-        }
-
-        .subtitle {
-            color: var(--muted);
-            font-size: 13px;
-            margin-top: 4px;
-        }
-
-        .btn {
-            border: 1px solid #cfe0f8;
-            background: #f5f9ff;
-            color: #1d4ed8;
-            border-radius: 10px;
-            padding: 8px 12px;
-            font-size: 13px;
-            font-weight: 700;
-            cursor: pointer;
-            text-decoration: none;
+        .space-shell-brand {
             display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 18px;
+            min-width: 0;
         }
 
-        .btn.danger {
-            border-color: #f3c9c9;
-            background: #fff5f5;
-            color: #c24141;
+        .space-brand-mark {
+            width: 40px;
+            height: 34px;
+            display: inline-flex;
+            align-items: flex-end;
+            gap: 4px;
+            flex-shrink: 0;
         }
 
-        .layout {
-            display: grid;
-            grid-template-columns: 320px minmax(0, 1fr);
-            gap: 14px;
+        .space-brand-mark span {
+            display: block;
+            width: 10px;
+            border-radius: 999px;
+            background: #111111;
         }
 
-        .panel {
-            border: 1px solid var(--line);
-            border-radius: 16px;
-            background: var(--panel);
-            box-shadow: 0 8px 22px rgba(15, 23, 42, 0.06);
-            padding: 12px;
+        .space-brand-mark span:nth-child(1) { height: 28px; }
+        .space-brand-mark span:nth-child(2) { height: 28px; }
+        .space-brand-mark span:nth-child(3) { height: 12px; }
+
+        .space-shell-context {
+            min-width: 0;
         }
 
-        .panel-title {
+        .space-shell-context-label {
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #98a2b3;
+            margin-bottom: 2px;
+        }
+
+        .space-shell-context-name {
             font-size: 15px;
             font-weight: 800;
-            margin-bottom: 8px;
+            color: #101828;
+            line-height: 1.2;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: min(42vw, 520px);
         }
 
-        .space-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            max-height: 72vh;
-            overflow-y: auto;
+        .space-shell-user {
+            font-size: 12px;
+            color: var(--muted);
+            white-space: nowrap;
         }
 
-        .space-card {
+        .space-page {
+            width: min(100%, 1560px);
+            margin: 0 auto;
+            padding: 30px 56px 56px;
+        }
+
+        .space-reader {
             width: 100%;
-            text-align: left;
-            border: 1px solid #dee6f2;
-            border-radius: 12px;
-            background: #ffffff;
-            padding: 10px;
-            cursor: pointer;
+            min-height: 100vh;
+            padding: 22px 24px 28px;
         }
 
-        .space-card.active {
-            border-color: #84aef0;
-            background: #f8fbff;
-            box-shadow: 0 6px 16px rgba(29, 78, 216, 0.1);
+        .space-reader-topbar {
+            width: min(100%, 1360px);
+            margin: 0 auto 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
         }
 
-        .space-name {
+        .space-reader-back {
+            border: 1px solid #d0d5dd;
+            background: rgba(255, 255, 255, 0.96);
+            color: #101828;
+            border-radius: 999px;
+            min-height: 44px;
+            padding: 0 18px;
             font-size: 14px;
             font-weight: 800;
-            margin-bottom: 3px;
-        }
-
-        .space-meta {
-            font-size: 12px;
-            color: var(--muted);
-        }
-
-        .item-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 10px;
-            margin-bottom: 10px;
-        }
-
-        .item-card {
-            border: 1px solid #e2e8f4;
-            border-radius: 12px;
-            background: #ffffff;
-            padding: 10px;
             cursor: pointer;
+            box-shadow: var(--shadow-sm);
+            flex-shrink: 0;
         }
 
-        .item-card.active {
-            border-color: #84aef0;
-            background: #f8fbff;
-        }
-
-        .item-name {
-            font-size: 13px;
+        .space-reader-file {
+            min-width: 0;
+            font-size: 14px;
             font-weight: 700;
-            margin-bottom: 2px;
-            word-break: break-all;
+            color: #667085;
+            text-align: right;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
-        .item-meta {
-            font-size: 11px;
-            color: var(--muted);
+        .space-reader-body {
+            width: min(100%, 1360px);
+            margin: 0 auto;
         }
 
-        .item-snippet {
-            margin-top: 6px;
-            font-size: 12px;
-            line-height: 1.55;
-            color: #475569;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
+        .space-reader-document {
+            min-height: calc(100vh - 116px);
+            border: 1px solid #e5e7eb;
+            border-radius: 28px;
+            background: #ffffff;
+            box-shadow: var(--shadow-md);
             overflow: hidden;
         }
 
-        .viewer {
-            border: 1px dashed #d5e0ef;
-            border-radius: 12px;
-            background: #fafcff;
-            padding: 10px;
-            min-height: 320px;
+        .space-reader-document.is-text {
+            width: min(100%, 960px);
+            margin: 0 auto;
+            min-height: auto;
+            padding: 52px 56px 56px;
         }
 
-        .viewer-title {
-            font-size: 15px;
-            font-weight: 800;
-            margin-bottom: 6px;
+        .space-reader-document.is-pdf {
+            background: #eef2f7;
+            padding: 26px 0;
         }
 
-        .viewer-meta {
-            font-size: 12px;
-            color: var(--muted);
-            margin-bottom: 8px;
+        .space-reader-document.is-text pre {
+            white-space: pre-wrap;
+            word-break: break-word;
+            font-size: 18px;
+            line-height: 1.95;
+            color: #101828;
         }
 
-        .viewer-actions {
+        .space-reader-pdf {
+            width: min(100%, 1120px);
+            margin: 0 auto;
+            display: grid;
+            gap: 20px;
+            padding: 0 24px;
+        }
+
+        .space-reader-pdf-page {
             display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 12px;
+            border-radius: 20px;
+            background: #ffffff;
+            box-shadow: 0 18px 34px rgba(15, 23, 42, 0.08);
+        }
+
+        .space-reader-pdf-page canvas {
+            width: 100%;
+            max-width: 100%;
+            height: auto;
+            display: block;
+        }
+
+        .space-reader-frame {
+            width: 100%;
+            min-height: calc(100vh - 116px);
+            border: none;
+            background: #ffffff;
+            display: block;
+        }
+
+        .space-reader-media {
+            min-height: calc(100vh - 116px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 28px;
+            background: #ffffff;
+        }
+
+        .space-reader-media img,
+        .space-reader-media video {
+            max-width: 100%;
+            max-height: calc(100vh - 180px);
+            display: block;
+        }
+
+        .space-reader-media audio {
+            width: min(100%, 760px);
+        }
+
+        .space-reader-note {
+            min-height: calc(100vh - 116px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 32px;
+            color: #667085;
+            font-size: 16px;
+            text-align: center;
+            line-height: 1.8;
+        }
+
+        .space-reader-loading {
+            min-height: calc(100vh - 220px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #667085;
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        body.space-reader-mode {
+            background: #f3f4f6;
+        }
+
+        body.space-reader-mode .global-sidebar-toggle,
+        body.space-reader-mode .global-sidebar-backdrop,
+        body.space-reader-mode .global-sidebar,
+        body.space-reader-mode .space-shell-topbar {
+            display: none;
+        }
+
+        .space-hero {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 42px;
+        }
+
+        .space-hero-copy {
+            max-width: 720px;
+        }
+
+        .space-title-wrap {
+            min-height: 80px;
+        }
+
+        .space-description-wrap {
+            margin-top: 10px;
+            min-height: 40px;
+        }
+
+        .editable-shell {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
             gap: 8px;
-            margin-bottom: 8px;
+        }
+
+        .editable-trigger {
+            border: none;
+            background: transparent;
+            color: inherit;
+            text-align: left;
+            padding: 0;
+            cursor: text;
+        }
+
+        .space-title-wrap .editable-trigger {
+            font-size: clamp(30px, 4vw, 46px);
+            font-weight: 900;
+            line-height: 1.06;
+            letter-spacing: -0.04em;
+        }
+
+        .space-description-wrap .editable-trigger {
+            font-size: 18px;
+            font-weight: 500;
+            color: #667085;
+            line-height: 1.45;
+        }
+
+        .editable-trigger.is-empty {
+            color: #98a2b3;
+        }
+
+        .space-name-input,
+        .space-description-input {
+            width: min(100%, 760px);
+            border: none;
+            border-bottom: 2px solid #d0d5dd;
+            background: transparent;
+            color: #101828;
+            padding: 0 0 10px;
+            resize: none;
+        }
+
+        .space-name-input {
+            font-size: clamp(30px, 4vw, 46px);
+            font-weight: 900;
+            line-height: 1.06;
+            letter-spacing: -0.04em;
+        }
+
+        .space-description-input {
+            min-height: 64px;
+            font-size: 18px;
+            font-weight: 500;
+            line-height: 1.45;
+        }
+
+        .space-name-input:focus,
+        .space-description-input:focus {
+            outline: none;
+            border-color: #111111;
+        }
+
+        .editable-hint {
+            font-size: 12px;
+            color: #98a2b3;
+        }
+
+        .space-hero-actions {
+            display: inline-flex;
+            align-items: center;
+            gap: 14px;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            flex-shrink: 0;
+            padding-top: 16px;
+        }
+
+        .space-action-btn {
+            height: 48px;
+            border-radius: 20px;
+            border: 1px solid #111111;
+            background: #111111;
+            color: #ffffff;
+            padding: 0 20px;
+            font-size: 20px;
+            font-weight: 700;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .space-action-btn:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .space-action-btn .btn-plus {
+            font-size: 24px;
+            line-height: 1;
+        }
+
+        .space-more-wrap {
+            position: relative;
+        }
+
+        .space-more-btn {
+            width: 52px;
+            height: 52px;
+            border-radius: 20px;
+            border: 1px solid #d0d5dd;
+            background: #ffffff;
+            color: #101828;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .space-more-btn:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .space-more-btn::before,
+        .space-more-btn::after,
+        .space-more-btn span {
+            content: "";
+            width: 4px;
+            height: 4px;
+            border-radius: 999px;
+            background: currentColor;
+            display: block;
+        }
+
+        .space-more-btn span {
+            margin: 5px 0;
+        }
+
+        .space-more-menu {
+            position: absolute;
+            right: 0;
+            top: calc(100% + 12px);
+            min-width: 210px;
+            padding: 8px;
+            border: 1px solid #e4e7ec;
+            border-radius: 18px;
+            background: #ffffff;
+            box-shadow: var(--shadow-md);
+            display: none;
+        }
+
+        .space-more-menu.show {
+            display: block;
+        }
+
+        .space-more-menu-btn {
+            width: 100%;
+            border: none;
+            border-radius: 12px;
+            background: transparent;
+            color: #111827;
+            font-size: 15px;
+            font-weight: 700;
+            text-align: left;
+            padding: 14px 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .space-more-menu-btn:hover {
+            background: #f8fafc;
+        }
+
+        .space-more-menu-btn svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        .space-table {
+            border-top: 1px solid var(--line);
+        }
+
+        .space-table-head,
+        .space-row {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) 200px 58px;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .space-table-head {
+            min-height: 60px;
+            color: #667085;
+            font-size: 14px;
+            font-weight: 700;
+            border-bottom: 1px solid var(--line);
+        }
+
+        .space-table-head-title {
+            padding-left: 18px;
+        }
+
+        .space-table-head-added {
+            text-align: left;
+        }
+
+        .space-row {
+            position: relative;
+            min-height: 82px;
+            border-bottom: 1px solid var(--soft-line);
+        }
+
+        .space-row-main {
+            border: none;
+            background: transparent;
+            width: 100%;
+            min-height: 82px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 0 0 18px;
+            cursor: pointer;
+            text-align: left;
+            color: inherit;
+        }
+
+        .space-row-main-left {
+            display: inline-flex;
+            align-items: center;
+            gap: 14px;
+            min-width: 0;
+        }
+
+        .space-row-icon {
+            width: 24px;
+            height: 24px;
+            color: #6b7280;
+            flex-shrink: 0;
+        }
+
+        .space-row-icon svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .space-row-name {
+            font-size: 17px;
+            font-weight: 700;
+            color: #101828;
+            word-break: break-word;
+        }
+
+        .space-row-added {
+            color: #667085;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .space-row-actions {
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+        }
+
+        .space-row-menu-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            background: transparent;
+            color: #111827;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 3px;
+            border-radius: 10px;
+        }
+
+        .space-row-menu-btn:hover {
+            background: #f3f4f6;
+        }
+
+        .space-row-menu-btn span {
+            width: 4px;
+            height: 4px;
+            border-radius: 999px;
+            background: currentColor;
+            display: block;
+        }
+
+        .item-menu {
+            position: absolute;
+            top: calc(100% - 6px);
+            right: 0;
+            width: 256px;
+            border: 1px solid #e4e7ec;
+            border-radius: 20px;
+            background: #ffffff;
+            box-shadow: var(--shadow-md);
+            padding: 8px;
+            display: none;
+            z-index: 8;
+        }
+
+        .item-menu.is-open {
+            display: block;
+        }
+
+        .item-menu-btn {
+            width: 100%;
+            border: none;
+            background: transparent;
+            border-radius: 14px;
+            min-height: 44px;
+            padding: 11px 14px;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #111827;
+            cursor: pointer;
+        }
+
+        .item-menu-btn:hover {
+            background: #f8fafc;
+        }
+
+        .item-menu-btn.danger {
+            color: var(--danger);
+        }
+
+        .item-menu-icon {
+            width: 20px;
+            height: 20px;
+            flex-shrink: 0;
+        }
+
+        .item-menu-icon svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .item-menu-btn.has-arrow {
+            justify-content: space-between;
+        }
+
+        .item-menu-btn.has-arrow > span:nth-child(2) {
+            flex: 1;
+        }
+
+        .item-menu-arrow {
+            font-size: 22px;
+            line-height: 1;
+            color: #667085;
+        }
+
+        .item-move-panel {
+            display: none;
+            margin: 2px 0 8px;
+            padding: 6px 0 2px 32px;
+        }
+
+        .item-move-panel.is-open {
+            display: block;
+        }
+
+        .item-move-target,
+        .item-move-empty {
+            width: 100%;
+            border: none;
+            background: transparent;
+            text-align: left;
+            padding: 10px 12px;
+            border-radius: 12px;
+            font-size: 14px;
+            color: #475467;
+        }
+
+        .item-move-target {
+            cursor: pointer;
+        }
+
+        .item-move-target:hover {
+            background: #f8fafc;
+            color: #111827;
+        }
+
+        .space-list-empty,
+        .space-empty-state {
+            margin-top: 28px;
+            border: 1px dashed #d0d5dd;
+            border-radius: 28px;
+            background: rgba(255, 255, 255, 0.86);
+            padding: 40px;
+            text-align: center;
+        }
+
+        .space-list-empty-title,
+        .space-empty-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: #101828;
+        }
+
+        .space-list-empty-subtitle,
+        .space-empty-subtitle {
+            margin-top: 8px;
+            font-size: 14px;
+            color: #667085;
+        }
+
+        .space-empty-btn {
+            margin-top: 20px;
+            height: 48px;
+            border-radius: 16px;
+            border: none;
+            background: #111111;
+            color: #ffffff;
+            padding: 0 22px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .content-modal,
+        .item-preview-modal,
+        .item-properties-modal {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.26);
+            backdrop-filter: blur(6px);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            z-index: 1500;
+        }
+
+        .content-modal.show,
+        .item-preview-modal.show,
+        .item-properties-modal.show {
+            display: flex;
+        }
+
+        .content-modal-card,
+        .item-preview-card,
+        .item-properties-card {
+            width: min(100%, 1180px);
+            max-height: min(90vh, 860px);
+            overflow: auto;
+            background: #ffffff;
+            border-radius: 30px;
+            border: 1px solid #e5e7eb;
+            box-shadow: var(--shadow-lg);
+            scrollbar-width: thin;
+            scrollbar-color: rgba(148, 163, 184, 0.9) rgba(241, 245, 249, 0.95);
+            scrollbar-gutter: stable both-edges;
+        }
+
+        .content-modal-card::-webkit-scrollbar,
+        .item-preview-card::-webkit-scrollbar,
+        .item-properties-card::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        .content-modal-card::-webkit-scrollbar-track,
+        .item-preview-card::-webkit-scrollbar-track,
+        .item-properties-card::-webkit-scrollbar-track {
+            background: rgba(241, 245, 249, 0.95);
+            border-radius: 999px;
+            margin: 10px;
+        }
+
+        .content-modal-card::-webkit-scrollbar-thumb,
+        .item-preview-card::-webkit-scrollbar-thumb,
+        .item-properties-card::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.9);
+            border-radius: 999px;
+            border: 2px solid rgba(241, 245, 249, 0.95);
+        }
+
+        .content-modal-card {
+            padding: 24px 28px 28px;
+        }
+
+        .content-modal-head,
+        .item-preview-head,
+        .item-properties-head {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .content-modal-headline {
+            text-align: center;
+            font-size: clamp(28px, 3.4vw, 42px);
+            font-weight: 400;
+            line-height: 1.08;
+            letter-spacing: -0.04em;
+            margin: 18px auto 28px;
+        }
+
+        .content-modal-close,
+        .item-preview-close,
+        .item-properties-close {
+            border: none;
+            background: #f3f4f6;
+            color: #111827;
+            border-radius: 14px;
+            min-width: 74px;
+            height: 42px;
+            padding: 0 16px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .content-mode-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 14px;
+        }
+
+        .content-mode-card {
+            border: 1px solid #d0d5dd;
+            border-radius: 24px;
+            background: #ffffff;
+            padding: 22px 24px;
+            min-height: 138px;
+            text-align: left;
+            cursor: pointer;
+            transition: transform 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+        }
+
+        .content-mode-card:hover,
+        .content-mode-card.active {
+            transform: translateY(-1px);
+            border-color: #111111;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .content-mode-icon {
+            width: 34px;
+            height: 34px;
+            color: #666666;
+            margin-bottom: 12px;
+        }
+
+        .content-mode-icon svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .content-mode-title {
+            font-size: 20px;
+            font-weight: 800;
+            color: #101828;
+        }
+
+        .content-mode-desc {
+            margin-top: 4px;
+            color: #667085;
+            font-size: 14px;
+            line-height: 1.45;
+        }
+
+        .content-modal-form {
+            margin-top: 18px;
+            border: 1px solid #e4e7ec;
+            border-radius: 24px;
+            background: #fcfcfd;
+            padding: 22px;
+        }
+
+        .content-field-grid {
+            display: grid;
+            gap: 12px;
+        }
+
+        .content-input,
+        .content-textarea,
+        .content-file {
+            width: 100%;
+            border: 1px solid #d0d5dd;
+            border-radius: 18px;
+            background: #ffffff;
+            padding: 14px 16px;
+            font-size: 15px;
+            color: #101828;
+        }
+
+        .content-textarea {
+            min-height: 152px;
+            resize: vertical;
+        }
+
+        .content-input:focus,
+        .content-textarea:focus,
+        .content-file:focus {
+            outline: none;
+            border-color: #111111;
+        }
+
+        .content-file-note,
+        .content-record-status,
+        .content-modal-result {
+            margin-top: 10px;
+            font-size: 14px;
+            color: #667085;
+        }
+
+        .content-record-controls {
+            margin-top: 12px;
+            padding: 16px 18px;
+            border: 1px solid #e4e7ec;
+            border-radius: 20px;
+            background: #ffffff;
+        }
+
+        .content-record-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
             flex-wrap: wrap;
         }
 
-        .viewer-summary {
-            margin-bottom: 10px;
-            border: 1px dashed #d5e0ef;
-            border-radius: 10px;
+        .content-record-btn {
+            height: 40px;
+            border-radius: 999px;
+            border: 1px solid #d0d5dd;
             background: #ffffff;
-            padding: 10px;
-            color: #475569;
-            font-size: 12px;
-            line-height: 1.6;
-            white-space: pre-wrap;
-            word-break: break-word;
+            padding: 0 16px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
         }
 
-        .viewer-body img {
-            max-width: 100%;
-            border-radius: 10px;
-            border: 1px solid #dbe4ef;
+        .content-record-btn.primary {
+            border-color: #111111;
+            background: #111111;
+            color: #ffffff;
         }
 
-        .viewer-body video {
+        .content-record-audio {
             width: 100%;
-            border-radius: 10px;
-            border: 1px solid #dbe4ef;
-            background: #0f172a;
+            margin-top: 12px;
+            display: none;
         }
 
-        .viewer-body iframe {
+        .content-modal-footer {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .content-footer-btn {
+            height: 46px;
+            border-radius: 16px;
+            border: 1px solid #d0d5dd;
+            background: #ffffff;
+            color: #101828;
+            padding: 0 20px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+        }
+
+        .content-footer-btn.primary {
+            border-color: #111111;
+            background: #111111;
+            color: #ffffff;
+        }
+
+        .item-preview-card {
+            width: min(100%, 860px);
+            padding: 24px 24px 26px;
+        }
+
+        .item-preview-title {
+            font-size: 22px;
+            font-weight: 900;
+            color: #101828;
+            line-height: 1.15;
+        }
+
+        .item-preview-meta {
+            margin-top: 8px;
+            color: #667085;
+            font-size: 13px;
+        }
+
+        .item-preview-body {
+            margin-top: 14px;
+            border: 1px solid #e4e7ec;
+            border-radius: 22px;
+            padding: 18px;
+            background: #ffffff;
+            min-height: 180px;
+        }
+
+        .item-preview-body img,
+        .item-preview-body video,
+        .item-preview-body audio {
+            width: 100%;
+            max-width: 100%;
+            display: block;
+        }
+
+        .item-preview-body iframe {
             width: 100%;
             min-height: 420px;
-            border: 1px solid #dbe4ef;
-            border-radius: 10px;
+            border: none;
+            border-radius: 14px;
             background: #ffffff;
         }
 
-        .viewer-body audio {
-            width: 100%;
-        }
-
-        .viewer-body pre {
+        .item-preview-body pre {
             white-space: pre-wrap;
             word-break: break-word;
-            background: #ffffff;
-            border: 1px solid #e2e8f4;
-            border-radius: 10px;
-            padding: 10px;
+            font-size: 14px;
+            line-height: 1.7;
             color: #1f2937;
+        }
+
+        .preview-note {
+            color: #667085;
+            font-size: 14px;
+        }
+
+        .item-properties-card {
+            width: min(100%, 760px);
+            padding: 24px 24px 26px;
+        }
+
+        .item-properties-title {
+            font-size: 22px;
+            font-weight: 900;
+            color: #101828;
+            line-height: 1.15;
+        }
+
+        .item-properties-meta {
+            margin-top: 8px;
+            color: #667085;
             font-size: 13px;
-            line-height: 1.6;
         }
 
-        .hint {
+        .item-properties-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin-top: 18px;
+        }
+
+        .item-properties-row {
+            border: 1px solid #e4e7ec;
+            border-radius: 18px;
+            background: #f8fafc;
+            padding: 14px 16px;
+        }
+
+        .item-properties-label {
             font-size: 12px;
-            color: var(--muted);
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            color: #98a2b3;
+            text-transform: uppercase;
         }
 
-        @media (max-width: 980px) {
-            .layout { grid-template-columns: 1fr; }
-            .item-grid { grid-template-columns: 1fr; }
+        .item-properties-value {
+            margin-top: 8px;
+            color: #1f2937;
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1.6;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        .item-properties-summary {
+            margin-top: 16px;
+            padding: 14px 16px;
+            border-radius: 18px;
+            background: #f8fafc;
+            color: #344054;
+            font-size: 14px;
+            line-height: 1.7;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+
+        @media (max-width: 1080px) {
+            .space-page {
+                padding: 24px 22px 48px;
+            }
+
+            .space-reader {
+                padding: 18px 18px 24px;
+            }
+
+            .space-hero {
+                flex-direction: column;
+            }
+
+            .space-shell-topbar {
+                padding-right: 20px;
+            }
+
+            .content-mode-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+
+        @media (max-width: 760px) {
+            .space-shell-topbar {
+                padding: 16px 16px 12px 82px;
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .space-shell-user {
+                white-space: normal;
+            }
+
+            .space-reader-topbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .space-reader-file {
+                text-align: left;
+            }
+
+            .space-reader-document.is-text {
+                padding: 30px 22px 34px;
+                border-radius: 22px;
+            }
+
+            .space-reader-document.is-pdf {
+                padding: 16px 0;
+                border-radius: 22px;
+            }
+
+            .space-reader-document.is-text pre {
+                font-size: 16px;
+                line-height: 1.85;
+            }
+
+            .space-reader-pdf {
+                padding: 0 12px;
+                gap: 14px;
+            }
+
+            .space-table-head {
+                display: none;
+            }
+
+            .space-row {
+                grid-template-columns: minmax(0, 1fr) 42px;
+                padding: 14px 0;
+            }
+
+            .space-row-main {
+                min-height: 0;
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 6px;
+                padding-left: 12px;
+            }
+
+            .space-row-main-left,
+            .space-row-main-right {
+                width: 100%;
+            }
+
+            .space-row-added {
+                display: block;
+                padding-left: 42px;
+            }
+
+            .content-mode-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .content-modal-card,
+            .item-preview-card,
+            .item-properties-card {
+                padding: 22px 18px 24px;
+                border-radius: 24px;
+            }
+
+            .item-properties-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
 <body>
-    <button class="global-sidebar-toggle" id="globalSidebarToggle" type="button" aria-label="打开侧栏">☰</button>
+    <button class="global-sidebar-toggle" id="globalSidebarToggle" type="button" aria-label="打开侧栏">
+        <span class="global-sidebar-toggle-icon" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+        </span>
+    </button>
     <div class="global-sidebar-backdrop" id="globalSidebarBackdrop"></div>
     <aside class="global-sidebar" id="globalSidebar">
         <div class="global-sidebar-scroll">
@@ -376,41 +1364,177 @@
         </div>
     </aside>
 
-    <div class="wrap">
-        <div class="topbar">
-            <div>
-                <div class="title">我的空间</div>
-                <div class="subtitle" id="spaceUserLabel">用户：-</div>
+    <header class="space-shell-topbar">
+        <div class="space-shell-brand">
+            <div class="space-brand-mark" aria-hidden="true">
+                <span></span>
+                <span></span>
+                <span></span>
             </div>
-            <div class="topbar-actions">
-                <button class="btn" id="createSpaceBtn" type="button">新建空间</button>
-                <button class="btn danger" id="deleteSpaceBtn" type="button">删除当前空间</button>
-                <a class="btn" href="index.html">返回首页</a>
+            <div class="space-shell-context">
+                <div class="space-shell-context-label">Space</div>
+                <div class="space-shell-context-name" id="topSpaceName">我的空间</div>
             </div>
         </div>
+        <div class="space-shell-user" id="spaceUserLabel">用户：-</div>
+    </header>
 
-        <div class="layout">
-            <section class="panel">
-                <div class="panel-title">空间列表</div>
-                <div class="space-list" id="spaceList"></div>
-            </section>
-
-            <section class="panel">
-                <div class="panel-title" id="itemPanelTitle">空间内容</div>
-                <div class="item-grid" id="itemGrid"></div>
-                <div class="viewer" id="itemViewer">
-                    <div class="hint">点击左侧空间和内容项查看详情。</div>
+    <main class="space-page" id="spacePage">
+        <section class="space-hero" id="spaceHero">
+            <div class="space-hero-copy">
+                <div class="space-title-wrap" id="spaceTitleWrap"></div>
+                <div class="space-description-wrap" id="spaceDescriptionWrap"></div>
+            </div>
+            <div class="space-hero-actions">
+                <button class="space-action-btn" id="addContentBtn" type="button">
+                    <span class="btn-plus">+</span>
+                    <span>添加内容</span>
+                </button>
+                <div class="space-more-wrap">
+                    <button class="space-more-btn" id="spaceMoreBtn" type="button" aria-label="更多操作" aria-haspopup="menu" aria-expanded="false">
+                        <span aria-hidden="true"></span>
+                    </button>
+                    <div class="space-more-menu" id="spaceMoreMenu" role="menu">
+                        <button class="space-more-menu-btn" id="createFolderBtn" type="button">
+                            <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                                <path d="M3.5 7.5A2.5 2.5 0 0 1 6 5h4l2 2h6A2.5 2.5 0 0 1 20.5 9.5v7A2.5 2.5 0 0 1 18 19H6a2.5 2.5 0 0 1-2.5-2.5v-9Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                                <path d="M12 9.5v6M9 12.5h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                            </svg>
+                            <span>新建文件夹</span>
+                        </button>
+                    </div>
                 </div>
-            </section>
+            </div>
+        </section>
+
+        <section class="space-table" id="spaceTable">
+            <div class="space-table-head">
+                <div class="space-table-head-title">名称 ↑ <span style="color:#98a2b3;font-weight:600;">(<span id="spaceItemCount">0</span>)</span></div>
+                <div class="space-table-head-added">已添加</div>
+                <div></div>
+            </div>
+            <div id="spaceItemList"></div>
+        </section>
+
+        <section class="space-empty-state" id="spaceEmptyState" hidden>
+            <div class="space-empty-title">你还没有空间</div>
+            <div class="space-empty-subtitle">先创建一个空间，之后就可以在这里添加文件、链接、笔记和录音。</div>
+            <button class="space-empty-btn" id="createSpaceFromEmptyBtn" type="button">创建第一个空间</button>
+        </section>
+    </main>
+
+    <main class="space-reader" id="spaceReader" hidden>
+        <div class="space-reader-topbar">
+            <button class="space-reader-back" id="spaceReaderBackBtn" type="button">返回空间</button>
+            <div class="space-reader-file" id="spaceReaderFileName">文档预览</div>
+        </div>
+        <section class="space-reader-body" id="spaceReaderBody"></section>
+    </main>
+
+    <div class="content-modal" id="contentModal">
+        <div class="content-modal-card">
+            <div class="content-modal-head">
+                <div></div>
+                <button class="content-modal-close" id="contentModalCloseBtn" type="button">关闭</button>
+            </div>
+            <div class="content-modal-headline" id="contentModalHeadline">是时候学习了，同学</div>
+
+            <div class="content-mode-grid">
+                <button class="content-mode-card active" type="button" data-content-mode-select="upload">
+                    <div class="content-mode-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M12 16V4M12 4l-4 4M12 4l4 4M4 16.5V18a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-1.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="content-mode-title">上传</div>
+                    <div class="content-mode-desc">文件、音频、视频</div>
+                </button>
+                <button class="content-mode-card" type="button" data-content-mode-select="link">
+                    <div class="content-mode-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M10 13.5 14 9.5M8.25 15.25l-1.75 1.75a3.18 3.18 0 1 1-4.5-4.5l3.25-3.25a3.18 3.18 0 0 1 4.5 0M15.75 8.75l1.75-1.75a3.18 3.18 0 1 1 4.5 4.5l-3.25 3.25a3.18 3.18 0 0 1-4.5 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                    </div>
+                    <div class="content-mode-title">链接</div>
+                    <div class="content-mode-desc">YouTube、网站</div>
+                </button>
+                <button class="content-mode-card" type="button" data-content-mode-select="paste">
+                    <div class="content-mode-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <path d="M9 4.5h6M9.75 3h4.5A1.25 1.25 0 0 1 15.5 4.25v.25H17A2.5 2.5 0 0 1 19.5 7v11A2.5 2.5 0 0 1 17 20.5H7A2.5 2.5 0 0 1 4.5 18V7A2.5 2.5 0 0 1 7 4.5h1.5v-.25A1.25 1.25 0 0 1 9.75 3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+                            <path d="M8.5 10.5h7M8.5 14h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <div class="content-mode-title">粘贴</div>
+                    <div class="content-mode-desc">复制的文本</div>
+                </button>
+                <button class="content-mode-card" type="button" data-content-mode-select="record">
+                    <div class="content-mode-icon" aria-hidden="true">
+                        <svg viewBox="0 0 24 24" fill="none">
+                            <rect x="9" y="3.5" width="6" height="11" rx="3" stroke="currentColor" stroke-width="1.8"/>
+                            <path d="M6 11.5a6 6 0 0 0 12 0M12 17.5V21M8.5 21h7" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+                        </svg>
+                    </div>
+                    <div class="content-mode-title">记录</div>
+                    <div class="content-mode-desc">录制讲座</div>
+                </button>
+            </div>
+
+            <div class="content-modal-form">
+                <div class="content-field-grid">
+                    <input class="content-input" id="contentModalTitle" type="text" placeholder="标题（可选）">
+
+                    <div id="contentUploadFields">
+                        <input class="content-file" id="contentModalFile" type="file" accept="image/*,video/*,application/pdf,.pdf,.doc,.docx,.txt,.md,.markdown,.json,.csv,.tsv,.ppt,.pptx,.xls,.xlsx,audio/*" multiple>
+                        <div class="content-file-note">支持图片、文本、文档、PDF、音频、视频。</div>
+                    </div>
+
+                    <div id="contentTextFields" hidden>
+                        <textarea class="content-textarea" id="contentModalText" placeholder="请输入内容"></textarea>
+                    </div>
+
+                    <div id="contentRecordFields" hidden>
+                        <div class="content-record-controls">
+                            <div class="content-record-row">
+                                <button class="content-record-btn primary" id="contentRecordToggleBtn" type="button">开始录音</button>
+                                <button class="content-record-btn" id="contentRecordResetBtn" type="button">清空录音</button>
+                                <span class="content-record-status" id="contentRecordStatus">未录音</span>
+                            </div>
+                            <audio class="content-record-audio" id="contentRecordAudio" controls></audio>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="content-modal-result" id="contentModalResult"></div>
+
+                <div class="content-modal-footer">
+                    <button class="content-footer-btn" id="contentModalCancelBtn" type="button">取消</button>
+                    <button class="content-footer-btn primary" id="contentModalSubmitBtn" type="button">开始上传</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="item-properties-modal" id="itemPropertiesModal">
+        <div class="item-properties-card">
+            <div class="item-properties-head">
+                <div>
+                    <div class="item-properties-title" id="itemPropertiesTitle">文件属性</div>
+                    <div class="item-properties-meta" id="itemPropertiesMeta">-</div>
+                </div>
+                <button class="item-properties-close" id="itemPropertiesCloseBtn" type="button">关闭</button>
+            </div>
+            <div class="item-properties-grid" id="itemPropertiesGrid"></div>
+            <div class="item-properties-summary" id="itemPropertiesSummary" hidden></div>
         </div>
     </div>
 
     <script src="assets/js/shared/user-context.js?v=20260330-authfix"></script>
-    <script src="assets/js/shared/api-utils.js?v=20260330-authfix"></script>
+    <script src="assets/js/shared/api-utils.js?v=20260403-spaceeditfix"></script>
     <script src="assets/js/shared/project-local-data.js?v=20260330-authfix"></script>
-    <script src="assets/js/shared/space-cloud-store.js?v=20260330-spacecloud"></script>
+    <script src="assets/js/shared/space-cloud-store.js?v=20260403-sidebarspaces"></script>
     <script src="assets/js/shared/auth-ui.js?v=20260330-authfix"></script>
-    <script src="assets/js/shared/page-shell.js?v=20260331-telemetryfix"></script>
-    <script src="assets/js/pages/spaces-page.js?v=20260330-spacecloud"></script>
+    <script src="assets/js/shared/page-shell.js?v=20260403-space-root-nav"></script>
+    <script src="assets/js/pages/spaces-page.js?v=20260403-detailspacefix"></script>
 </body>
 </html>

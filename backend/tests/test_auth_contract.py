@@ -253,6 +253,46 @@ class TestAuthContract(unittest.TestCase):
             self.assertEqual(ok_data.get("auth", {}).get("user", {}).get("locale"), "EN")
             self.assertTrue(ok_data.get("auth", {}).get("token"))
 
+    def test_login_keeps_account_data_isolated_from_guest_state(self):
+        with self._patch_auth_storage(), self._patch_learning_state_storage():
+            self.users["student_004"] = {
+                "username": "student_004",
+                "display_name": "独立账号",
+                "password_hash": backend_app.generate_password_hash("secret999"),
+                "locale": "CN",
+                "created_at": "2026-03-29T10:00:00",
+                "updated_at": "2026-03-29T10:00:00",
+                "last_login_at": None,
+            }
+            self.knowledge_store["guest_abcd1234"] = {
+                "concepts": [{"concept": "导数", "mastery": 0.3}],
+                "relations": [],
+                "deleted_concepts": [],
+            }
+            self.profile_store["guest_abcd1234"] = {
+                "user_id": "guest_abcd1234",
+                "interests": ["导数"],
+            }
+
+            login_resp = self.client.post("/api/auth/login", json={
+                "username": "student_004",
+                "password": "secret999",
+                "guest_user_id": "guest_abcd1234",
+            })
+
+            self.assertEqual(login_resp.status_code, 200)
+            login_data = login_resp.get_json()
+            self.assertTrue(login_data.get("success"))
+            self.assertFalse(login_data.get("binding", {}).get("migrated"))
+            self.assertEqual(
+                self.knowledge_store.get("student_004"),
+                None,
+            )
+            self.assertEqual(
+                self.profile_store.get("student_004"),
+                None,
+            )
+
     def test_authenticated_business_request_uses_login_user(self):
         with self._patch_auth_storage(), self._patch_plan_storage():
             register_resp = self.client.post("/api/auth/register", json={
@@ -293,8 +333,9 @@ class TestAuthContract(unittest.TestCase):
             self.assertFalse(data.get("success"))
             self.assertEqual(data.get("error_code"), "AUTH_REQUIRED")
 
-    def test_login_binds_guest_project_state(self):
+    def test_login_does_not_bind_guest_project_state(self):
         with self._patch_auth_storage(), self._patch_plan_storage(), self._patch_learning_state_storage():
+            guest_user_id = "guest_abcd1234"
             self.users["student_bind"] = {
                 "username": "student_bind",
                 "display_name": "已注册用户",
@@ -304,24 +345,31 @@ class TestAuthContract(unittest.TestCase):
                 "updated_at": "2026-03-29T10:00:00",
                 "last_login_at": None,
             }
-            self.plan_store["default_user"] = [{
+            self.plan_store[guest_user_id] = [{
                 "id": "plan-guest-1",
                 "time": "09:00",
                 "task": "复习极限",
                 "completed": False,
                 "created_at": "2026-03-30T08:00:00",
             }]
-            self.knowledge_store["default_user"] = {
+            self.knowledge_store[guest_user_id] = {
                 "concepts": [{"concept": "导数", "mastery": 0.35, "review_count": 1}],
                 "relations": [{"source": "极限", "target": "导数", "type": "前置", "score": 0.9}],
                 "deleted_concepts": [],
             }
-            self.event_store[("default_user", "content")] = [{
+            self.event_store[(guest_user_id, "content")] = [{
                 "content_type": "note",
                 "timestamp": "2026-03-30T09:20:00",
                 "topics": ["导数"],
             }]
-            self.space_store["default_user"] = {
+            self.event_store[(guest_user_id, "qa")] = [{
+                "user_id": guest_user_id,
+                "timestamp": "2026-03-30T09:22:00",
+                "question": "导数是什么",
+                "answer": "变化率",
+                "topics": ["导数"],
+            }]
+            self.space_store[guest_user_id] = {
                 "activeEntrySpaceId": "space_guest_1",
                 "spaces": [{
                     "id": "space_guest_1",
@@ -348,6 +396,89 @@ class TestAuthContract(unittest.TestCase):
             ok_resp = self.client.post("/api/auth/login", json={
                 "username": "student_bind",
                 "password": "secret456",
+                "guest_user_id": guest_user_id,
+            })
+
+            self.assertEqual(ok_resp.status_code, 200)
+            ok_data = ok_resp.get_json()
+            self.assertTrue(ok_data.get("success"))
+            binding = ok_data.get("binding", {})
+            self.assertFalse(binding.get("migrated"))
+            self.assertEqual(binding.get("guest_user_id"), "")
+            self.assertNotIn("student_bind", self.plan_store)
+            self.assertNotIn("student_bind", self.knowledge_store)
+            self.assertNotIn(("student_bind", "content"), self.event_store)
+            self.assertNotIn(("student_bind", "qa"), self.event_store)
+            self.assertNotIn("student_bind", self.profile_store)
+            self.assertNotIn("student_bind", self.space_store)
+
+            self.assertIn(guest_user_id, self.plan_store)
+            self.assertIn(guest_user_id, self.knowledge_store)
+            self.assertIn((guest_user_id, "qa"), self.event_store)
+            self.assertIn(guest_user_id, self.space_store)
+
+    def test_register_does_not_bind_guest_project_state(self):
+        with self._patch_auth_storage(), self._patch_plan_storage(), self._patch_learning_state_storage():
+            guest_user_id = "guest_reg1234"
+            self.plan_store[guest_user_id] = [{
+                "id": "plan-guest-1",
+                "time": "09:00",
+                "task": "访客待办",
+                "completed": False,
+            }]
+            self.knowledge_store[guest_user_id] = {
+                "concepts": [{"concept": "导数", "mastery": 0.35}],
+                "relations": [],
+                "deleted_concepts": [],
+            }
+            self.event_store[(guest_user_id, "content")] = [{
+                "user_id": guest_user_id,
+                "content_type": "note",
+                "timestamp": "2026-03-30T09:20:00",
+                "topics": ["导数"],
+            }]
+
+            register_resp = self.client.post("/api/auth/register", json={
+                "username": "student_fresh",
+                "password": "secret123",
+                "display_name": "新账号",
+                "guest_user_id": guest_user_id,
+            })
+
+            self.assertEqual(register_resp.status_code, 200)
+            register_data = register_resp.get_json()
+            self.assertTrue(register_data.get("success"))
+            binding = register_data.get("binding", {})
+            self.assertFalse(binding.get("migrated"))
+            self.assertEqual(binding.get("guest_user_id"), "")
+            self.assertEqual(binding.get("message"), "新账号默认不自动继承访客数据")
+            self.assertNotIn("student_fresh", self.plan_store)
+            self.assertNotIn("student_fresh", self.knowledge_store)
+            self.assertIn(guest_user_id, self.plan_store)
+            self.assertIn(guest_user_id, self.knowledge_store)
+            self.assertIn((guest_user_id, "content"), self.event_store)
+
+    def test_login_does_not_bind_legacy_default_user(self):
+        with self._patch_auth_storage(), self._patch_plan_storage(), self._patch_learning_state_storage():
+            self.users["student_skip"] = {
+                "username": "student_skip",
+                "display_name": "已注册用户",
+                "password_hash": backend_app.generate_password_hash("secret456"),
+                "locale": "CN",
+                "created_at": "2026-03-29T10:00:00",
+                "updated_at": "2026-03-29T10:00:00",
+                "last_login_at": None,
+            }
+            self.plan_store["default_user"] = [{
+                "id": "plan-legacy-1",
+                "time": "10:00",
+                "task": "遗留访客计划",
+                "completed": False,
+            }]
+
+            ok_resp = self.client.post("/api/auth/login", json={
+                "username": "student_skip",
+                "password": "secret456",
                 "guest_user_id": "default_user",
             })
 
@@ -355,29 +486,9 @@ class TestAuthContract(unittest.TestCase):
             ok_data = ok_resp.get_json()
             self.assertTrue(ok_data.get("success"))
             binding = ok_data.get("binding", {})
-            self.assertTrue(binding.get("migrated"))
-            self.assertEqual(binding.get("guest_user_id"), "default_user")
-            self.assertEqual(binding.get("plans"), 1)
-            self.assertEqual(binding.get("concepts"), 1)
-            self.assertEqual(binding.get("relations"), 1)
-            self.assertEqual(binding.get("events"), 1)
-
-            self.assertIn("student_bind", self.plan_store)
-            self.assertEqual(len(self.plan_store["student_bind"]), 1)
-            self.assertEqual(self.plan_store["student_bind"][0]["task"], "复习极限")
-
-            target_knowledge = self.knowledge_store.get("student_bind", {})
-            self.assertEqual(target_knowledge.get("concepts", [])[0].get("concept"), "导数")
-            self.assertEqual(target_knowledge.get("relations", [])[0].get("target"), "导数")
-
-            target_events = self.event_store.get(("student_bind", "content"), [])
-            self.assertEqual(len(target_events), 1)
-            self.assertEqual(target_events[0].get("topics"), ["导数"])
-            self.assertEqual(self.profile_store.get("student_bind", {}).get("user_id"), "student_bind")
-            target_spaces = self.space_store.get("student_bind", {}).get("spaces", [])
-            self.assertEqual(len(target_spaces), 1)
-            self.assertEqual(target_spaces[0].get("name"), "访客空间")
-            self.assertEqual(target_spaces[0].get("items", [])[0].get("name"), "访客笔记")
+            self.assertFalse(binding.get("migrated"))
+            self.assertEqual(binding.get("guest_user_id"), "")
+            self.assertNotIn("student_skip", self.plan_store)
 
     def test_delete_account_contract_clears_user_and_session(self):
         with self._patch_auth_storage():

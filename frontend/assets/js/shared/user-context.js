@@ -3,6 +3,7 @@
   const AUTH_STORAGE_KEY = 'fangzhigong_auth_state';
   const LOCALE_STORAGE_KEY = 'fangzhigong_locale';
   const DEFAULT_USER_ID = 'default_user';
+  const GUEST_USER_PREFIX = 'guest_';
   const DEFAULT_LOCALE = 'CN';
 
   function sanitizeUserId(value) {
@@ -164,20 +165,51 @@
     };
   }
 
-  function getGuestUserId() {
-    const url = new URL(window.location.href);
-    const urlUser = url.searchParams.get('user_id');
-    if (urlUser) {
-      const normalized = sanitizeUserId(urlUser);
+  function randomGuestSegment() {
+    try {
+      if (window.crypto && typeof window.crypto.getRandomValues === 'function') {
+        const bytes = new Uint8Array(8);
+        window.crypto.getRandomValues(bytes);
+        return Array.from(bytes).map(function (value) {
+          return value.toString(16).padStart(2, '0');
+        }).join('');
+      }
+    } catch (error) {
+      // 忽略随机源不可用场景，回退到时间戳方案。
+    }
+
+    return `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 10)}`.slice(0, 16);
+  }
+
+  function generateGuestUserId() {
+    return sanitizeUserId(`${GUEST_USER_PREFIX}${randomGuestSegment()}`);
+  }
+
+  function isGeneratedGuestUserId(value) {
+    return new RegExp(`^${GUEST_USER_PREFIX}[a-z0-9]{8,40}$`).test(String(value || '').trim());
+  }
+
+  function ensureGuestUserId(value) {
+    const normalized = sanitizeUserId(value);
+    if (normalized && normalized !== DEFAULT_USER_ID) {
       localStorage.setItem(GUEST_USER_STORAGE_KEY, normalized);
       return normalized;
     }
 
-    const stored = localStorage.getItem(GUEST_USER_STORAGE_KEY);
-    if (stored) return sanitizeUserId(stored);
+    const generated = generateGuestUserId();
+    localStorage.setItem(GUEST_USER_STORAGE_KEY, generated);
+    return generated;
+  }
 
-    localStorage.setItem(GUEST_USER_STORAGE_KEY, DEFAULT_USER_ID);
-    return DEFAULT_USER_ID;
+  function getGuestUserId() {
+    const url = new URL(window.location.href);
+    const urlUser = url.searchParams.get('user_id');
+    if (urlUser) {
+      return ensureGuestUserId(urlUser);
+    }
+
+    const stored = localStorage.getItem(GUEST_USER_STORAGE_KEY);
+    return ensureGuestUserId(stored);
   }
 
   function getUserId() {
@@ -194,7 +226,7 @@
       return normalizeDisplayName(auth.user.display_name, auth.user.username);
     }
     const guestUserId = getGuestUserId();
-    return guestUserId === DEFAULT_USER_ID ? '同学' : guestUserId;
+    return guestUserId === DEFAULT_USER_ID || isGeneratedGuestUserId(guestUserId) ? '同学' : guestUserId;
   }
 
   function getUserLabel() {
@@ -208,7 +240,7 @@
       return userId;
     }
     const guestUserId = getGuestUserId();
-    return guestUserId === DEFAULT_USER_ID ? '访客' : guestUserId;
+    return guestUserId === DEFAULT_USER_ID || isGeneratedGuestUserId(guestUserId) ? '访客' : guestUserId;
   }
 
   function getLocale() {
@@ -234,10 +266,18 @@
     if (isAuthenticated()) {
       return getUserId();
     }
-    const normalized = sanitizeUserId(newUserId);
-    localStorage.setItem(GUEST_USER_STORAGE_KEY, normalized);
+    const normalized = ensureGuestUserId(newUserId);
     dispatchContextChange('guest_user_changed');
     return normalized;
+  }
+
+  function resetGuestUserId() {
+    const nextGuestId = generateGuestUserId();
+    localStorage.setItem(GUEST_USER_STORAGE_KEY, nextGuestId);
+    if (!isAuthenticated()) {
+      dispatchContextChange('guest_user_reset');
+    }
+    return nextGuestId;
   }
 
   function setLocale(locale) {
@@ -340,6 +380,7 @@
     getUserId,
     getGuestUserId,
     setUserId,
+    resetGuestUserId,
     getDisplayName,
     getUserLabel,
     getLocale,

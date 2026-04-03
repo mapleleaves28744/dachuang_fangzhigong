@@ -1,0 +1,160 @@
+{
+  "meta": {
+    "generated_at": "2026-04-03 09:59:53",
+    "base_url": "http://127.0.0.1:5000",
+    "rounds": 3,
+    "notes": "extended multi-round benchmark for report enrichment"
+  },
+  "concurrency_rounds": [
+    {
+      "round": 1,
+      "max_rps": 879.14,
+      "worst_p95_ms": 8025.573,
+      "avg_error_rate_percent": 34.229,
+      "overall_stable": false
+    },
+    {
+      "round": 2,
+      "max_rps": 863.011,
+      "worst_p95_ms": 8024.286,
+      "avg_error_rate_percent": 34.211,
+      "overall_stable": false
+    },
+    {
+      "round": 3,
+      "max_rps": 874.465,
+      "worst_p95_ms": 8025.396,
+      "avg_error_rate_percent": 33.905,
+      "overall_stable": false
+    }
+  ],
+  "security_rounds": [
+    {
+      "round": 1,
+      "pass_rate_percent": 90.0,
+      "risk_level": "high",
+      "rate_limit_detected": false,
+      "failed": 1
+    },
+    {
+      "round": 2,
+      "pass_rate_percent": 90.0,
+      "risk_level": "high",
+      "rate_limit_detected": false,
+      "failed": 1
+    },
+    {
+      "round": 3,
+      "pass_rate_percent": 90.0,
+      "risk_level": "high",
+      "rate_limit_detected": false,
+      "failed": 1
+    }
+  ],
+  "usability_rounds": [
+    {
+      "round": 1,
+      "completion_rate_percent": 85.71,
+      "retry_rate_percent": 14.29,
+      "avg_step_latency_ms": 1927.296,
+      "failed_steps": 1
+    },
+    {
+      "round": 2,
+      "completion_rate_percent": 85.71,
+      "retry_rate_percent": 14.29,
+      "avg_step_latency_ms": 1878.53,
+      "failed_steps": 1
+    },
+    {
+      "round": 3,
+      "completion_rate_percent": 85.71,
+      "retry_rate_percent": 14.29,
+      "avg_step_latency_ms": 1865.187,
+      "failed_steps": 1
+    }
+  ],
+  "pytest_extended": {
+    "rounds": 8,
+    "results": [
+      {
+        "round": 1,
+        "ok": true,
+        "passed": 50,
+        "warnings": 1,
+        "duration_s": 4.73,
+        "wall_s": 5.544
+      },
+      {
+        "round": 2,
+        "ok": true,
+        "passed": 50,
+        "warnings": 1,
+        "duration_s": 4.69,
+        "wall_s": 5.473
+      },
+      {
+        "round": 3,
+        "ok": true,
+        "passed": 50,
+        "warnings": 1,
+        "duration_s": 34.7,
+        "wall_s": 35.391
+      },
+      {
+        "round": 4,
+        "ok": true,
+        "passed": 50,
+        "warnings": 1,
+        "duration_s": 4.65,
+        "wall_s": 5.383
+      },
+      {
+        "round": 5,
+        "ok": true,
+        "passed": 50,
+        "warnings": 1,
+        "duration_s": 4.77,
+        "wall_s": 5.502
+      },
+      {
+        "round": 6,
+        "ok": true,
+        "passed": 50,
+        "warnings": 1,
+        "duration_s": 4.86,
+        "wall_s": 5.602
+      },
+      {
+        "round": 7,
+        "ok": true,
+        "passed": 50,
+        "warnings": 1,
+        "duration_s": 4.64,
+        "wall_s": 5.371
+      },
+      {
+        "round": 8,
+        "ok": true,
+        "passed": 50,
+        "warnings": 1,
+        "duration_s": 5.09,
+        "wall_s": 5.821
+      }
+    ],
+    "pass_rate_percent": 100.0,
+    "avg_duration_s": 8.516,
+    "min_duration_s": 4.64,
+    "max_duration_s": 34.7
+  },
+  "aggregates": {
+    "concurrency_avg_max_rps": 872.205,
+    "concurrency_avg_worst_p95_ms": 8025.085,
+    "concurrency_avg_error_rate_percent": 34.115,
+    "security_avg_pass_rate_percent": 90.0,
+    "security_rate_limit_detected_rounds": 0,
+    "usability_avg_completion_rate_percent": 85.71,
+    "usability_avg_retry_rate_percent": 14.29,
+    "usability_avg_step_latency_ms": 1890.338
+  }
+}

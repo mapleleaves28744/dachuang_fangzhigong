@@ -1,4 +1,6 @@
 (function () {
+  const SPACE_SYNC_KEY = 'fangzhigong_space_sync';
+
   function getApiBase() {
     if (window.ApiUtils && typeof window.ApiUtils.getApiBase === 'function') {
       return window.ApiUtils.getApiBase();
@@ -35,6 +37,27 @@
     return Number.isFinite(num) ? num : fallback;
   }
 
+  function broadcastSpaceChange(detail) {
+    const payload = {
+      time: Date.now(),
+      ...(detail && typeof detail === 'object' ? detail : {})
+    };
+
+    try {
+      window.localStorage.setItem(SPACE_SYNC_KEY, JSON.stringify(payload));
+    } catch (error) {
+      // 忽略只读存储等异常，继续派发同标签页事件。
+    }
+
+    try {
+      window.dispatchEvent(new CustomEvent('spaces:changed', { detail: payload }));
+    } catch (error) {
+      // 忽略不支持 CustomEvent 的边界场景。
+    }
+
+    return payload;
+  }
+
   function normalizeItem(item) {
     if (!item || typeof item !== 'object') return null;
     const itemId = String(item.id || '').trim();
@@ -62,6 +85,7 @@
     return {
       id: spaceId,
       name: String(space.name || '新空间'),
+      description: String(space.description || ''),
       createdAt: normalizeNumber(space.createdAt || space.created_at, Date.now()),
       updatedAt: normalizeNumber(space.updatedAt || space.updated_at || space.createdAt || space.created_at, Date.now()),
       itemCount: Math.max(0, normalizeNumber(space.itemCount || space.item_count, 0)),
@@ -74,6 +98,30 @@
     return parseResponse(response);
   }
 
+  function buildJsonRequestOptions(method, payload) {
+    return {
+      method: method,
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload || {})
+    };
+  }
+
+  function shouldRetryWithPost(error) {
+    const status = Number(error && error.status);
+    return status === 405 || status === 501;
+  }
+
+  async function requestWithUpdateFallback(path, payload) {
+    try {
+      return await request(path, buildJsonRequestOptions('PUT', payload));
+    } catch (error) {
+      if (!shouldRetryWithPost(error)) {
+        throw error;
+      }
+      return request(path, buildJsonRequestOptions('POST', payload));
+    }
+  }
+
   async function listSpaces(userId) {
     const data = await request(`/api/spaces?user_id=${encodeURIComponent(userId)}`);
     return {
@@ -84,40 +132,67 @@
   }
 
   async function createSpace(userId, name) {
-    const data = await request('/api/spaces', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        user_id: userId,
-        name: String(name || '')
-      })
-    });
-    return {
+    const data = await request('/api/spaces', buildJsonRequestOptions('POST', {
+      user_id: userId,
+      name: String(name || '')
+    }));
+    const result = {
       data,
       space: normalizeSpace(data.space)
     };
+    broadcastSpaceChange({
+      action: 'create_space',
+      userId: String(userId || '').trim(),
+      spaceId: result.space ? result.space.id : ''
+    });
+    return result;
+  }
+
+  async function updateSpace(userId, spaceId, payload) {
+    const data = await requestWithUpdateFallback(`/api/spaces/${encodeURIComponent(spaceId)}`, {
+      user_id: userId,
+      ...(payload || {})
+    });
+    const result = {
+      data,
+      space: normalizeSpace(data.space)
+    };
+    broadcastSpaceChange({
+      action: 'update_space',
+      userId: String(userId || '').trim(),
+      spaceId: result.space ? result.space.id : String(spaceId || '').trim()
+    });
+    return result;
   }
 
   async function deleteSpace(userId, spaceId) {
-    return request(`/api/spaces/${encodeURIComponent(spaceId)}?user_id=${encodeURIComponent(userId)}`, {
+    const result = await request(`/api/spaces/${encodeURIComponent(spaceId)}?user_id=${encodeURIComponent(userId)}`, {
       method: 'DELETE'
     });
+    broadcastSpaceChange({
+      action: 'delete_space',
+      userId: String(userId || '').trim(),
+      spaceId: String(spaceId || '').trim()
+    });
+    return result;
   }
 
   async function addItems(userId, spaceId, items) {
-    const data = await request(`/api/spaces/${encodeURIComponent(spaceId)}/items`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        user_id: userId,
-        items: Array.isArray(items) ? items : []
-      })
-    });
-    return {
+    const data = await request(`/api/spaces/${encodeURIComponent(spaceId)}/items`, buildJsonRequestOptions('POST', {
+      user_id: userId,
+      items: Array.isArray(items) ? items : []
+    }));
+    const result = {
       data,
       space: normalizeSpace(data.space),
       items: Array.isArray(data.items) ? data.items.map(normalizeItem).filter(Boolean) : []
     };
+    broadcastSpaceChange({
+      action: 'add_items',
+      userId: String(userId || '').trim(),
+      spaceId: result.space ? result.space.id : String(spaceId || '').trim()
+    });
+    return result;
   }
 
   async function getItem(userId, itemId) {
@@ -130,18 +205,50 @@
   }
 
   async function updateItem(userId, itemId, payload) {
-    const data = await request(`/api/spaces/items/${encodeURIComponent(itemId)}`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        user_id: userId,
-        ...(payload || {})
-      })
+    const data = await requestWithUpdateFallback(`/api/spaces/items/${encodeURIComponent(itemId)}`, {
+      user_id: userId,
+      ...(payload || {})
     });
-    return {
+    const result = {
       data,
-      item: normalizeItem(data.item)
+      item: normalizeItem(data.item),
+      space: normalizeSpace(data.space),
+      sourceSpace: normalizeSpace(data.sourceSpace || data.source_space)
     };
+    broadcastSpaceChange({
+      action: 'update_item',
+      userId: String(userId || '').trim(),
+      itemId: String(itemId || '').trim(),
+      spaceId: result.space ? result.space.id : '',
+      sourceSpaceId: result.sourceSpace ? result.sourceSpace.id : ''
+    });
+    return result;
+  }
+
+  async function moveItem(userId, itemId, targetSpaceId) {
+    return updateItem(userId, itemId, {
+      targetSpaceId: String(targetSpaceId || '').trim()
+    });
+  }
+
+  async function deleteItem(userId, itemId) {
+    const data = await request(`/api/spaces/items/${encodeURIComponent(itemId)}?user_id=${encodeURIComponent(userId)}`, {
+      method: 'DELETE'
+    });
+    const result = {
+      data,
+      deleted: !!data.deleted,
+      itemId: String(data.itemId || data.item_id || ''),
+      spaceId: String(data.spaceId || data.space_id || ''),
+      space: normalizeSpace(data.space)
+    };
+    broadcastSpaceChange({
+      action: 'delete_item',
+      userId: String(userId || '').trim(),
+      itemId: result.itemId || String(itemId || '').trim(),
+      spaceId: result.spaceId || (result.space ? result.space.id : '')
+    });
+    return result;
   }
 
   function getItemSnippet(item, limit) {
@@ -181,14 +288,18 @@
 
   window.SpaceCloudStore = {
     withSuggestion,
+    broadcastSpaceChange,
     normalizeItem,
     normalizeSpace,
     listSpaces,
     createSpace,
+    updateSpace,
     deleteSpace,
     addItems,
     getItem,
     updateItem,
+    moveItem,
+    deleteItem,
     getItemSnippet,
     buildItemPreviewHtml
   };

@@ -350,7 +350,45 @@
       "created_by": "official_ai",
       "is_public": true,
       "bank_source": "official_ai"
+    },
+    {
+      "id": "qb-ai-f737c3f15311",
+      "concept": "导数",
+      "difficulty": "medium",
+      "question_type": "single_choice",
+      "question": "设函数 $ f(x) = x^2 e^x $，则 $ f'(1) $ 的值为？",
+      "options": [
+        "A. $ 3e $",
+        "B. $ 2e $",
+        "C. $ e $",
+        "D. $ 4e $"
+      ],
+      "answer": "A",
+      "analysis": "使用乘积法则：$ f'(x) = 2x e^x + x^2 e^x = e^x (2x + x^2) $，代入 $ x = 1 $ 得 $ f'(1) = e(2 + 1) = 3e $。",
+      "created_at": "2026-04-03T09:14:01.749839",
+      "created_by": "official_ai",
+      "is_public": true,
+      "bank_source": "official_ai"
+    },
+    {
+      "id": "qb-ai-f22f11bb809a",
+      "concept": "导数",
+      "difficulty": "medium",
+      "question_type": "single_choice",
+      "question": "设函数 $ f(x) = x^2 e^x $，则 $ f'(1) $ 的值为？",
+      "options": [
+        "A. $ 3e $",
+        "B. $ 2e $",
+        "C. $ e $",
+        "D. $ 4e $"
+      ],
+      "answer": "A",
+      "analysis": "使用乘积法则：$ f'(x) = 2x e^x + x^2 e^x = e^x (2x + x^2) $，代入 $ x = 1 $ 得 $ f'(1) = e(2 + 1) = 3e $。",
+      "created_at": "2026-04-03T09:14:11.798204",
+      "created_by": "official_ai",
+      "is_public": true,
+      "bank_source": "official_ai"
     }
   ],
-  "updated_at": "2026-03-31T19:36:38.624464"
+  "updated_at": "2026-04-03T09:14:11.799696"
 }

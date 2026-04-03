@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>测试报告仪表盘 - 坊知工</title>
+  <link rel="stylesheet" href="assets/css/shared/auth-ui.css">
+  <link rel="stylesheet" href="assets/css/pages/test-report-dashboard.css">
+</head>
+<body id="test-dashboard-page">
+  <div class="page-wrap">
+    <header class="hero">
+      <div>
+        <p class="kicker">FANGZHIGONG QA REPORT</p>
+        <h1>项目测试报告静态仪表盘</h1>
+        <p class="subtitle">覆盖多轮回归、并发压测、安全专项、可用性评测与技术指标，数据来自 docs/testing 结构化结果。</p>
+      </div>
+      <div class="meta-box">
+        <div class="meta-item">
+          <span>数据版本</span>
+          <strong id="meta-version">--</strong>
+        </div>
+        <div class="meta-item">
+          <span>生成时间</span>
+          <strong id="meta-generated-at">--</strong>
+        </div>
+        <button id="btn-refresh" type="button">刷新数据</button>
+      </div>
+    </header>
+
+    <main>
+      <section class="kpi-grid" id="kpi-grid"></section>
+
+      <section class="panel two-col">
+        <article>
+          <h2>多维技术指标</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>维度</th><th>评分</th><th>风险</th><th>说明</th></tr>
+              </thead>
+              <tbody id="dimension-table"></tbody>
+            </table>
+          </div>
+        </article>
+        <article>
+          <h2>pytest 多轮耗时</h2>
+          <div id="pytest-chart" class="mini-chart"></div>
+          <p class="hint">柱状条显示每轮 pytest 耗时（秒），用于观察回归稳定性。</p>
+        </article>
+      </section>
+
+      <section class="panel two-col">
+        <article>
+          <h2>并发压测结果</h2>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr><th>场景</th><th>并发</th><th>吞吐(rps)</th><th>P95(ms)</th><th>错误率(%)</th><th>稳定性</th></tr>
+              </thead>
+              <tbody id="concurrency-table"></tbody>
+            </table>
+          </div>
+        </article>
+        <article>
+          <h2>安全专项矩阵</h2>
+          <ul id="security-list" class="security-list"></ul>
+        </article>
+      </section>
+
+      <section class="panel">
+        <h2>可用性评测步骤</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr><th>步骤</th><th>状态</th><th>HTTP</th><th>耗时(ms)</th><th>错误码</th></tr>
+            </thead>
+            <tbody id="usability-table"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="panel source-panel">
+        <h2>证据文件清单</h2>
+        <ul id="source-list"></ul>
+      </section>
+    </main>
+  </div>
+  <script src="assets/js/pages/test-report-dashboard.js"></script>
+</body>
+</html>

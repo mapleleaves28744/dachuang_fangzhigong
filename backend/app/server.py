@@ -21,13 +21,14 @@ from .services.learning_profile import (
     build_recommendations as build_recommendations_core,
     build_recommendation_context,
 )
+from .services.topic_guard import filter_learning_topics, is_learning_topic
 from .services.concept_mapping import (
     DEFAULT_MATCH_THRESHOLDS as CONCEPT_MAPPING_THRESHOLDS,
     DEFAULT_METHOD_INFO as CONCEPT_MAPPING_METHOD_INFO,
     build_concept_profiles,
     map_learning_items,
 )
-from .services.dashboard_summary import build_dashboard_sections
+from .services.dashboard_summary import build_dashboard_sections, has_learning_evidence
 from .services.neo4j_store import Neo4jGraphStore
 import logging
 import time
@@ -173,6 +174,7 @@ AUTH_BINDABLE_EVENT_SUFFIXES = (
     "question_draw",
     "question_answer",
 )
+GUEST_USER_ID_PATTERN = re.compile(r"^guest_[a-z0-9]{8,40}$")
 SPACE_MAX_ITEM_COUNT = max(20, int(os.getenv("SPACE_MAX_ITEM_COUNT", "200")))
 SPACE_MAX_FILE_BYTES = max(1024, int(os.getenv("SPACE_MAX_FILE_BYTES", "10485760")))
 
@@ -298,6 +300,7 @@ def create_space_record(name):
     return {
         "id": f"space_{ts}_{uuid.uuid4().hex[:6]}",
         "name": normalize_space_name(name, "新空间"),
+        "description": "",
         "createdAt": ts,
         "updatedAt": ts,
         "items": [],
@@ -456,6 +459,7 @@ def merge_space_payloads(existing_payload, incoming_payload):
             )
             target_space["items"] = merged_items
             target_space["name"] = normalize_space_name(target_space.get("name") or payload.get("name"), "新空间")
+            target_space["description"] = str(target_space.get("description") or payload.get("description") or "").strip()
             target_space["updatedAt"] = max(
                 int(target_space.get("updatedAt") or target_space.get("createdAt") or 0),
                 int(payload.get("updatedAt") or payload.get("createdAt") or 0),
@@ -465,6 +469,7 @@ def merge_space_payloads(existing_payload, incoming_payload):
 
         new_space = deep_copy_data(payload, {})
         new_space["name"] = normalize_space_name(new_space.get("name"), "新空间")
+        new_space["description"] = str(new_space.get("description") or "").strip()
         new_space["items"] = (new_space.get("items", []) if isinstance(new_space.get("items"), list) else [])[:SPACE_MAX_ITEM_COUNT]
         merged_spaces.append(new_space)
         space_map[space_id] = len(merged_spaces) - 1
@@ -528,6 +533,7 @@ def serialize_space(space, user_id):
     return {
         "id": str(space.get("id") or "").strip(),
         "name": normalize_space_name(space.get("name"), "新空间"),
+        "description": str(space.get("description") or "").strip(),
         "createdAt": int(space.get("createdAt") or now_ms()),
         "updatedAt": int(space.get("updatedAt") or space.get("createdAt") or now_ms()),
         "items": items[:SPACE_MAX_ITEM_COUNT],
@@ -560,6 +566,12 @@ def normalize_guest_binding_user_id(value, target_username=""):
     guest_user_id = str(value or "").strip()
     target_user_id = str(target_username or "").strip()
     if not guest_user_id or guest_user_id == target_user_id:
+        return ""
+    if guest_user_id == "default_user":
+        return ""
+    if not GUEST_USER_ID_PATTERN.fullmatch(guest_user_id):
+        return ""
+    if get_auth_user(guest_user_id):
         return ""
     return guest_user_id
 
@@ -935,6 +947,16 @@ def merge_user_event_lists(existing_items, incoming_items):
     return merged, added_count
 
 
+def retarget_user_event(item, target_user_id):
+    payload = deep_copy_data(item, {})
+    normalized_user_id = normalize_request_user_id(target_user_id, fallback="")
+    if not normalized_user_id:
+        return payload
+    if "user_id" in payload:
+        payload["user_id"] = normalized_user_id
+    return payload
+
+
 def bind_guest_user_data_to_auth_user(guest_user_id, target_user_id):
     source_user_id = normalize_guest_binding_user_id(guest_user_id, target_user_id)
     summary = {
@@ -983,7 +1005,11 @@ def bind_guest_user_data_to_auth_user(guest_user_id, target_user_id):
     event_added = 0
     for suffix in AUTH_BINDABLE_EVENT_SUFFIXES:
         target_events = deep_copy_data(load_user_event_list(target_user_id, suffix), [])
-        source_events = deep_copy_data(load_user_event_list(source_user_id, suffix), [])
+        source_events = [
+            retarget_user_event(item, target_user_id)
+            for item in deep_copy_data(load_user_event_list(source_user_id, suffix), [])
+            if isinstance(item, dict)
+        ]
         merged_events, added_count = merge_user_event_lists(target_events, source_events)
         if added_count > 0:
             save_user_event_list(target_user_id, suffix, merged_events)
@@ -1005,11 +1031,44 @@ def bind_guest_user_data_to_auth_user(guest_user_id, target_user_id):
             build_learning_profile(target_user_id)
         except Exception as exc:
             logger.exception("failed to rebuild profile after auth binding for user=%s: %s", target_user_id, exc)
+        try:
+            cleanup_summary = delete_auth_user_account(source_user_id)
+            summary["guest_cleanup"] = {
+                "plans_deleted": int(cleanup_summary.get("plans_deleted", 0) or 0),
+                "knowledge_deleted": int(cleanup_summary.get("knowledge_deleted", 0) or 0),
+                "profile_deleted": int(cleanup_summary.get("profile_deleted", 0) or 0),
+                "events_deleted": int(cleanup_summary.get("events_deleted", 0) or 0),
+                "spaces_deleted": int(cleanup_summary.get("spaces_deleted", 0) or 0),
+                "space_items_deleted": int(cleanup_summary.get("space_items_deleted", 0) or 0),
+            }
+        except Exception as exc:
+            logger.exception("failed to cleanup guest user data for user=%s after binding: %s", source_user_id, exc)
+        try:
+            if neo4j_store.ensure_connected():
+                neo4j_store.delete_user_graph(source_user_id)
+        except Exception as exc:
+            logger.exception("failed to cleanup guest neo4j graph for user=%s after binding: %s", source_user_id, exc)
         summary["message"] = "已将访客数据绑定到当前账号"
     else:
         summary["message"] = "当前没有可绑定的访客数据"
 
     return summary
+
+
+def build_auth_register_binding_summary(target_user_id):
+    return {
+        "guest_user_id": "",
+        "user_id": normalize_request_user_id(target_user_id, fallback="default_user"),
+        "migrated": False,
+        "plans": 0,
+        "spaces": 0,
+        "space_items": 0,
+        "concepts": 0,
+        "relations": 0,
+        "knowledge_updated": False,
+        "events": 0,
+        "message": "新账号默认不自动继承访客数据",
+    }
 
 
 def load_simple_env_files():
@@ -1386,7 +1445,9 @@ def detect_concepts_from_text(text):
     candidates = re.findall(r"[\u4e00-\u9fff]{2,8}", text)
     stopwords = get_configured_concept_stopwords()
     for word in candidates:
-        if word not in stopwords and word not in detected:
+        if not is_learning_topic(word, extra_stopwords=stopwords):
+            continue
+        if word not in detected:
             detected.append(word)
         if len(detected) >= 4:
             break
@@ -1892,12 +1953,12 @@ def contains_confusion_signal(text):
 
 
 def normalize_topic_list(items):
-    normalized = []
-    for item in items if isinstance(items, list) else []:
-        topic = normalize_concept_name(item)
-        if topic and topic not in normalized:
-            normalized.append(topic)
-    return normalized
+    raw_items = [
+        normalize_concept_name(item)
+        for item in (items if isinstance(items, list) else [])
+        if normalize_concept_name(item)
+    ]
+    return filter_learning_topics(raw_items)
 
 
 def extract_topics_from_qa_item(item):
@@ -1908,11 +1969,10 @@ def extract_topics_from_qa_item(item):
     if topics:
         return topics[:6]
 
-    merged = " ".join([
-        str(item.get("question") or "").strip(),
-        str(item.get("answer") or "").strip(),
-    ]).strip()
-    return normalize_topic_list(detect_concepts_from_text(merged))[:6]
+    question_text = str(item.get("question") or "").strip()
+    if not question_text:
+        return []
+    return normalize_topic_list(detect_concepts_from_text(question_text))[:6]
 
 
 def build_wrong_question_entry(source, question, user_answer, concept="", topics=None, extra=None):
@@ -2282,6 +2342,17 @@ def sync_dashboard_hidden_metrics(
     space_payload=None,
 ):
     profile_obj = deep_copy_data(profile or {}, {})
+    if not has_learning_evidence(
+        content_logs=content_logs,
+        qa_logs=qa_logs,
+        question_draw_logs=question_draw_logs,
+        question_answer_logs=question_answer_logs,
+        diagnosis_logs=diagnosis_logs,
+        space_payload=space_payload,
+    ):
+        current_hidden = profile_obj.get("dashboard_hidden") if isinstance(profile_obj.get("dashboard_hidden"), dict) else {}
+        return profile_obj, current_hidden
+
     hidden_tables = build_dashboard_hidden_tables(
         content_logs=content_logs,
         qa_logs=qa_logs,
@@ -2358,6 +2429,9 @@ def build_graph_response(user_id, min_relation_score=None):
     """内部构建图谱响应对象。"""
     threshold = RELATION_MIN_SCORE if min_relation_score is None else float(min_relation_score)
     threshold = max(0.0, min(1.0, threshold))
+    user_knowledge = normalize_user_knowledge(get_user_knowledge(user_id))
+    user_concepts = user_knowledge.get("concepts", []) if isinstance(user_knowledge.get("concepts"), list) else []
+    user_relations = user_knowledge.get("relations", []) if isinstance(user_knowledge.get("relations"), list) else []
 
     prefer_neo4j = GRAPH_PRIMARY in {"auto", "neo4j"}
     if prefer_neo4j and getattr(neo4j_store, "enabled", False) and neo4j_store.ensure_connected():
@@ -2383,11 +2457,26 @@ def build_graph_response(user_id, min_relation_score=None):
                     "min_relation_score": threshold,
                 }
 
+    if not user_concepts and not user_relations:
+        return {
+            "success": True,
+            "user_id": user_id,
+            "graph": {
+                "nodes": [],
+                "links": [],
+                "updated_at": datetime.now().isoformat(),
+            },
+            "node_count": 0,
+            "edge_count": 0,
+            "storage": "json",
+            "graph_primary": GRAPH_PRIMARY,
+            "min_relation_score": threshold,
+        }
+
     kg = build_knowledge_graph()
     sync_user_mastery_to_graph(kg, user_id)
     payload = to_graph_payload(kg, user_id)
 
-    user_knowledge = normalize_user_knowledge(get_user_knowledge(user_id))
     existing_links = {(l["source"], l["target"]) for l in payload["links"]}
     for rel in user_knowledge.get("relations", []):
         source = rel.get("source")
@@ -2543,6 +2632,43 @@ def create_space():
     ))
 
 
+@app.route('/api/spaces/<space_id>', methods=['PUT', 'POST'])
+def update_space(space_id):
+    request_id = get_request_id()
+    data = request.json or {}
+    user_id, auth_error = resolve_request_user_id_from_json(data)
+    if auth_error:
+        return auth_error
+
+    payload = get_user_space_payload(user_id)
+    space = find_space_by_id(payload, space_id)
+    if not space:
+        return error_response(request_id, 404, "SPACE_NOT_FOUND", "目标空间不存在，请刷新后重试")
+
+    updates = {}
+    if "name" in data:
+        current_name = normalize_space_name(space.get("name"), "新空间")
+        updates["name"] = normalize_space_name(data.get("name"), current_name)
+    if "description" in data:
+        updates["description"] = clamp_text(data.get("description"), 800).strip()
+
+    if not updates:
+        return error_response(request_id, 400, "INVALID_INPUT", "没有可更新的空间信息")
+
+    space.update(updates)
+    space["updatedAt"] = now_ms()
+    set_user_space_payload(user_id, payload)
+
+    return jsonify(success_payload(
+        request_id,
+        message="空间更新成功",
+        user_id=user_id,
+        space=serialize_space(space, user_id),
+        error_code="",
+        error_message="",
+    ))
+
+
 @app.route('/api/spaces/<space_id>', methods=['DELETE'])
 def delete_space(space_id):
     request_id = get_request_id()
@@ -2657,7 +2783,7 @@ def get_space_item_detail(item_id):
     ))
 
 
-@app.route('/api/spaces/items/<item_id>', methods=['PUT'])
+@app.route('/api/spaces/items/<item_id>', methods=['PUT', 'POST'])
 def update_space_item(item_id):
     request_id = get_request_id()
     data = request.json or {}
@@ -2670,6 +2796,13 @@ def update_space_item(item_id):
     if not item or not space:
         return error_response(request_id, 404, "SPACE_ITEM_NOT_FOUND", "空间内容不存在或已被删除")
 
+    target_space_id = str(data.get("targetSpaceId") or data.get("target_space_id") or "").strip()
+    move_target_space = None
+    if target_space_id and target_space_id != str(space.get("id") or "").strip():
+        move_target_space = find_space_by_id(payload, target_space_id)
+        if not move_target_space:
+            return error_response(request_id, 404, "SPACE_NOT_FOUND", "目标空间不存在，请刷新后重试")
+
     updates = {}
     if "name" in data:
         updates["name"] = clamp_text(data.get("name") or "未命名文件", 180).strip() or "未命名文件"
@@ -2678,7 +2811,7 @@ def update_space_item(item_id):
     if "summary" in data:
         updates["summary"] = clamp_text(data.get("summary"), 4000).strip()
 
-    if not updates:
+    if not updates and not move_target_space:
         return error_response(request_id, 400, "INVALID_INPUT", "没有可更新的内容")
 
     item.update(updates)
@@ -2694,13 +2827,63 @@ def update_space_item(item_id):
             has_file=bool(item.get("fileDataUrl") or item.get("audioDataUrl")),
         )
     space["updatedAt"] = item["updatedAt"]
+    if move_target_space and move_target_space is not space:
+        source_items = space.get("items", []) if isinstance(space.get("items"), list) else []
+        target_items = move_target_space.get("items", []) if isinstance(move_target_space.get("items"), list) else []
+        space["items"] = [
+            existing for existing in source_items
+            if str((existing or {}).get("id") or "").strip() != str(item.get("id") or "").strip()
+        ]
+        move_target_space["items"] = [item] + [
+            existing for existing in target_items
+            if str((existing or {}).get("id") or "").strip() != str(item.get("id") or "").strip()
+        ]
+        if len(move_target_space["items"]) > SPACE_MAX_ITEM_COUNT:
+            move_target_space["items"] = move_target_space["items"][:SPACE_MAX_ITEM_COUNT]
+        move_target_space["updatedAt"] = item["updatedAt"]
     set_user_space_payload(user_id, payload)
 
     return jsonify(success_payload(
         request_id,
-        message="空间内容更新成功",
+        message="空间内容更新成功" if not move_target_space else "空间内容已移动",
         user_id=user_id,
         item=serialize_space_item(item, user_id),
+        space=serialize_space(move_target_space or space, user_id),
+        sourceSpace=serialize_space(space, user_id),
+        error_code="",
+        error_message="",
+    ))
+
+
+@app.route('/api/spaces/items/<item_id>', methods=['DELETE'])
+def delete_space_item(item_id):
+    request_id = get_request_id()
+    user_id, auth_error = resolve_request_user_id_from_args()
+    if auth_error:
+        return auth_error
+
+    payload = get_user_space_payload(user_id)
+    space, item = find_space_item(payload, item_id)
+    if not item or not space:
+        return error_response(request_id, 404, "SPACE_ITEM_NOT_FOUND", "空间内容不存在或已被删除")
+
+    items = space.get("items", []) if isinstance(space.get("items"), list) else []
+    target_item_id = str(item.get("id") or "").strip()
+    space["items"] = [
+        existing for existing in items
+        if str((existing or {}).get("id") or "").strip() != target_item_id
+    ]
+    space["updatedAt"] = now_ms()
+    set_user_space_payload(user_id, payload)
+
+    return jsonify(success_payload(
+        request_id,
+        message="空间内容已删除",
+        user_id=user_id,
+        deleted=True,
+        itemId=target_item_id,
+        spaceId=str(space.get("id") or "").strip(),
+        space=serialize_space(space, user_id),
         error_code="",
         error_message="",
     ))
@@ -2955,32 +3138,13 @@ def parse_json_from_ai_text(content):
 def normalize_ai_concepts(raw_concepts, max_count=8):
     """规范化 AI 返回的概念列表。"""
     generic_words = get_configured_concept_stopwords()
-    generic_words_lower = {w.lower() for w in generic_words}
 
     def is_valid_concept(name):
         n = (name or "").strip()
         if not n:
             return False
 
-        # 过滤过于泛化的词和动词短语
-        if n in generic_words or n.lower() in generic_words_lower:
-            return False
-        if n.startswith("学习") or n.endswith("学习"):
-            return False
-        if n.startswith("我要") or n.startswith("想"):
-            return False
-
-        # 中文概念长度控制
-        has_cn = bool(re.search(r"[\u4e00-\u9fff]", n))
-        if has_cn and len(n) < 2:
-            return False
-
-        # 英文概念长度与字符过滤（如 Python / NumPy）
-        has_en = bool(re.search(r"[A-Za-z]", n))
-        if has_en and not re.match(r"^[A-Za-z][A-Za-z0-9_\-\+\.]{1,30}$", n):
-            return False
-
-        return True
+        return is_learning_topic(n, extra_stopwords=generic_words)
 
     concepts = []
     if not isinstance(raw_concepts, list):
@@ -5280,6 +5444,29 @@ def extract_knowledge_from_text_api_inner(user_id, text, source):
     concept_list = user_knowledge["concepts"]
     relation_list = user_knowledge["relations"]
     deleted_concepts = user_knowledge.get("deleted_concepts", [])
+    blocked_topics = {
+        normalize_concept_name(item)
+        for item in (deleted_concepts if isinstance(deleted_concepts, list) else [])
+        if normalize_concept_name(item)
+    }
+    detected_concepts = filter_learning_topics(
+        [normalize_concept_name(item) for item in detected_concepts],
+        blocked_topics=blocked_topics,
+        limit=8,
+    )
+    relations = [
+        {
+            **rel,
+            "source": normalize_concept_name(rel.get("source")),
+            "target": normalize_concept_name(rel.get("target")),
+        }
+        for rel in (relations if isinstance(relations, list) else [])
+        if isinstance(rel, dict)
+        and is_learning_topic(normalize_concept_name(rel.get("source")))
+        and is_learning_topic(normalize_concept_name(rel.get("target")))
+        and normalize_concept_name(rel.get("source")) not in blocked_topics
+        and normalize_concept_name(rel.get("target")) not in blocked_topics
+    ]
 
     new_count = 0
     for concept in detected_concepts:
@@ -6077,7 +6264,7 @@ def register_auth_user_api():
     }
     saved_user = upsert_auth_user(user)
     session_bundle = create_auth_session_payload(saved_user)
-    binding = bind_guest_user_data_to_auth_user(data.get("guest_user_id"), username)
+    binding = build_auth_register_binding_summary(username)
     append_auth_login_behavior(username, "auth_register")
 
     return jsonify(success_payload(
@@ -6115,7 +6302,7 @@ def login_auth_user_api():
     user["updated_at"] = iso_now()
     saved_user = upsert_auth_user(user)
     session_bundle = create_auth_session_payload(saved_user)
-    binding = bind_guest_user_data_to_auth_user(data.get("guest_user_id"), username)
+    binding = build_auth_register_binding_summary(username)
     append_auth_login_behavior(username, "auth_login")
 
     return jsonify(success_payload(

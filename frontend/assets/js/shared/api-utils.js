@@ -132,6 +132,7 @@
       const rawMessage = data.error_message || data.message || '';
       const message = mapApiErrorMessage(code, rawMessage, response.status);
       const err = new Error(message);
+      err.status = response.status;
       err.code = code;
       err.rawMessage = rawMessage;
       err.payload = data;

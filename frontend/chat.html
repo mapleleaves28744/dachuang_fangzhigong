@@ -7,8 +7,8 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;600;700;800&family=Noto+Sans+SC:wght@400;500;700;900&family=Noto+Serif+SC:wght@600;700;900&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="assets/css/shared/auth-ui.css">
-    <link rel="stylesheet" href="assets/css/pages/chat-page.css">
+    <link rel="stylesheet" href="assets/css/shared/auth-ui.css?v=20260403-space-root-nav">
+    <link rel="stylesheet" href="assets/css/pages/chat-page.css?v=20260403-chatupload">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
@@ -62,11 +62,16 @@
                                 </div>
                                 <button class="chat-action-btn primary" id="newChatBtn" type="button">+ 新对话</button>
                             </div>
+                            <div class="composer-toolbar-group">
+                                <input class="composer-file-input" id="composerFileInput" type="file" multiple>
+                                <button class="chat-action-btn" id="composerAttachBtn" type="button">上传文件</button>
+                            </div>
                         </div>
                         <div class="composer-meta">
-                            <span>和主界面共用同一份问答历史</span>
+                            <span>支持直接上传图片、PDF、TXT、Markdown、CSV 等资料</span>
                             <span>按 `Enter` 发送，`Shift + Enter` 换行</span>
                         </div>
+                        <div class="composer-attachments" id="composerAttachments" hidden></div>
                         <div class="composer-row">
                             <textarea class="composer-input" id="questionInput" placeholder="学习任何东西"></textarea>
                             <button class="composer-send-btn" id="askQuestionBtn" type="button" aria-label="发送问题">↑</button>
@@ -94,8 +99,9 @@
     <script src="assets/js/shared/user-context.js?v=20260330-authfix"></script>
     <script src="assets/js/shared/api-utils.js?v=20260330-authfix"></script>
     <script src="assets/js/shared/project-local-data.js?v=20260330-authfix"></script>
+    <script src="assets/js/shared/space-cloud-store.js?v=20260403-sidebarspaces"></script>
     <script src="assets/js/shared/auth-ui.js?v=20260330-authfix"></script>
-    <script src="assets/js/shared/page-shell.js?v=20260331-telemetryfix"></script>
-    <script src="assets/js/pages/chat-page.js?v=20260330-chatpage"></script>
+    <script src="assets/js/shared/page-shell.js?v=20260403-space-root-nav"></script>
+    <script src="assets/js/pages/chat-page.js?v=20260403-chatupload"></script>
 </body>
 </html>

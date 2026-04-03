@@ -139,6 +139,24 @@ class TestSpaceContract(unittest.TestCase):
             self.assertEqual(list_data.get("count"), 1)
             self.assertEqual(list_data.get("spaces", [])[0].get("itemCount"), 1)
 
+            rename_resp = self.client.put(f"/api/spaces/{space_id}", json={
+                "user_id": "space_user",
+                "name": "纺织复习空间",
+                "description": "整理纺织结构与工艺资料",
+            })
+            self.assertEqual(rename_resp.status_code, 200)
+            rename_data = rename_resp.get_json()
+            self.assertEqual(rename_data.get("space", {}).get("name"), "纺织复习空间")
+            self.assertEqual(rename_data.get("space", {}).get("description"), "整理纺织结构与工艺资料")
+
+            rename_post_resp = self.client.post(f"/api/spaces/{space_id}", json={
+                "user_id": "space_user",
+                "description": "课堂资料与工艺要点",
+            })
+            self.assertEqual(rename_post_resp.status_code, 200)
+            rename_post_data = rename_post_resp.get_json()
+            self.assertEqual(rename_post_data.get("space", {}).get("description"), "课堂资料与工艺要点")
+
             detail_resp = self.client.get(f"/api/spaces/items/{item_id}?user_id=space_user")
             self.assertEqual(detail_resp.status_code, 200)
             detail_data = detail_resp.get_json()
@@ -158,10 +176,52 @@ class TestSpaceContract(unittest.TestCase):
             update_data = update_resp.get_json()
             self.assertEqual(update_data.get("item", {}).get("name"), "整理后的笔记.txt")
 
+            update_post_resp = self.client.post(f"/api/spaces/items/{item_id}", json={
+                "user_id": "space_user",
+                "name": "整理后的课堂笔记.txt",
+            })
+            self.assertEqual(update_post_resp.status_code, 200)
+            update_post_data = update_post_resp.get_json()
+            self.assertEqual(update_post_data.get("item", {}).get("name"), "整理后的课堂笔记.txt")
+
+            second_space_resp = self.client.post("/api/spaces", json={
+                "user_id": "space_user",
+                "name": "移动目标空间",
+            })
+            self.assertEqual(second_space_resp.status_code, 200)
+            second_space_id = second_space_resp.get_json().get("space", {}).get("id")
+
+            move_resp = self.client.put(f"/api/spaces/items/{item_id}", json={
+                "user_id": "space_user",
+                "targetSpaceId": second_space_id,
+            })
+            self.assertEqual(move_resp.status_code, 200)
+            move_data = move_resp.get_json()
+            self.assertEqual(move_data.get("space", {}).get("id"), second_space_id)
+            self.assertEqual(move_data.get("sourceSpace", {}).get("id"), space_id)
+
+            moved_list = self.client.get("/api/spaces?user_id=space_user").get_json()
+            moved_spaces = {item.get("id"): item for item in moved_list.get("spaces", [])}
+            self.assertEqual(moved_spaces.get(space_id, {}).get("itemCount"), 0)
+            self.assertEqual(moved_spaces.get(second_space_id, {}).get("itemCount"), 1)
+
+            delete_item_resp = self.client.delete(f"/api/spaces/items/{item_id}?user_id=space_user")
+            self.assertEqual(delete_item_resp.status_code, 200)
+            delete_item_data = delete_item_resp.get_json()
+            self.assertTrue(delete_item_data.get("deleted"))
+            self.assertEqual(delete_item_data.get("spaceId"), second_space_id)
+
+            after_item_delete = self.client.get("/api/spaces?user_id=space_user").get_json()
+            after_item_spaces = {item.get("id"): item for item in after_item_delete.get("spaces", [])}
+            self.assertEqual(after_item_spaces.get(second_space_id, {}).get("itemCount"), 0)
+
             delete_resp = self.client.delete(f"/api/spaces/{space_id}?user_id=space_user")
             self.assertEqual(delete_resp.status_code, 200)
             delete_data = delete_resp.get_json()
             self.assertTrue(delete_data.get("deleted"))
+
+            delete_second_resp = self.client.delete(f"/api/spaces/{second_space_id}?user_id=space_user")
+            self.assertEqual(delete_second_resp.status_code, 200)
 
             final_list = self.client.get("/api/spaces?user_id=space_user").get_json()
             self.assertEqual(final_list.get("count"), 0)

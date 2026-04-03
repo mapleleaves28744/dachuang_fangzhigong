@@ -1,6 +1,8 @@
 from collections import Counter, defaultdict
 from datetime import datetime, timedelta
 
+from .topic_guard import filter_learning_topics, is_learning_topic
+
 
 STYLE_LABELS = {
     "visual": "视觉型学习者",
@@ -75,6 +77,14 @@ def normalize_topic(value):
     return str(value or "").strip()
 
 
+def normalize_blocked_topics(blocked_topics):
+    return {
+        normalize_topic(item)
+        for item in (blocked_topics if isinstance(blocked_topics, (list, tuple, set)) else [])
+        if normalize_topic(item)
+    }
+
+
 def normalize_page_id(value):
     text = str(value or "").strip().lower()
     if text.endswith(".html"):
@@ -147,6 +157,40 @@ def unique_preserve(seq, limit=None):
     return items
 
 
+def collect_space_items(space_payload):
+    spaces = [
+        space for space in (space_payload.get("spaces", []) if isinstance(space_payload.get("spaces"), list) else [])
+        if isinstance(space, dict)
+    ]
+    items = []
+    for space in spaces:
+        for item in (space.get("items", []) if isinstance(space.get("items"), list) else []):
+            if isinstance(item, dict):
+                items.append(item)
+    return spaces, items
+
+
+def has_learning_evidence(
+    content_logs,
+    qa_logs,
+    question_draw_logs,
+    question_answer_logs,
+    diagnosis_logs,
+    wrong_question_logs=None,
+    space_payload=None,
+):
+    _, space_items = collect_space_items(space_payload if isinstance(space_payload, dict) else {"spaces": []})
+    return any([
+        bool(content_logs),
+        bool(qa_logs),
+        bool(question_draw_logs),
+        bool(question_answer_logs),
+        bool(diagnosis_logs),
+        bool(wrong_question_logs),
+        bool(space_items),
+    ])
+
+
 def build_data_pool_summary(
     content_logs,
     qa_logs,
@@ -158,6 +202,7 @@ def build_data_pool_summary(
     space_payload=None,
     hidden_metrics=None,
     now=None,
+    blocked_topics=None,
 ):
     content_logs = content_logs if isinstance(content_logs, list) else []
     qa_logs = qa_logs if isinstance(qa_logs, list) else []
@@ -169,11 +214,21 @@ def build_data_pool_summary(
     space_payload = space_payload if isinstance(space_payload, dict) else {"spaces": []}
     hidden_metrics = hidden_metrics if isinstance(hidden_metrics, dict) else {}
     current_time = parse_datetime_safe(now) or datetime.now()
+    blocked_set = normalize_blocked_topics(blocked_topics)
+    learning_evidence_exists = has_learning_evidence(
+        content_logs=content_logs,
+        qa_logs=qa_logs,
+        question_draw_logs=question_draw_logs,
+        question_answer_logs=question_answer_logs,
+        diagnosis_logs=diagnosis_logs,
+        wrong_question_logs=wrong_question_logs,
+        space_payload=space_payload,
+    )
+    summary_behavior_logs = behavior_logs if learning_evidence_exists else []
 
     total_records = (
         len(content_logs)
         + len(qa_logs)
-        + len(behavior_logs)
         + len(question_draw_logs)
         + len(question_answer_logs)
         + len(diagnosis_logs)
@@ -194,7 +249,8 @@ def build_data_pool_summary(
     today_question_answer_count = 0
     today_qa_count = 0
     today_diagnosis_count = 0
-    active_days.add(today_label)
+    if learning_evidence_exists:
+        active_days.add(today_label)
 
     def mark_timestamp(value):
         dt = parse_datetime_safe(value)
@@ -217,7 +273,11 @@ def build_data_pool_summary(
         dt = mark_timestamp(item.get("timestamp"))
         if dt and dt.date().isoformat() == today_label:
             today_content_counter[content_type] += 1
-        topics = [normalize_topic(topic) for topic in (item.get("topics") or []) if normalize_topic(topic)]
+        topics = filter_learning_topics(
+            [normalize_topic(topic) for topic in (item.get("topics") or []) if normalize_topic(topic)],
+            blocked_topics=blocked_set,
+            limit=6,
+        )
         for topic in topics:
             topic_counter[topic] += 1
         if topics:
@@ -257,7 +317,8 @@ def build_data_pool_summary(
         if dt and dt.date().isoformat() == today_label:
             today_question_draw_count += 1
         concept = str(item.get("concept") or "综合").strip() or "综合"
-        topic_counter[concept] += 1
+        if concept not in blocked_set and is_learning_topic(concept):
+            topic_counter[concept] += 1
         recent_feed.append({
             "timestamp": item.get("timestamp") or "",
             "kind": "question_draw",
@@ -276,7 +337,8 @@ def build_data_pool_summary(
         if dt and dt.date().isoformat() == today_label:
             today_question_answer_count += 1
         concept = str(item.get("concept") or "综合").strip() or "综合"
-        topic_counter[concept] += 1
+        if concept not in blocked_set and is_learning_topic(concept):
+            topic_counter[concept] += 1
         score = float(item.get("score", 0.0) or 0.0)
         score_total += score
         if bool(item.get("is_correct", False)):
@@ -305,7 +367,7 @@ def build_data_pool_summary(
             "summary": short_text(diagnosis.get("recommendation") or item.get("question") or "", 60),
         })
 
-    for item in behavior_logs:
+    for item in summary_behavior_logs:
         if not isinstance(item, dict):
             continue
         behavior_type = str(item.get("behavior_type") or item.get("type") or "behavior").strip().lower() or "behavior"
@@ -370,10 +432,23 @@ def build_data_pool_summary(
     hidden_topic_table = hidden_metrics.get("topic_total_table", []) if isinstance(hidden_metrics.get("topic_total_table"), list) else []
     hidden_window_table = hidden_metrics.get("study_window_total_table", []) if isinstance(hidden_metrics.get("study_window_total_table"), list) else []
 
-    top_topics = hidden_topic_table[:6] if hidden_topic_table else [
+    filtered_hidden_topic_table = []
+    for item in hidden_topic_table:
+        if not isinstance(item, dict):
+            continue
+        topic = normalize_topic(item.get("topic"))
+        if topic in blocked_set or not is_learning_topic(topic):
+            continue
+        filtered_hidden_topic_table.append({
+            "topic": topic,
+            "count": int(item.get("count", 0) or 0),
+        })
+
+    top_topics = filtered_hidden_topic_table[:6] if filtered_hidden_topic_table else [
         {"topic": topic, "count": count}
-        for topic, count in topic_counter.most_common(6)
-    ]
+        for topic, count in topic_counter.most_common()
+        if topic not in blocked_set and is_learning_topic(topic)
+    ][:6]
 
     study_windows = hidden_window_table[:6] if hidden_window_table else [
         {"label": label, "count": count}
@@ -402,19 +477,11 @@ def build_data_pool_summary(
         + content_counter.get("other", 0)
     )
 
-    spaces = [
-        space for space in (space_payload.get("spaces", []) if isinstance(space_payload.get("spaces"), list) else [])
-        if isinstance(space, dict)
-    ]
-    space_items = []
+    spaces, space_items = collect_space_items(space_payload)
     space_kind_counter = Counter()
-    for space in spaces:
-        for item in (space.get("items", []) if isinstance(space.get("items"), list) else []):
-            if not isinstance(item, dict):
-                continue
-            space_items.append(item)
-            kind = str(item.get("kind") or "document").strip().lower() or "document"
-            space_kind_counter[kind] += 1
+    for item in space_items:
+        kind = str(item.get("kind") or "document").strip().lower() or "document"
+        space_kind_counter[kind] += 1
 
     space_content_count = len(space_items)
     learning_content_record_count = learning_record_count + space_content_count
@@ -479,11 +546,13 @@ def build_graph_insights(
     reminders,
     content_logs,
     infer_learning_path_fn=None,
+    blocked_topics=None,
 ):
     user_knowledge = user_knowledge if isinstance(user_knowledge, dict) else {}
     graph_payload = graph_payload if isinstance(graph_payload, dict) else {}
     reminders = reminders if isinstance(reminders, dict) else {}
     content_logs = content_logs if isinstance(content_logs, list) else []
+    blocked_set = normalize_blocked_topics(blocked_topics)
 
     concepts = user_knowledge.get("concepts", []) if isinstance(user_knowledge.get("concepts"), list) else []
     relations = user_knowledge.get("relations", []) if isinstance(user_knowledge.get("relations"), list) else []
@@ -506,7 +575,11 @@ def build_graph_insights(
             "content_type": str(item.get("content_type") or "other"),
             "timestamp": str(item.get("timestamp") or ""),
         }
-        for topic in [normalize_topic(topic) for topic in (item.get("topics") or []) if normalize_topic(topic)]:
+        for topic in filter_learning_topics(
+            [normalize_topic(topic) for topic in (item.get("topics") or []) if normalize_topic(topic)],
+            blocked_topics=blocked_set,
+            limit=6,
+        ):
             concept_sources[topic].append(source_item)
 
     relation_snapshot = []
@@ -515,7 +588,13 @@ def build_graph_insights(
             continue
         source = str(rel.get("source") or "").strip()
         target = str(rel.get("target") or "").strip()
-        if not source or not target:
+        if (
+            not source or not target
+            or source in blocked_set
+            or target in blocked_set
+            or not is_learning_topic(source)
+            or not is_learning_topic(target)
+        ):
             continue
         relation_snapshot.append({
             "source": source,
@@ -533,7 +612,7 @@ def build_graph_insights(
         if not isinstance(item, dict):
             continue
         concept = str(item.get("concept") or "").strip()
-        if not concept:
+        if not concept or concept in blocked_set or not is_learning_topic(concept):
             continue
         mastery = round(float(item.get("mastery", 0.0) or 0.0) * 100)
         if mastery < 45:
@@ -625,9 +704,10 @@ def build_graph_insights(
     }
 
 
-def build_profile_insights(profile, data_pool):
+def build_profile_insights(profile, data_pool, blocked_topics=None):
     profile = profile if isinstance(profile, dict) else {}
     data_pool = data_pool if isinstance(data_pool, dict) else {}
+    blocked_set = normalize_blocked_topics(blocked_topics)
 
     content_counter = profile.get("content_type_counter", {}) if isinstance(profile.get("content_type_counter"), dict) else {}
     style_scores = profile.get("style_scores", {}) if isinstance(profile.get("style_scores"), dict) else {}
@@ -655,8 +735,19 @@ def build_profile_insights(profile, data_pool):
     media_preferences.sort(key=lambda item: item.get("count", 0), reverse=True)
 
     top_topics = data_pool.get("top_topics", []) if isinstance(data_pool.get("top_topics"), list) else []
-    explicit_interests = [normalize_topic(item) for item in (profile.get("interests") or []) if normalize_topic(item)]
-    implicit_map = {item.get("topic"): int(item.get("count", 0) or 0) for item in top_topics if isinstance(item, dict)}
+    explicit_interests = filter_learning_topics(
+        [normalize_topic(item) for item in (profile.get("interests") or []) if normalize_topic(item)],
+        blocked_topics=blocked_set,
+        limit=8,
+    )
+    implicit_map = {
+        normalize_topic(item.get("topic")): int(item.get("count", 0) or 0)
+        for item in top_topics
+        if isinstance(item, dict)
+        and normalize_topic(item.get("topic"))
+        and normalize_topic(item.get("topic")) not in blocked_set
+        and is_learning_topic(normalize_topic(item.get("topic")))
+    }
 
     interests = []
     interest_keys = unique_preserve(explicit_interests + list(implicit_map.keys()), limit=8)
@@ -675,6 +766,13 @@ def build_profile_insights(profile, data_pool):
     learning_style = str(profile.get("learning_style") or "").strip()
     style_method = str(profile.get("style_method") or "").strip()
     profile_traits = []
+    has_profile_signal = any([
+        learning_style,
+        explicit_interests,
+        any(int(item.get("count", 0) or 0) > 0 for item in media_preferences),
+        str(profile.get("best_time_range") or "").strip(),
+        bool(profile.get("focus_minutes")),
+    ])
 
     if media_preferences and media_preferences[0].get("count", 0) > 0:
         profile_traits.append(f"当前最常使用的内容通道为“{media_preferences[0]['label']}”，说明学习输入更依赖该媒介。")
@@ -686,7 +784,7 @@ def build_profile_insights(profile, data_pool):
         profile_traits.append(f"建议单次专注学习时长控制在 {profile.get('focus_minutes')} 分钟左右，以兼顾效率与持续性。")
 
     return {
-        "learning_style_label": STYLE_LABELS.get(learning_style, "综合型学习者"),
+        "learning_style_label": STYLE_LABELS.get(learning_style, learning_style) if has_profile_signal else "",
         "style_method_label": METHOD_LABELS.get(style_method, style_method or "--"),
         "style_scores": {
             "visual": round(float(style_scores.get("visual", 0.0) or 0.0) * 100),
@@ -696,6 +794,7 @@ def build_profile_insights(profile, data_pool):
         "media_preferences": media_preferences,
         "interests": interests,
         "profile_traits": profile_traits[:4],
+        "has_profile_signal": bool(has_profile_signal),
     }
 
 
@@ -818,6 +917,7 @@ def build_dashboard_sections(
     hidden_metrics=None,
     infer_learning_path_fn=None,
 ):
+    blocked_topics = user_knowledge.get("deleted_concepts", []) if isinstance(user_knowledge, dict) else []
     data_pool = build_data_pool_summary(
         content_logs=content_logs,
         qa_logs=qa_logs,
@@ -828,6 +928,7 @@ def build_dashboard_sections(
         wrong_question_logs=wrong_question_logs,
         space_payload=space_payload,
         hidden_metrics=hidden_metrics,
+        blocked_topics=blocked_topics,
     )
 
     # 认知诊断样本总量应使用完整 diagnosis_report，而不是 latest 切片。
@@ -848,8 +949,9 @@ def build_dashboard_sections(
         reminders=reminders,
         content_logs=content_logs,
         infer_learning_path_fn=infer_learning_path_fn,
+        blocked_topics=blocked_topics,
     )
-    profile_insights = build_profile_insights(profile=profile, data_pool=data_pool)
+    profile_insights = build_profile_insights(profile=profile, data_pool=data_pool, blocked_topics=blocked_topics)
     intervention_summary = build_intervention_summary(
         profile=profile,
         diagnosis_report=diagnosis_report,

@@ -779,10 +779,6 @@
     const username = String((usernameInput && usernameInput.value) || '').trim();
     const password = String((passwordInput && passwordInput.value) || '').trim();
     const displayName = String((displayNameInput && displayNameInput.value) || '').trim();
-    const guestUserId = window.UserContext && typeof window.UserContext.getGuestUserId === 'function'
-      ? window.UserContext.getGuestUserId()
-      : 'default_user';
-
     if (!username || !password) {
       setFeedback('error', '请输入账号和密码。');
       return;
@@ -804,8 +800,7 @@
       const endpoint = currentMode === 'register' ? '/api/auth/register' : '/api/auth/login';
       const payload = {
         username,
-        password,
-        guest_user_id: guestUserId
+        password
       };
       if (currentMode === 'register') {
         payload.display_name = displayName;
@@ -823,29 +818,19 @@
         ? await window.ApiUtils.parseApiResponse(response)
         : await response.json();
 
-      const nextUserId = data && data.auth && data.auth.user
-        ? (data.auth.user.user_id || data.auth.user.username || username)
-        : username;
-
-      if (window.ProjectLocalData && typeof window.ProjectLocalData.migrateGuestLocalData === 'function') {
-        try {
-          window.ProjectLocalData.migrateGuestLocalData(guestUserId, nextUserId, { maxChatSessions: 20 });
-        } catch (migrationError) {
-          // 本地数据迁移失败不阻塞登录，只保留账号会话。
-        }
-      }
-
       if (data && data.auth && typeof window.UserContext.setAuth === 'function') {
         window.UserContext.setAuth(data.auth);
+      }
+      if (window.UserContext && typeof window.UserContext.resetGuestUserId === 'function') {
+        window.UserContext.resetGuestUserId();
       }
 
       if (displayNameInput) displayNameInput.value = '';
       if (passwordInput) passwordInput.value = '';
 
-      const binding = data && data.binding && typeof data.binding === 'object' ? data.binding : null;
-      const successMessage = binding && binding.migrated
-        ? `${currentMode === 'register' ? '注册成功' : '登录成功'}，访客数据已绑定到账号。`
-        : (currentMode === 'register' ? '注册成功，已自动登录。' : '登录成功，正在同步页面账号...');
+      const successMessage = currentMode === 'register'
+        ? '注册成功，已自动登录。'
+        : '登录成功，当前账号数据已保持独立。';
       setFeedback('success', successMessage);
       currentMode = 'login';
       renderAll();

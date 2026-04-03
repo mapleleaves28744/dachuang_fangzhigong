@@ -75,6 +75,81 @@ class TestLearningProfileContract(unittest.TestCase):
         self.assertEqual(profile["user_id"], "u1")
         self.assertIn("u1", stored.get("user_id", "u1"))
 
+    def test_build_profile_filters_noise_interests_and_deleted_topics(self):
+        svc = LearningProfileService(kmeans_cls=None, np_module=None)
+        stored = {}
+
+        def get_user_profile(_):
+            return {}
+
+        def set_user_profile(_, profile):
+            stored.update(profile)
+
+        def load_user_event_list(_, suffix):
+            if suffix == "content":
+                return [
+                    {
+                        "content_type": "note",
+                        "timestamp": "2026-03-16T09:30:00",
+                        "topics": ["我是你爹吗", "导数", "你好呀"],
+                    }
+                ]
+            return []
+
+        def get_user_knowledge(_):
+            return {
+                "concepts": [
+                    {"concept": "导数", "mastery": 0.3},
+                    {"concept": "你是谁", "mastery": 0.2},
+                ],
+                "deleted_concepts": ["你是谁"],
+            }
+
+        profile = svc.build_profile(
+            user_id="u1",
+            get_user_profile=get_user_profile,
+            set_user_profile=set_user_profile,
+            load_user_event_list=load_user_event_list,
+            get_user_knowledge=get_user_knowledge,
+            normalize_user_knowledge=None,
+        )
+
+        self.assertIn("导数", profile["interests"])
+        self.assertNotIn("我是你爹吗", profile["interests"])
+        self.assertNotIn("你是谁", profile["interests"])
+        self.assertIn("导数", stored.get("interests", []))
+
+    def test_build_profile_returns_empty_state_without_learning_signal(self):
+        svc = LearningProfileService(kmeans_cls=None, np_module=None)
+        stored = {}
+
+        def get_user_profile(_):
+            return {}
+
+        def set_user_profile(_, profile):
+            stored.update(profile)
+
+        def load_user_event_list(_, __):
+            return []
+
+        def get_user_knowledge(_):
+            return {"concepts": [], "relations": [], "deleted_concepts": []}
+
+        profile = svc.build_profile(
+            user_id="u-empty",
+            get_user_profile=get_user_profile,
+            set_user_profile=set_user_profile,
+            load_user_event_list=load_user_event_list,
+            get_user_knowledge=get_user_knowledge,
+            normalize_user_knowledge=None,
+        )
+
+        self.assertEqual(profile["learning_style"], "")
+        self.assertEqual(profile["interests"], [])
+        self.assertEqual(profile["best_time_range"], "")
+        self.assertIsNone(profile["focus_minutes"])
+        self.assertEqual(stored.get("interests"), [])
+
     def test_build_recommendation_context(self):
         ctx = build_recommendation_context({"learning_style": "auditory", "style_method": "kmeans"}, 4)
         self.assertEqual(ctx["learning_style"], "auditory")
@@ -191,6 +266,40 @@ class TestLearningProfileContract(unittest.TestCase):
         self.assertIn("evidence_brief", first)
         self.assertIn("source_evidence", first)
         self.assertIn("strategy_tags", first)
+
+    def test_build_recommendations_returns_empty_without_interests_or_weak_points(self):
+        def fake_build_learning_profile(_):
+            return {
+                "learning_style": "",
+                "style_method": "",
+                "style_scores": {"visual": 0.0, "auditory": 0.0, "kinesthetic": 0.0},
+                "style_features": {
+                    "image_count": 0,
+                    "link_count": 0,
+                    "note_count": 0,
+                    "qa_content_count": 0,
+                },
+                "best_time_range": "",
+                "interests": [],
+            }
+
+        def fake_get_user_knowledge(_):
+            return {
+                "concepts": [],
+                "relations": [],
+                "deleted_concepts": [],
+            }
+
+        items = build_recommendations(
+            user_id="u-empty",
+            limit=3,
+            build_learning_profile_fn=fake_build_learning_profile,
+            get_user_knowledge=fake_get_user_knowledge,
+            normalize_user_knowledge=lambda knowledge: knowledge,
+            load_user_event_list=lambda *_: [],
+        )
+
+        self.assertEqual(items, [])
 
 
 if __name__ == "__main__":

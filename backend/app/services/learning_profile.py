@@ -1,5 +1,7 @@
 from datetime import datetime
 
+from .topic_guard import filter_learning_topics, is_learning_topic
+
 try:
     import numpy as _np
 except Exception:
@@ -60,6 +62,30 @@ class LearningProfileService:
         knowledge["relations"] = relations
         knowledge["deleted_concepts"] = deleted_concepts
         return knowledge
+
+    @staticmethod
+    def _empty_style_scores():
+        return {
+            "visual": 0.0,
+            "auditory": 0.0,
+            "kinesthetic": 0.0,
+        }
+
+    @staticmethod
+    def _empty_style_features():
+        return {
+            "image_count": 0,
+            "link_count": 0,
+            "qa_content_count": 0,
+            "note_count": 0,
+            "other_count": 0,
+            "qa_log_count": 0,
+            "concept_count": 0,
+        }
+
+    @staticmethod
+    def _empty_content_type_counter():
+        return {"note": 0, "link": 0, "image": 0, "qa": 0, "other": 0}
 
     def _infer_learning_style(self, content_type_counter, qa_logs, concept_count):
         visual_score = content_type_counter.get("image", 0) + content_type_counter.get("link", 0)
@@ -144,8 +170,31 @@ class LearningProfileService:
         qa_logs = load_user_event_list(user_id, "qa")
         normalize_fn = normalize_user_knowledge or self._normalize_user_knowledge_fallback
         knowledge = normalize_fn(get_user_knowledge(user_id))
+        concept_items = knowledge.get("concepts", []) if isinstance(knowledge, dict) else []
+        blocked_topics = {
+            str(item or "").strip()
+            for item in (knowledge.get("deleted_concepts", []) if isinstance(knowledge, dict) else [])
+            if str(item or "").strip()
+        }
+        has_learning_signal = bool(content_logs or qa_logs or concept_items)
 
-        content_type_counter = {"note": 0, "link": 0, "image": 0, "qa": 0, "other": 0}
+        if not has_learning_signal:
+            profile.update({
+                "user_id": user_id,
+                "updated_at": datetime.now().isoformat(),
+                "learning_style": "",
+                "style_scores": self._empty_style_scores(),
+                "style_method": "",
+                "style_features": self._empty_style_features(),
+                "interests": [],
+                "best_time_range": "",
+                "focus_minutes": None,
+                "content_type_counter": self._empty_content_type_counter(),
+            })
+            set_user_profile(user_id, profile)
+            return profile
+
+        content_type_counter = self._empty_content_type_counter()
         hour_counter = {}
         interest_counter = {}
 
@@ -159,13 +208,12 @@ class LearningProfileService:
             if ts:
                 hour_counter[ts.hour] = hour_counter.get(ts.hour, 0) + 1
 
-            for topic in item.get("topics", []):
+            for topic in filter_learning_topics(item.get("topics"), blocked_topics=blocked_topics):
                 interest_counter[topic] = interest_counter.get(topic, 0) + 1
 
-        concept_items = knowledge.get("concepts", []) if isinstance(knowledge, dict) else []
         for item in concept_items:
-            concept = item.get("concept")
-            if concept:
+            concept = str(item.get("concept") or "").strip()
+            if concept and concept not in blocked_topics and is_learning_topic(concept):
                 interest_counter[concept] = interest_counter.get(concept, 0) + 1
 
         learning_style, style_scores, profile_method, feature_vector = self._infer_learning_style(
@@ -174,11 +222,11 @@ class LearningProfileService:
             concept_count=len(concept_items),
         )
 
-        best_hour = max(hour_counter, key=hour_counter.get) if hour_counter else 15
-        best_time_range = f"{best_hour:02d}:00-{(best_hour + 2) % 24:02d}:00"
+        best_hour = max(hour_counter, key=hour_counter.get) if hour_counter else None
+        best_time_range = f"{best_hour:02d}:00-{(best_hour + 2) % 24:02d}:00" if best_hour is not None else ""
 
         top_interests = sorted(interest_counter.items(), key=lambda x: x[1], reverse=True)[:5]
-        interests = [k for k, _ in top_interests] if top_interests else ["综合学习"]
+        interests = [k for k, _ in top_interests] if top_interests else []
 
         profile.update({
             "user_id": user_id,
@@ -452,8 +500,18 @@ def build_recommendations(
             category = "unknown"
         recent_category_count[category] += 1
 
+    blocked_topics = {
+        str(item or "").strip()
+        for item in (knowledge.get("deleted_concepts", []) if isinstance(knowledge, dict) else [])
+        if str(item or "").strip()
+    }
     weak_concepts = sorted(
-        [c for c in knowledge.get("concepts", []) if float(c.get("mastery", 0)) < 0.6],
+        [
+            c for c in knowledge.get("concepts", [])
+            if float(c.get("mastery", 0)) < 0.6
+            and str(c.get("concept") or "").strip() not in blocked_topics
+            and is_learning_topic(str(c.get("concept") or "").strip())
+        ],
         key=lambda x: float(x.get("mastery", 0)),
     )
 
@@ -474,7 +532,8 @@ def build_recommendations(
         )
 
     if not items:
-        interests = profile.get("interests", ["综合学习"]) if isinstance(profile, dict) else ["综合学习"]
+        interests = profile.get("interests", []) if isinstance(profile, dict) else []
+        interests = filter_learning_topics(interests, blocked_topics=blocked_topics, limit=safe_limit)
         for topic in interests[:safe_limit]:
             items.append(
                 build_interest_recommendation_item(

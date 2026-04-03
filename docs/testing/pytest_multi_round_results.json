@@ -1,0 +1,51 @@
+{
+  "timestamp": "2026-04-03 09:14:30",
+  "rounds": 5,
+  "results": [
+    {
+      "round": 1,
+      "exit_code": 0,
+      "passed": 50,
+      "warnings": 1,
+      "reported_duration_s": 9.58,
+      "wall_duration_s": 10.6,
+      "ok": true
+    },
+    {
+      "round": 2,
+      "exit_code": 0,
+      "passed": 50,
+      "warnings": 1,
+      "reported_duration_s": 9.39,
+      "wall_duration_s": 10.084,
+      "ok": true
+    },
+    {
+      "round": 3,
+      "exit_code": 0,
+      "passed": 50,
+      "warnings": 1,
+      "reported_duration_s": 4.6,
+      "wall_duration_s": 5.323,
+      "ok": true
+    },
+    {
+      "round": 4,
+      "exit_code": 0,
+      "passed": 50,
+      "warnings": 1,
+      "reported_duration_s": 4.62,
+      "wall_duration_s": 5.299,
+      "ok": true
+    },
+    {
+      "round": 5,
+      "exit_code": 0,
+      "passed": 50,
+      "warnings": 1,
+      "reported_duration_s": 4.82,
+      "wall_duration_s": 5.543,
+      "ok": true
+    }
+  ]
+}

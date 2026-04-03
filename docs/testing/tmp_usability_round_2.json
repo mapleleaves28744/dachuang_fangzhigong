@@ -1,0 +1,109 @@
+{
+  "meta": {
+    "generated_at": "2026-04-03 10:04:43",
+    "base_url": "http://127.0.0.1:5000",
+    "user_id": "ux_20260403100418_8f6a6a",
+    "steps": [
+      "register",
+      "dashboard_summary",
+      "ask_valid",
+      "create_space",
+      "list_spaces",
+      "recommendations",
+      "knowledge_graph"
+    ]
+  },
+  "summary": {
+    "total_steps": 7,
+    "passed_steps": 6,
+    "failed_steps": 1,
+    "completion_rate_percent": 85.71,
+    "avg_step_latency_ms": 1878.53,
+    "retry_count": 1,
+    "retry_rate_percent": 14.29,
+    "usability_level": "good"
+  },
+  "results": [
+    {
+      "name": "register",
+      "passed": true,
+      "status": 200,
+      "latency_ms": 118.134,
+      "error": "",
+      "error_code": "",
+      "attempts": 1
+    },
+    {
+      "name": "dashboard_summary",
+      "passed": true,
+      "status": 200,
+      "latency_ms": 312.766,
+      "error": "",
+      "error_code": "",
+      "attempts": 1
+    },
+    {
+      "name": "ask_valid",
+      "passed": false,
+      "status": null,
+      "latency_ms": 12004.586,
+      "error": "timed out",
+      "error_code": null,
+      "attempts": 2,
+      "retried_from_status": null
+    },
+    {
+      "name": "create_space",
+      "passed": true,
+      "status": 200,
+      "latency_ms": 10.111,
+      "error": "",
+      "error_code": "",
+      "attempts": 1
+    },
+    {
+      "name": "list_spaces",
+      "passed": true,
+      "status": 200,
+      "latency_ms": 3.696,
+      "error": "",
+      "error_code": "",
+      "attempts": 1
+    },
+    {
+      "name": "recommendations",
+      "passed": true,
+      "status": 200,
+      "latency_ms": 15.963,
+      "error": "",
+      "error_code": "",
+      "attempts": 1
+    },
+    {
+      "name": "knowledge_graph",
+      "passed": true,
+      "status": 200,
+      "latency_ms": 684.451,
+      "error": "",
+      "error_code": null,
+      "attempts": 1
+    }
+  ],
+  "slowest_steps": [
+    {
+      "name": "ask_valid",
+      "latency_ms": 12004.586,
+      "passed": false
+    },
+    {
+      "name": "knowledge_graph",
+      "latency_ms": 684.451,
+      "passed": true
+    },
+    {
+      "name": "dashboard_summary",
+      "latency_ms": 312.766,
+      "passed": true
+    }
+  ]
+}

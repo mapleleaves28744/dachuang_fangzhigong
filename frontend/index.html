@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Noto+Serif+SC:wght@600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/pages/home-page.css">
-    <link rel="stylesheet" href="assets/css/shared/auth-ui.css">
+    <link rel="stylesheet" href="assets/css/shared/auth-ui.css?v=20260403-space-root-nav">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
@@ -37,23 +37,59 @@
 
         .global-sidebar-toggle {
             position: fixed;
-            left: 12px;
-            top: 12px;
-            width: 42px;
-            height: 42px;
-            border: 1px solid #d8e2f1;
-            background: #ffffff;
-            border-radius: 12px;
-            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.12);
+            left: 16px;
+            top: 16px;
+            width: 54px;
+            height: 54px;
+            border: 1px solid #dbe4f2;
+            background: rgba(255, 255, 255, 0.96);
+            border-radius: 18px;
+            box-shadow:
+                0 16px 36px rgba(15, 23, 42, 0.12),
+                inset 0 1px 0 rgba(255, 255, 255, 0.92);
             color: #0f172a;
-            font-size: 20px;
             cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            backdrop-filter: blur(10px);
             z-index: 1400;
         }
 
         body.sidebar-open .global-sidebar-toggle {
             opacity: 0;
             pointer-events: none;
+        }
+
+        .global-sidebar-toggle-icon {
+            width: 22px;
+            height: 16px;
+            display: inline-flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .global-sidebar-toggle-icon span {
+            display: block;
+            width: 100%;
+            height: 2.5px;
+            border-radius: 999px;
+            background: #1f2a44;
+            transform-origin: center;
+            transition: transform 0.18s ease, opacity 0.18s ease;
+        }
+
+        .global-sidebar-toggle[aria-expanded="true"] .global-sidebar-toggle-icon span:nth-child(1) {
+            transform: translateY(6.75px) rotate(45deg);
+        }
+
+        .global-sidebar-toggle[aria-expanded="true"] .global-sidebar-toggle-icon span:nth-child(2) {
+            opacity: 0;
+        }
+
+        .global-sidebar-toggle[aria-expanded="true"] .global-sidebar-toggle-icon span:nth-child(3) {
+            transform: translateY(-6.75px) rotate(-45deg);
         }
 
         .global-sidebar-backdrop {
@@ -70,7 +106,7 @@
             position: fixed;
             left: 0;
             top: 0;
-            width: 280px;
+            width: 260px;
             height: 100vh;
             background: #f8fafd;
             border-right: 1px solid #dbe4ef;
@@ -133,13 +169,38 @@
         .app-container { max-width: 1320px; margin: 0 auto; padding: 24px; }
 
         .navbar {
-            display: flex;
-            justify-content: center;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
             align-items: center;
+            column-gap: 22px;
             min-height: 82px;
-            padding: 16px 220px 16px 24px;
+            padding: 16px 24px;
             margin-bottom: 18px;
             text-align: center;
+        }
+
+        .navbar-brand-shell {
+            grid-column: 1 / -1;
+            min-width: 0;
+            display: flex;
+            justify-content: center;
+            width: 100%;
+        }
+
+        .logo-panel {
+            width: 100%;
+            max-width: none;
+            min-height: 94px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 64px;
+            border-radius: 30px;
+            border: 1px solid #e6edf6;
+            background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+            box-shadow:
+                0 18px 44px rgba(15, 23, 42, 0.08),
+                inset 0 1px 0 rgba(255, 255, 255, 0.96);
         }
 
         .logo {
@@ -170,6 +231,18 @@
         .logo-tagline {
             font-weight: 800;
             color: #16233f;
+        }
+
+        .auth-top-slot {
+            position: absolute;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            width: auto;
+            min-width: 92px;
         }
 
         .nav-links {
@@ -208,9 +281,10 @@
         }
 
         .entry-gateway {
-            max-width: 1080px;
+            --entry-content-width: 780px;
+            max-width: 1160px;
             margin: 28px auto 6px;
-            padding: 12px 4px;
+            padding: 12px 4px 20px;
         }
 
         body.chat-open .entry-gateway {
@@ -219,12 +293,12 @@
 
         .entry-heading {
             text-align: center;
-            font-size: 36px;
+            font-size: clamp(24px, 3vw, 40px);
             line-height: 1.18;
-            letter-spacing: 0.1px;
-            font-weight: 700;
+            letter-spacing: -0.04em;
+            font-weight: 300;
             color: #0f172a;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
         }
 
         #entryUserName {
@@ -234,9 +308,9 @@
 
         .entry-subheading {
             text-align: center;
-            color: #6b7280;
-            font-size: 14px;
-            margin-bottom: 18px;
+            color: #8b94a7;
+            font-size: 15px;
+            margin-bottom: 22px;
         }
 
         .entry-tools-layout {
@@ -250,23 +324,27 @@
         .entry-main-stack {
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 14px;
         }
 
         .entry-tools {
             display: grid;
             grid-template-columns: repeat(4, minmax(0, 1fr));
-            gap: 8px;
+            gap: 12px;
+            width: min(100%, var(--entry-content-width));
             margin-bottom: 0;
+            max-width: none;
+            margin-left: auto;
+            margin-right: auto;
         }
 
         .entry-tool {
             border: 1px solid #dde5ef;
-            border-radius: 14px;
+            border-radius: 24px;
             background: #ffffff;
-            padding: 10px;
-            min-height: 84px;
-            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+            padding: 16px 18px 14px;
+            min-height: 118px;
+            box-shadow: 0 12px 30px rgba(15, 23, 42, 0.06);
             cursor: pointer;
             transition: transform 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
         }
@@ -274,93 +352,261 @@
         .entry-tool:hover {
             transform: translateY(-2px);
             border-color: #c8d8ee;
-            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1);
+            box-shadow: 0 16px 34px rgba(15, 23, 42, 0.1);
         }
 
         .entry-tool-icon {
-            width: 34px;
-            height: 34px;
-            border-radius: 10px;
-            background: #f3f7ff;
-            border: 1px solid #dbe6f8;
+            width: 50px;
+            height: 50px;
+            border-radius: 16px;
+            background: linear-gradient(180deg, #ffffff 0%, #f7fafc 100%);
+            border: 1px solid #e6ebf3;
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 7px;
+            margin-bottom: 12px;
         }
 
         .entry-tool-icon svg {
-            width: 18px;
-            height: 18px;
-            stroke: #0f4fbf;
+            width: 22px;
+            height: 22px;
+            stroke: #5b6472;
             fill: none;
-            stroke-width: 1.9;
+            stroke-width: 1.85;
             stroke-linecap: round;
             stroke-linejoin: round;
         }
 
         .entry-tool-title {
-            font-size: 16px;
+            font-size: 17px;
             font-weight: 800;
-            margin-bottom: 2px;
-            color: #111827;
+            margin-bottom: 4px;
+            color: #1f2937;
         }
 
         .entry-tool-desc {
-            font-size: 12px;
-            color: #64748b;
-            line-height: 1.35;
+            font-size: 13px;
+            color: #8a94a5;
+            line-height: 1.45;
         }
 
         .entry-input-wrap {
             display: flex;
             align-items: center;
             gap: 8px;
+            width: min(100%, var(--entry-content-width));
+            max-width: none;
+            margin: 0 auto;
+            min-height: 56px;
             border: 1px solid #dbe3ef;
             border-radius: 999px;
             background: #ffffff;
-            padding: 4px 5px 4px 14px;
-            box-shadow: 0 6px 14px rgba(15, 23, 42, 0.05);
+            padding: 6px 7px 6px 20px;
+            box-shadow: 0 10px 24px rgba(15, 23, 42, 0.06);
         }
 
         .entry-input {
             flex: 1;
             border: none;
             outline: none;
-            font-size: 18px;
+            font-size: 16px;
             color: #0f172a;
             background: transparent;
             padding: 5px 0;
         }
 
+        .entry-input::placeholder {
+            color: #97a0af;
+        }
+
         .entry-send-btn {
+            width: 42px;
+            height: 42px;
+            border: none;
+            border-radius: 999px;
+            background: #9d9d9d;
+            color: #ffffff;
+            font-size: 20px;
+            cursor: pointer;
+            font-weight: 800;
+            line-height: 1;
+            transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
+        }
+
+        .entry-send-btn:hover {
+            transform: translateY(-1px);
+            background: #7f7f7f;
+            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+        }
+
+        .entry-explore {
+            max-width: 1040px;
+            margin: 36px auto 0;
+        }
+
+        .entry-explore-head {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .entry-explore-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: #111827;
+            letter-spacing: -0.02em;
+        }
+
+        .entry-explore-refresh {
             width: 34px;
             height: 34px;
             border: none;
             border-radius: 999px;
-            background: #9ca3af;
-            color: #ffffff;
-            font-size: 17px;
+            background: transparent;
+            color: #6b7280;
+            font-size: 20px;
             cursor: pointer;
-            font-weight: 800;
-            line-height: 1;
+            transition: background 0.16s ease, color 0.16s ease, transform 0.16s ease;
+        }
+
+        .entry-explore-refresh:hover {
+            background: #f3f4f6;
+            color: #111827;
+            transform: rotate(18deg);
+        }
+
+        .entry-explore-refresh:disabled {
+            opacity: 0.55;
+            cursor: wait;
+            transform: none;
+        }
+
+        .entry-explore-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .entry-explore-empty {
+            grid-column: 1 / -1;
+            min-height: 180px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px dashed #d8e0ea;
+            border-radius: 26px;
+            background: #fafcff;
+            color: #7b8596;
+            font-size: 15px;
+            text-align: center;
+            padding: 22px;
+        }
+
+        .entry-explore-card {
+            display: block;
+            width: 100%;
+            border: 1px solid #dfe6ee;
+            border-radius: 24px;
+            background: #ffffff;
+            overflow: hidden;
+            padding: 0;
+            text-align: left;
+            cursor: pointer;
+            box-shadow: 0 14px 32px rgba(15, 23, 42, 0.06);
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+        }
+
+        .entry-explore-card:hover {
+            transform: translateY(-3px);
+            border-color: #c7d3e4;
+            box-shadow: 0 18px 40px rgba(15, 23, 42, 0.1);
+        }
+
+        .entry-explore-card-cover {
+            aspect-ratio: 16 / 9;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+        }
+
+        .entry-explore-card-body {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            padding: 14px 16px 16px;
+        }
+
+        .entry-explore-card-play {
+            flex: 0 0 28px;
+            width: 28px;
+            height: 28px;
+            border: 1px solid #d9e1eb;
+            border-radius: 999px;
+            color: #7b8596;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 13px;
+            margin-top: 2px;
+        }
+
+        .entry-explore-card-copy {
+            min-width: 0;
+            flex: 1;
+        }
+
+        .entry-explore-card-title {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            font-size: 16px;
+            font-weight: 700;
+            color: #262b33;
+            line-height: 1.38;
+        }
+
+        .entry-explore-card-meta {
+            margin-top: 5px;
+            color: #8b94a3;
+            font-size: 13px;
+            line-height: 1.4;
         }
 
         .entry-spaces {
             margin-top: 16px;
             border: 1px solid #e4eaf4;
             border-radius: 18px;
-            background: #ffffff;
+            background:
+                linear-gradient(180deg, rgba(248, 250, 252, 0.96) 0%, rgba(255, 255, 255, 1) 22%),
+                #ffffff;
             padding: 14px;
             box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
         }
 
         .entry-spaces-head {
             display: flex;
-            align-items: center;
-            justify-content: space-between;
+            align-items: flex-start;
             gap: 10px;
-            margin-bottom: 10px;
+        }
+
+        .entry-spaces-heading {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .entry-spaces-title-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
         }
 
         .entry-spaces-title {
@@ -374,110 +620,445 @@
             color: #64748b;
         }
 
-        .entry-space-add-btn {
-            border: 1px solid #cfe0f8;
-            background: #f5f9ff;
-            color: #1d4ed8;
-            border-radius: 10px;
-            padding: 8px 12px;
-            font-size: 13px;
-            font-weight: 700;
+        .entry-spaces-toolbar {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            flex-shrink: 0;
+        }
+
+        .entry-space-sort-wrap {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .entry-space-sort-trigger {
+            border: none;
+            background: transparent;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0;
+            color: #475569;
             cursor: pointer;
+            font-size: 14px;
+            font-weight: 700;
+            line-height: 1.15;
+        }
+
+        .entry-space-sort-trigger:hover,
+        .entry-space-sort-trigger:focus-visible {
+            color: #0f172a;
+            outline: none;
+        }
+
+        .entry-space-sort-current-icon,
+        .entry-space-sort-option-icon {
+            width: 18px;
+            height: 18px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: currentColor;
+            flex-shrink: 0;
+        }
+
+        .entry-space-sort-current-icon svg,
+        .entry-space-sort-option-icon svg,
+        .entry-space-sort-caret svg {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .entry-space-sort-current-label {
+            display: inline-flex;
+            align-items: center;
+            font-size: 14px;
+            font-weight: 700;
+            color: inherit;
             white-space: nowrap;
+            line-height: 1.15;
+        }
+
+        .entry-space-sort-caret {
+            width: 14px;
+            height: 14px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            color: #9aa4b2;
+            transition: transform 0.18s ease, color 0.18s ease;
+            flex-shrink: 0;
+        }
+
+        .entry-space-sort-wrap.is-open .entry-space-sort-caret {
+            transform: rotate(180deg);
+            color: #475569;
+        }
+
+        .entry-space-sort-menu {
+            position: absolute;
+            top: calc(100% + 12px);
+            left: 0;
+            min-width: 212px;
+            padding: 8px;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            background: #ffffff;
+            box-shadow: 0 18px 34px rgba(15, 23, 42, 0.14);
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 6;
+        }
+
+        .entry-space-sort-wrap.is-open .entry-space-sort-menu {
+            display: flex;
+        }
+
+        .entry-space-sort-option {
+            width: 100%;
+            border: none;
+            border-radius: 14px;
+            background: transparent;
+            padding: 11px 12px;
+            color: #0f172a;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 700;
+            text-align: left;
+            transition: background 0.16s ease, color 0.16s ease;
+        }
+
+        .entry-space-sort-option:hover,
+        .entry-space-sort-option:focus-visible {
+            background: #f8fafc;
+            outline: none;
+        }
+
+        .entry-space-sort-option.is-selected {
+            background: #f5f7fb;
+        }
+
+        .entry-space-sort-option-check {
+            width: 16px;
+            color: #0f172a;
+            font-size: 15px;
+            opacity: 0;
+            flex-shrink: 0;
+        }
+
+        .entry-space-sort-option.is-selected .entry-space-sort-option-check {
+            opacity: 1;
+        }
+
+        .entry-space-sort-option-label {
+            flex: 1;
+            min-width: 0;
+            font-size: 14px;
+            font-weight: 700;
         }
 
         .entry-space-grid {
-            display: grid;
-            grid-template-columns: repeat(2, minmax(0, 1fr));
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            min-height: 220px;
+            max-height: 640px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .entry-space-create-card {
+            width: 100%;
+            min-height: 164px;
+            border: 2px dashed #dbe3ec;
+            border-radius: 24px;
+            background:
+                radial-gradient(circle at top, rgba(255, 255, 255, 0.96), rgba(248, 250, 252, 0.98)),
+                #ffffff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
             gap: 10px;
-            margin-bottom: 12px;
+            cursor: pointer;
+            transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .entry-space-create-card:hover,
+        .entry-space-create-card:focus-visible {
+            transform: translateY(-2px);
+            border-color: #cbd5e1;
+            box-shadow: 0 14px 26px rgba(15, 23, 42, 0.08);
+            outline: none;
+        }
+
+        .entry-space-create-plus {
+            width: 54px;
+            height: 54px;
+            border-radius: 999px;
+            background: #d6d8dc;
+            color: #ffffff;
+            font-size: 32px;
+            line-height: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.7);
+        }
+
+        .entry-space-create-text {
+            font-size: 15px;
+            font-weight: 800;
+            color: #64748b;
         }
 
         .entry-space-card {
-            border: 1px solid #dee6f2;
-            border-radius: 14px;
-            background: #ffffff;
-            padding: 12px;
+            position: relative;
+        }
+
+        .entry-space-card-main {
             width: 100%;
+            border: 1px solid #dfe4eb;
+            border-radius: 24px;
+            background: #ffffff;
+            padding: 0;
             text-align: left;
             cursor: pointer;
-            transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+            overflow: hidden;
+            transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+            box-shadow:
+                0 8px 20px rgba(15, 23, 42, 0.05),
+                inset 0 1px 0 rgba(255, 255, 255, 0.92);
         }
 
-        .entry-space-card:hover {
+        .entry-space-card:hover .entry-space-card-main,
+        .entry-space-card:focus-within .entry-space-card-main,
+        .entry-space-card.is-menu-open .entry-space-card-main {
             transform: translateY(-1px);
-            border-color: #bfd6f6;
-            box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+            border-color: #d5dbe4;
+            box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+            outline: none;
         }
 
-        .entry-space-card.active {
-            border-color: #84aef0;
-            background: #f8fbff;
-            box-shadow: 0 8px 20px rgba(29, 78, 216, 0.1);
+        .entry-space-card.is-active .entry-space-card-main {
+            border-color: #cfd8e3;
+            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.07);
+        }
+
+        .entry-space-card.is-editing .entry-space-card-main {
+            cursor: default;
+            border-color: #c8d7ee;
+            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.07);
+        }
+
+        .entry-space-card.is-editing:hover .entry-space-card-main,
+        .entry-space-card.is-editing:focus-within .entry-space-card-main {
+            transform: none;
+        }
+
+        .entry-space-cover {
+            height: 70px;
+            background:
+                linear-gradient(180deg, rgba(244, 246, 248, 0.98) 0%, rgba(250, 251, 252, 0.96) 100%);
+        }
+
+        .entry-space-body {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 18px 18px 20px;
+        }
+
+        .entry-space-icon {
+            width: 24px;
+            height: 24px;
+            color: #b0b7c3;
+            flex-shrink: 0;
+        }
+
+        .entry-space-icon svg {
+            display: block;
+            width: 100%;
+            height: 100%;
+        }
+
+        .entry-space-copy {
+            min-width: 0;
+            padding-right: 54px;
+        }
+
+        .entry-space-copy.is-editing {
+            padding-right: 0;
         }
 
         .entry-space-name {
             font-size: 15px;
             font-weight: 800;
             color: #0f172a;
-            margin-bottom: 4px;
+            line-height: 1.45;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            word-break: break-word;
+        }
+
+        .entry-space-inline-input {
+            width: 100%;
+            border: none;
+            border-bottom: 1.5px solid #cbd5e1;
+            background: transparent;
+            color: #0f172a;
+            font-size: 15px;
+            font-weight: 800;
+            line-height: 1.45;
+            padding: 0 0 5px;
+            transition: border-color 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .entry-space-inline-input:focus {
+            outline: none;
+            border-color: #1d4ed8;
+            box-shadow: inset 0 -1px 0 rgba(29, 78, 216, 0.45);
+        }
+
+        .entry-space-inline-input:disabled {
+            opacity: 0.7;
+            cursor: wait;
         }
 
         .entry-space-meta {
+            margin-top: 6px;
+            font-size: 13px;
+            color: #94a3b8;
+        }
+
+        .entry-space-meta.is-editing {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .entry-space-edit-hint {
             font-size: 12px;
             color: #64748b;
         }
 
-        .entry-space-files {
-            border: 1px dashed #d5e0ef;
-            border-radius: 12px;
-            padding: 10px;
-            background: #fafcff;
-        }
-
-        .entry-space-files-title {
-            font-size: 13px;
-            font-weight: 800;
-            color: #0f172a;
-            margin-bottom: 6px;
-        }
-
-        .entry-space-file-list {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            max-height: 180px;
-            overflow-y: auto;
-        }
-
-        .entry-space-file-item {
-            border: 1px solid #e2e8f4;
-            border-radius: 10px;
-            background: #ffffff;
-            padding: 8px;
-        }
-
-        .entry-space-file-item.clickable {
+        .entry-space-menu-trigger {
+            position: absolute;
+            right: 18px;
+            bottom: 18px;
+            width: 38px;
+            height: 38px;
+            border: none;
+            border-radius: 999px;
+            background: #e5e7eb;
+            color: #334155;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             cursor: pointer;
-            transition: border-color 0.16s ease, box-shadow 0.16s ease;
+            opacity: 0;
+            pointer-events: none;
+            transform: translateY(4px);
+            transition: opacity 0.18s ease, transform 0.18s ease, background 0.18s ease;
+            z-index: 2;
         }
 
-        .entry-space-file-item.clickable:hover {
-            border-color: #bfd6f6;
-            box-shadow: 0 6px 16px rgba(15, 23, 42, 0.08);
+        .entry-space-card:hover .entry-space-menu-trigger,
+        .entry-space-card:focus-within .entry-space-menu-trigger,
+        .entry-space-card.is-menu-open .entry-space-menu-trigger {
+            opacity: 1;
+            pointer-events: auto;
+            transform: translateY(0);
         }
 
-        .entry-space-file-name {
+        .entry-space-menu-trigger:hover,
+        .entry-space-menu-trigger:focus-visible {
+            background: #d8dbe0;
+            outline: none;
+        }
+
+        .entry-space-menu-trigger span {
+            display: block;
+            line-height: 1;
+            font-size: 22px;
+            transform: translateY(-1px);
+        }
+
+        .entry-space-menu {
+            position: absolute;
+            right: 18px;
+            bottom: 64px;
+            min-width: 128px;
+            padding: 8px;
+            border: 1px solid #e2e8f0;
+            border-radius: 16px;
+            background: #ffffff;
+            box-shadow: 0 18px 34px rgba(15, 23, 42, 0.14);
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            z-index: 3;
+        }
+
+        .entry-space-card.is-menu-open .entry-space-menu {
+            display: flex;
+        }
+
+        .entry-space-menu-item {
+            border: none;
+            border-radius: 12px;
+            background: transparent;
+            color: #0f172a;
+            text-align: left;
+            padding: 10px 12px;
             font-size: 13px;
             font-weight: 700;
-            color: #0f172a;
-            margin-bottom: 2px;
-            word-break: break-all;
+            cursor: pointer;
+            transition: background 0.16s ease, color 0.16s ease;
+        }
+
+        .entry-space-menu-item:hover,
+        .entry-space-menu-item:focus-visible {
+            background: #f8fafc;
+            outline: none;
+        }
+
+        .entry-space-menu-item.danger {
+            color: #c24141;
+        }
+
+        .entry-space-empty {
+            border: 1px dashed #d8e0ea;
+            border-radius: 20px;
+            background: #ffffff;
+            padding: 18px;
+            text-align: center;
+            font-size: 13px;
+            color: #94a3b8;
         }
 
         .entry-space-file-meta {
-            font-size: 11px;
+            font-size: 12px;
             color: #64748b;
+        }
+
+        @media (hover: none) {
+            .entry-space-menu-trigger {
+                opacity: 1;
+                pointer-events: auto;
+                transform: translateY(0);
+            }
         }
 
         .workspace-column {
@@ -1502,6 +2083,7 @@
             .entry-tools-layout { grid-template-columns: 1fr; }
             .entry-main-stack { gap: 8px; }
             .entry-tools { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+            .entry-explore-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
             .entry-space-grid { grid-template-columns: 1fr; }
             .entry-heading { font-size: 32px; }
             .nav-links {
@@ -1537,11 +2119,31 @@
                 font-size: 24px;
             }
             .navbar {
-                flex-direction: column;
-                align-items: center;
-                gap: 10px;
+                grid-template-columns: 1fr;
+                gap: 12px;
                 min-height: auto;
-                padding: 14px;
+                padding: 12px 0;
+            }
+            .navbar-brand-shell {
+                grid-column: auto;
+                width: 100%;
+            }
+            .logo-panel {
+                width: 100%;
+                min-height: 78px;
+                padding: 18px 22px;
+                border-radius: 22px;
+            }
+            .auth-top-slot {
+                grid-column: auto;
+                position: static;
+                top: auto;
+                right: auto;
+                transform: none;
+                width: 100%;
+                justify-content: center;
+                justify-self: center;
+                margin-top: 12px;
             }
             .nav-links a { margin-right: 0; }
             .chat-header { flex-direction: column; align-items: flex-start; }
@@ -1557,8 +2159,10 @@
             .entry-heading { font-size: 28px; }
             .entry-tools-layout { grid-template-columns: 1fr; }
             .entry-tools { grid-template-columns: 1fr; }
+            .entry-explore-grid { grid-template-columns: 1fr; }
             .entry-main-stack { gap: 8px; }
             .entry-spaces-head { flex-direction: column; align-items: flex-start; }
+            .entry-spaces-title-row { align-items: flex-start; }
             .entry-input { font-size: 18px; }
         }
 
@@ -1590,14 +2194,20 @@
 
         .navbar {
             margin-bottom: 20px;
-            min-height: 82px;
-            padding: 12px 180px 12px 18px;
-            border: 1px solid rgba(255, 255, 255, 0.55);
-            border-radius: 18px;
-            background: linear-gradient(145deg, rgba(255, 255, 255, 0.7), rgba(255, 255, 255, 0.45));
-            box-shadow: 0 12px 28px rgba(11, 38, 77, 0.1);
-            backdrop-filter: blur(8px);
-            justify-content: center;
+            min-height: auto;
+            padding: 0 132px 0 0;
+            border: none;
+            border-radius: 0;
+            background: transparent;
+            box-shadow: none;
+            backdrop-filter: none;
+        }
+
+        .logo-panel {
+            background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(252, 253, 255, 0.98));
+            box-shadow:
+                0 22px 48px rgba(11, 38, 77, 0.09),
+                0 1px 0 rgba(255, 255, 255, 0.96) inset;
         }
 
         .logo {
@@ -1752,6 +2362,7 @@
 
         .guest-sidebar-panel {
             display: none;
+            position: relative;
         }
 
         .guest-sidebar-brand {
@@ -1803,7 +2414,7 @@
             font-size: 15px;
         }
 
-        .guest-sidebar-copy h2 {
+        .guest-sidebar-copy h3 {
             font-size: 18px;
             font-weight: 900;
             color: #0f172a;
@@ -1811,32 +2422,36 @@
         }
 
         body.guest-home-layout {
-            background:
-                radial-gradient(circle at top left, rgba(239, 246, 255, 0.92), transparent 38%),
-                linear-gradient(180deg, #fdfefe 0%, #ffffff 62%);
-        }
-
-        body.guest-home-layout .global-sidebar-toggle,
-        body.guest-home-layout .global-sidebar-backdrop {
-            display: none !important;
+            background: #ffffff;
         }
 
         body.guest-home-layout .global-sidebar {
             position: fixed;
             left: 0;
             top: 0;
-            width: 310px;
+            width: min(320px, calc(100vw - 12px));
             height: 100vh;
-            transform: none;
-            border-right: 1px solid #e5ebf4;
-            background: linear-gradient(180deg, #ffffff 0%, #f7f9fc 100%);
-            box-shadow: none;
+            transform: translateX(-100%);
+            opacity: 0;
+            pointer-events: none;
+            border: 1px solid #e5ebf4;
+            border-left: none;
+            border-radius: 0 28px 28px 0;
+            background: #ffffff;
+            box-shadow: 0 24px 60px rgba(15, 23, 42, 0.16);
             padding: 28px 18px 18px;
-            z-index: 120;
+            transition: transform 0.24s ease, opacity 0.24s ease;
+            z-index: 1360;
+        }
+
+        body.guest-home-layout .global-sidebar.open {
+            transform: translateX(0);
+            opacity: 1;
+            pointer-events: auto;
         }
 
         body.guest-home-layout .global-sidebar-scroll {
-            overflow: visible;
+            overflow-y: auto;
             padding-right: 0;
             display: flex;
             flex-direction: column;
@@ -1867,15 +2482,14 @@
         }
 
         body.guest-home-layout .app-container {
-            max-width: none;
-            margin-left: 310px;
-            padding: 18px 30px 40px 34px;
+            max-width: 1320px;
+            margin: 0 auto;
+            padding: 22px 24px 40px;
         }
 
         body.guest-home-layout .navbar {
-            justify-content: center;
-            min-height: 88px;
-            padding: 10px 160px 0 24px;
+            min-height: auto;
+            padding: 0 132px 0 0;
             margin-bottom: 0;
             border: none;
             border-radius: 0;
@@ -1884,81 +2498,102 @@
             backdrop-filter: none;
         }
 
+        body.guest-home-layout .navbar-brand-shell {
+            justify-content: center;
+            width: 100%;
+        }
+
+        body.guest-home-layout .logo-panel {
+            width: 100%;
+            max-width: none;
+            min-height: 96px;
+            padding: 22px 80px;
+            border-radius: 32px;
+        }
+
         body.guest-home-layout .logo {
             display: inline-flex;
         }
 
         body.guest-home-layout .auth-top-slot {
+            position: absolute;
+            top: 50%;
+            right: 0;
+            transform: translateY(-50%);
             width: auto;
             justify-content: flex-end;
         }
 
         body.guest-home-layout .entry-gateway {
-            max-width: 980px;
-            margin: 42px auto 0;
+            max-width: 1120px;
+            margin: 30px auto 0;
             padding: 0 0 24px;
         }
 
         body.guest-home-layout .entry-heading {
-            font-size: clamp(44px, 5vw, 60px);
-            font-weight: 900;
-            margin-bottom: 16px;
+            font-size: clamp(30px, 3.6vw, 44px);
+            font-weight: 400;
+            margin-bottom: 10px;
         }
 
         body.guest-home-layout .entry-subheading {
-            font-size: 16px;
-            margin-bottom: 28px;
+            font-size: 15px;
+            margin-bottom: 26px;
         }
 
         body.guest-home-layout .entry-tools {
-            gap: 14px;
+            gap: 12px;
         }
 
         body.guest-home-layout .entry-tool {
-            min-height: 136px;
-            padding: 18px;
+            min-height: 118px;
+            padding: 16px 18px 14px;
             border-radius: 24px;
-            box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
+            box-shadow: 0 14px 32px rgba(15, 23, 42, 0.07);
         }
 
         body.guest-home-layout .entry-tool-icon {
-            width: 46px;
-            height: 46px;
+            width: 50px;
+            height: 50px;
             margin-bottom: 12px;
-            border-radius: 14px;
+            border-radius: 16px;
         }
 
         body.guest-home-layout .entry-tool-icon svg {
-            width: 21px;
-            height: 21px;
+            width: 22px;
+            height: 22px;
         }
 
         body.guest-home-layout .entry-tool-title {
-            font-size: 20px;
-            margin-bottom: 6px;
+            font-size: 17px;
+            margin-bottom: 4px;
         }
 
         body.guest-home-layout .entry-tool-desc {
-            font-size: 14px;
+            font-size: 13px;
         }
 
         body.guest-home-layout .entry-input-wrap {
-            max-width: 840px;
-            margin: 6px auto 0;
-            min-height: 62px;
-            padding: 8px 8px 8px 22px;
-            box-shadow: 0 16px 34px rgba(15, 23, 42, 0.08);
+            max-width: none;
+            margin: 0 auto;
+            min-height: 56px;
+            padding: 6px 7px 6px 20px;
+            box-shadow: 0 14px 32px rgba(15, 23, 42, 0.08);
         }
 
         body.guest-home-layout .entry-input {
-            font-size: 18px;
+            font-size: 16px;
         }
 
         body.guest-home-layout .entry-send-btn {
-            width: 46px;
-            height: 46px;
-            background: #171717;
-            font-size: 20px;
+            width: 42px;
+            height: 42px;
+            background: #9d9d9d;
+            font-size: 18px;
+        }
+
+        body.guest-home-layout .entry-explore {
+            margin-top: 36px;
         }
 
         body.guest-home-layout .entry-workbench-grid {
@@ -1966,27 +2601,12 @@
         }
 
         @media (max-width: 1100px) {
-            body.guest-home-layout .global-sidebar {
-                width: 280px;
-            }
-
             body.guest-home-layout .app-container {
-                margin-left: 280px;
-                padding: 18px 22px 32px 26px;
+                padding: 20px 20px 32px;
             }
         }
 
         @media (max-width: 860px) {
-            body.guest-home-layout .global-sidebar {
-                position: relative;
-                width: calc(100% - 24px);
-                height: auto;
-                margin: 12px;
-                border: 1px solid #e5ebf4;
-                border-radius: 22px;
-                box-shadow: 0 14px 30px rgba(15, 23, 42, 0.08);
-            }
-
             body.guest-home-layout .app-container {
                 margin-left: 0;
                 padding: 0 14px 28px;
@@ -1994,7 +2614,7 @@
 
             body.guest-home-layout .navbar {
                 min-height: auto;
-                padding: 8px 0 0;
+                padding: 0;
             }
 
             body.guest-home-layout .logo {
@@ -2002,7 +2622,14 @@
             }
 
             body.guest-home-layout .auth-top-slot {
-                right: 0;
+                position: static;
+                top: auto;
+                right: auto;
+                transform: none;
+                width: 100%;
+                justify-content: center;
+                justify-self: center;
+                margin-top: 12px;
             }
 
             body.guest-home-layout .entry-gateway {
@@ -2011,9 +2638,16 @@
         }
 
         @media (max-width: 640px) {
+            .global-sidebar-toggle {
+                left: 12px;
+                top: 12px;
+                width: 50px;
+                height: 50px;
+                border-radius: 16px;
+            }
+
             body.guest-home-layout .navbar {
-                flex-direction: column;
-                align-items: center;
+                grid-template-columns: 1fr;
                 gap: 12px;
                 padding-top: 10px;
             }
@@ -2025,10 +2659,20 @@
                 justify-content: center;
             }
 
+            body.guest-home-layout .logo-panel {
+                width: 100%;
+                min-height: 84px;
+                padding: 18px 24px;
+                border-radius: 24px;
+            }
+
             body.guest-home-layout .global-sidebar {
-                width: calc(100% - 16px);
-                margin: 8px;
+                left: 0;
+                top: 0;
+                width: calc(100vw - 12px);
+                height: 100vh;
                 padding: 20px 16px 16px;
+                border-radius: 0 24px 24px 0;
             }
 
             body.guest-home-layout .entry-heading {
@@ -2042,7 +2686,13 @@
     </style>
 </head>
 <body>
-    <button class="global-sidebar-toggle" id="globalSidebarToggle" type="button" aria-label="打开侧栏">☰</button>
+    <button class="global-sidebar-toggle" id="globalSidebarToggle" type="button" aria-label="打开侧栏" aria-expanded="false">
+        <span class="global-sidebar-toggle-icon" aria-hidden="true">
+            <span></span>
+            <span></span>
+            <span></span>
+        </span>
+    </button>
     <div class="global-sidebar-backdrop" id="globalSidebarBackdrop"></div>
     <aside class="global-sidebar" id="globalSidebar">
         <div class="global-sidebar-scroll">
@@ -2056,7 +2706,7 @@
                     <div class="guest-sidebar-brand-text">坊知工</div>
                 </div>
                 <div class="guest-sidebar-copy">
-                    <h2>欢迎访问坊知工</h2>
+                    <h3>欢迎访问坊知工</h3>
                     <p>为您量身定制的个性化学习平台。</p>
                     <p>坊知工将学习材料转化为简明的笔记、互动讲解和个性化练习。</p>
                     <p>我们正在不断改进平台，欢迎您的反馈。</p>
@@ -2076,10 +2726,14 @@
     <div class="app-container">
         <!-- 顶部导航 -->
         <nav class="navbar">
-            <div class="logo" aria-label="坊知工 智能学习伴侣">
-                <span class="logo-brand">坊知工</span>
-                <span class="logo-separator" aria-hidden="true">•</span>
-                <span class="logo-tagline">智能学习伴侣</span>
+            <div class="navbar-brand-shell">
+                <div class="logo-panel">
+                    <div class="logo" aria-label="坊知工 智能学习伴侣">
+                        <span class="logo-brand">坊知工</span>
+                        <span class="logo-separator" aria-hidden="true">•</span>
+                        <span class="logo-tagline">智能学习伴侣</span>
+                    </div>
+                </div>
             </div>
             <div id="authTopSlot" class="auth-top-slot"></div>
         </nav>
@@ -2146,20 +2800,87 @@
                 </div>
             </div>
 
+            <section class="entry-explore" aria-labelledby="entryExploreTitle">
+                <div class="entry-explore-head">
+                    <div class="entry-explore-title" id="entryExploreTitle">探索</div>
+                    <button id="entryExploreRefreshBtn" class="entry-explore-refresh" type="button" aria-label="刷新探索内容">&#8635;</button>
+                </div>
+                <div class="entry-explore-grid" id="recommendation-list">
+                    <div class="entry-explore-empty">正在为你准备探索内容...</div>
+                </div>
+            </section>
+
             <div class="entry-workbench-grid">
                 <div class="entry-spaces" id="entrySpacesSection">
                     <div class="entry-spaces-head">
-                        <div>
-                            <div class="entry-spaces-title">空间</div>
-                            <div class="entry-spaces-subtitle">上传时可选择已有空间，也可以直接新建空间</div>
+                        <div class="entry-spaces-heading">
+                            <div class="entry-spaces-title-row">
+                                <div class="entry-spaces-title">空间</div>
+                                <div class="entry-spaces-toolbar">
+                                    <div class="entry-space-sort-wrap" id="entrySpaceSortWrap">
+                                        <button
+                                            id="entrySpaceSortTrigger"
+                                            class="entry-space-sort-trigger"
+                                            type="button"
+                                            aria-haspopup="menu"
+                                            aria-expanded="false"
+                                            aria-controls="entrySpaceSortMenu"
+                                        >
+                                            <span class="entry-space-sort-current-icon" id="entrySpaceSortCurrentIcon" aria-hidden="true"></span>
+                                            <span class="entry-space-sort-current-label" id="entrySpaceSortCurrentLabel">最新的</span>
+                                            <span class="entry-space-sort-caret" aria-hidden="true">
+                                                <svg viewBox="0 0 16 16" fill="none">
+                                                    <path d="M4 6.5L8 10L12 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
+                                                </svg>
+                                            </span>
+                                        </button>
+                                        <div class="entry-space-sort-menu" id="entrySpaceSortMenu" role="menu" aria-label="空间排序">
+                                            <button type="button" class="entry-space-sort-option" data-space-sort-option="latest" role="menuitemradio" aria-checked="true">
+                                                <span class="entry-space-sort-option-check" aria-hidden="true">&#10003;</span>
+                                                <span class="entry-space-sort-option-icon" aria-hidden="true">
+                                                    <svg viewBox="0 0 20 20" fill="none">
+                                                        <circle cx="10" cy="10" r="6.75" stroke="currentColor" stroke-width="1.6"></circle>
+                                                        <path d="M10 6.7V10.2L12.45 11.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
+                                                    </svg>
+                                                </span>
+                                                <span class="entry-space-sort-option-label">最新的</span>
+                                            </button>
+                                            <button type="button" class="entry-space-sort-option" data-space-sort-option="oldest" role="menuitemradio" aria-checked="false">
+                                                <span class="entry-space-sort-option-check" aria-hidden="true">&#10003;</span>
+                                                <span class="entry-space-sort-option-icon" aria-hidden="true">
+                                                    <svg viewBox="0 0 20 20" fill="none">
+                                                        <rect x="3.25" y="4.25" width="13.5" height="12.5" rx="2.25" stroke="currentColor" stroke-width="1.6"></rect>
+                                                        <path d="M6.5 2.75V5.75M13.5 2.75V5.75M3.25 8.25H16.75" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+                                                    </svg>
+                                                </span>
+                                                <span class="entry-space-sort-option-label">最旧的</span>
+                                            </button>
+                                            <button type="button" class="entry-space-sort-option" data-space-sort-option="name-asc" role="menuitemradio" aria-checked="false">
+                                                <span class="entry-space-sort-option-check" aria-hidden="true">&#10003;</span>
+                                                <span class="entry-space-sort-option-icon" aria-hidden="true">
+                                                    <svg viewBox="0 0 20 20" fill="none">
+                                                        <path d="M4 15.5V4.5M4 15.5L1.75 13.25M4 15.5L6.25 13.25M10 5H17M10 9H15M10 13H13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>
+                                                    </svg>
+                                                </span>
+                                                <span class="entry-space-sort-option-label">名称 A-Z</span>
+                                            </button>
+                                            <button type="button" class="entry-space-sort-option" data-space-sort-option="name-desc" role="menuitemradio" aria-checked="false">
+                                                <span class="entry-space-sort-option-check" aria-hidden="true">&#10003;</span>
+                                                <span class="entry-space-sort-option-icon" aria-hidden="true">
+                                                    <svg viewBox="0 0 20 20" fill="none">
+                                                        <path d="M4 4.5V15.5M4 4.5L1.75 6.75M4 4.5L6.25 6.75M10 5H17M10 9H15M10 13H13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>
+                                                    </svg>
+                                                </span>
+                                                <span class="entry-space-sort-option-label">名称 Z-A</span>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="entry-spaces-subtitle">点击卡片进入空间，悬浮后可编辑或删除</div>
                         </div>
-                        <button type="button" class="entry-space-add-btn" id="entryAddSpaceBtn">+ 新空间</button>
                     </div>
                     <div class="entry-space-grid" id="entrySpaceGrid"></div>
-                    <div class="entry-space-files">
-                        <div class="entry-space-files-title" id="entrySpaceFilesTitle">当前空间文件</div>
-                        <div class="entry-space-file-list" id="entrySpaceFileList"></div>
-                    </div>
                 </div>
 
                 <div class="entry-plan-board" id="entryPlanBoard">
@@ -2393,11 +3114,11 @@
     </div>
 
     <script src="assets/js/shared/user-context.js?v=20260330-authfix"></script>
-    <script src="assets/js/shared/api-utils.js?v=20260330-authfix"></script>
+    <script src="assets/js/shared/api-utils.js?v=20260403-spaceeditfix"></script>
     <script src="assets/js/shared/project-local-data.js?v=20260330-authfix"></script>
-    <script src="assets/js/shared/space-cloud-store.js?v=20260330-spacecloud"></script>
+    <script src="assets/js/shared/space-cloud-store.js?v=20260403-sidebarspaces"></script>
     <script src="assets/js/shared/auth-ui.js?v=20260330-authfix"></script>
-    <script src="assets/js/shared/page-shell.js?v=20260331-telemetryfix"></script>
+    <script src="assets/js/shared/page-shell.js?v=20260403-space-root-nav"></script>
     <script>
         const API_BASE = window.ApiUtils.getApiBase();
         const MAX_CHAT_SESSIONS = 20;
@@ -2419,11 +3140,24 @@
         let entryRecordedAudioUrl = '';
         let entrySpaces = [];
         let activeEntrySpaceId = null;
+        let activeEntrySpaceMenuId = null;
+        let isEntrySpaceSortMenuOpen = false;
+        let entrySpaceSortMode = 'latest';
+        let editingEntrySpaceId = null;
+        let editingEntrySpaceDraft = '';
+        let pendingEntrySpaceRenameId = null;
         let activeSpaceItemRef = null;
         let aiContextItems = [];
         let aiPendingExternalFiles = [];
         const ENTRY_ACTION_CREATE_SPACE_VALUE = '__create_new_space__';
+        const ENTRY_SPACE_SYNC_KEY = 'fangzhigong_space_sync';
         const TEXT_FILE_EXTENSIONS = ['.txt', '.md', '.markdown', '.json', '.csv', '.tsv', '.js', '.ts', '.py', '.java', '.c', '.cpp', '.html', '.htm', '.css', '.xml'];
+        const ENTRY_SPACE_SORT_OPTIONS = [
+            { value: 'latest', label: '最新的', icon: 'latest' },
+            { value: 'oldest', label: '最旧的', icon: 'oldest' },
+            { value: 'name-asc', label: '名称 A-Z', icon: 'name-asc' },
+            { value: 'name-desc', label: '名称 Z-A', icon: 'name-desc' }
+        ];
 
         function nowLabel(date) {
             const d = date instanceof Date ? date : new Date(date || Date.now());
@@ -2746,6 +3480,70 @@
             return normalized || (fallbackName || '新空间');
         }
 
+        function getEntrySpaceSortOptionConfig(value) {
+            return ENTRY_SPACE_SORT_OPTIONS.find(option => option.value === value) || ENTRY_SPACE_SORT_OPTIONS[0];
+        }
+
+        function getEntrySpaceSortIconHtml(icon) {
+            if (icon === 'oldest') {
+                return `
+                    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                        <rect x="3.25" y="4.25" width="13.5" height="12.5" rx="2.25" stroke="currentColor" stroke-width="1.6"></rect>
+                        <path d="M6.5 2.75V5.75M13.5 2.75V5.75M3.25 8.25H16.75" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"></path>
+                    </svg>
+                `;
+            }
+            if (icon === 'name-asc') {
+                return `
+                    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                        <path d="M4 15.5V4.5M4 15.5L1.75 13.25M4 15.5L6.25 13.25M10 5H17M10 9H15M10 13H13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>
+                    </svg>
+                `;
+            }
+            if (icon === 'name-desc') {
+                return `
+                    <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                        <path d="M4 4.5V15.5M4 4.5L1.75 6.75M4 4.5L6.25 6.75M10 5H17M10 9H15M10 13H13" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"></path>
+                    </svg>
+                `;
+            }
+            return `
+                <svg viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <circle cx="10" cy="10" r="6.75" stroke="currentColor" stroke-width="1.6"></circle>
+                    <path d="M10 6.7V10.2L12.45 11.9" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
+                </svg>
+            `;
+        }
+
+        function renderEntrySpaceSortControl() {
+            const wrap = document.getElementById('entrySpaceSortWrap');
+            const trigger = document.getElementById('entrySpaceSortTrigger');
+            const currentIcon = document.getElementById('entrySpaceSortCurrentIcon');
+            const currentLabel = document.getElementById('entrySpaceSortCurrentLabel');
+            const menu = document.getElementById('entrySpaceSortMenu');
+            const currentOption = getEntrySpaceSortOptionConfig(entrySpaceSortMode);
+
+            if (wrap) {
+                wrap.classList.toggle('is-open', isEntrySpaceSortMenuOpen);
+            }
+            if (trigger) {
+                trigger.setAttribute('aria-expanded', isEntrySpaceSortMenuOpen ? 'true' : 'false');
+            }
+            if (currentIcon) {
+                currentIcon.innerHTML = getEntrySpaceSortIconHtml(currentOption.icon);
+            }
+            if (currentLabel) {
+                currentLabel.textContent = currentOption.label;
+            }
+            if (!menu) return;
+
+            menu.querySelectorAll('[data-space-sort-option]').forEach(btn => {
+                const isSelected = btn.getAttribute('data-space-sort-option') === currentOption.value;
+                btn.classList.toggle('is-selected', isSelected);
+                btn.setAttribute('aria-checked', isSelected ? 'true' : 'false');
+            });
+        }
+
         function isTextLikeUpload(mime, lowerName) {
             if (String(mime || '').startsWith('text/')) return true;
             return TEXT_FILE_EXTENSIONS.some(ext => String(lowerName || '').endsWith(ext));
@@ -2819,11 +3617,59 @@
             return `新空间 ${count}`;
         }
 
+        function closeEntrySpaceMenu(shouldRender) {
+            if (!activeEntrySpaceMenuId) return;
+            activeEntrySpaceMenuId = null;
+            if (shouldRender) {
+                renderEntrySpacesSection();
+            }
+        }
+
+        function closeEntrySpaceSortMenu() {
+            if (!isEntrySpaceSortMenuOpen) return;
+            isEntrySpaceSortMenuOpen = false;
+            renderEntrySpaceSortControl();
+        }
+
+        function getSortedEntrySpaces() {
+            const sortedSpaces = [...entrySpaces];
+            if (entrySpaceSortMode === 'oldest') {
+                sortedSpaces.sort((a, b) => Number(a.createdAt || 0) - Number(b.createdAt || 0));
+                return sortedSpaces;
+            }
+            if (entrySpaceSortMode === 'name-asc') {
+                sortedSpaces.sort((a, b) => String(a.name || '').localeCompare(String(b.name || ''), 'zh-CN'));
+                return sortedSpaces;
+            }
+            if (entrySpaceSortMode === 'name-desc') {
+                sortedSpaces.sort((a, b) => String(b.name || '').localeCompare(String(a.name || ''), 'zh-CN'));
+                return sortedSpaces;
+            }
+            sortedSpaces.sort((a, b) => {
+                const left = Number(a.updatedAt || a.createdAt || 0);
+                const right = Number(b.updatedAt || b.createdAt || 0);
+                return right - left;
+            });
+            return sortedSpaces;
+        }
+
+        function getEntrySpaceCardIconHtml() {
+            return `
+                <span class="entry-space-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" fill="none">
+                        <path d="M12 3.5 19 7.75v8.5L12 20.5 5 16.25v-8.5L12 3.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"></path>
+                        <path d="M5 7.75 12 12l7-4.25M12 12v8.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"></path>
+                    </svg>
+                </span>
+            `;
+        }
+
         async function loadEntrySpacesFromCloud() {
             const api = getSpaceApi();
             if (!api || typeof api.listSpaces !== 'function') {
                 entrySpaces = [];
                 activeEntrySpaceId = null;
+                activeEntrySpaceMenuId = null;
                 return;
             }
             try {
@@ -2833,11 +3679,23 @@
                     activeEntrySpaceId = data.activeEntrySpaceId;
                 }
                 ensureEntrySpacesState();
+                activeEntrySpaceMenuId = null;
             } catch (error) {
                 console.warn('读取云端空间失败:', error);
                 entrySpaces = [];
                 activeEntrySpaceId = null;
+                activeEntrySpaceMenuId = null;
             }
+        }
+
+        async function refreshEntrySpacesUI() {
+            await loadEntrySpacesFromCloud();
+            ensureEntrySpacesState();
+            renderEntrySpaceSortControl();
+            renderEntrySpacesSection();
+            renderAiSpaceItemOptions();
+            renderAiContextList();
+            renderEntryActionSpaceOptions(activeEntrySpaceId);
         }
 
         function renderEntryActionSpaceOptions(selectedSpaceId) {
@@ -2874,11 +3732,33 @@
             activeEntrySpaceId = space.id;
             renderEntrySpacesSection();
             renderAiSpaceItemOptions();
+            renderEntryActionSpaceOptions(activeEntrySpaceId);
+            return space;
+        }
+
+        async function updateEntrySpaceAndPersist(spaceId, payload) {
+            const api = getSpaceApi();
+            if (!api || typeof api.updateSpace !== 'function') {
+                throw new Error('空间服务未初始化');
+            }
+
+            const updated = await api.updateSpace(getUserId(), spaceId, payload || {});
+            const space = updated && updated.space ? updated.space : null;
+            if (!space) {
+                throw new Error('空间更新失败');
+            }
+
+            replaceEntrySpace(space);
+            renderEntrySpacesSection();
+            renderAiSpaceItemOptions();
+            renderEntryActionSpaceOptions(activeEntrySpaceId);
             return space;
         }
 
         async function addEntrySpace() {
             try {
+                activeEntrySpaceMenuId = null;
+                closeEntrySpaceSortMenu();
                 await createEntrySpaceAndPersist(buildNextEntrySpaceName());
             } catch (error) {
                 alert((window.SpaceCloudStore && window.SpaceCloudStore.withSuggestion)
@@ -2887,11 +3767,110 @@
             }
         }
 
+        function focusEntrySpaceRenameInput() {
+            const input = document.getElementById('entrySpaceRenameInput');
+            if (!input) return;
+            input.focus();
+            input.select();
+        }
+
+        function startRenameEntrySpace(spaceId) {
+            const space = getEntrySpaceById(spaceId);
+            if (!space) return;
+
+            activeEntrySpaceMenuId = null;
+            closeEntrySpaceSortMenu();
+            editingEntrySpaceId = spaceId;
+            editingEntrySpaceDraft = String(space.name || '新空间');
+            pendingEntrySpaceRenameId = null;
+            renderEntrySpacesSection();
+            window.requestAnimationFrame(focusEntrySpaceRenameInput);
+        }
+
+        function cancelEntrySpaceRename() {
+            if (!editingEntrySpaceId) return;
+            editingEntrySpaceId = null;
+            editingEntrySpaceDraft = '';
+            pendingEntrySpaceRenameId = null;
+            renderEntrySpacesSection();
+        }
+
+        async function submitEntrySpaceRename(spaceId, nextName) {
+            const space = getEntrySpaceById(spaceId);
+            if (!space) {
+                cancelEntrySpaceRename();
+                return;
+            }
+
+            if (pendingEntrySpaceRenameId) return;
+
+            const normalizedName = normalizeEntrySpaceName(nextName, space.name || '新空间');
+            if (normalizedName === normalizeEntrySpaceName(space.name, '新空间')) {
+                cancelEntrySpaceRename();
+                return;
+            }
+
+            editingEntrySpaceDraft = normalizedName;
+            pendingEntrySpaceRenameId = spaceId;
+            renderEntrySpacesSection();
+
+            try {
+                await updateEntrySpaceAndPersist(spaceId, { name: normalizedName });
+                editingEntrySpaceId = null;
+                editingEntrySpaceDraft = '';
+                pendingEntrySpaceRenameId = null;
+                renderEntrySpacesSection();
+            } catch (error) {
+                pendingEntrySpaceRenameId = null;
+                renderEntrySpacesSection();
+                window.requestAnimationFrame(focusEntrySpaceRenameInput);
+                alert((window.SpaceCloudStore && window.SpaceCloudStore.withSuggestion)
+                    ? window.SpaceCloudStore.withSuggestion('空间重命名失败', error, '请稍后重试')
+                    : '空间重命名失败，请稍后重试。');
+            }
+        }
+
+        async function deleteEntrySpaceAndPersist(spaceId) {
+            const api = getSpaceApi();
+            const space = getEntrySpaceById(spaceId);
+            if (!api || typeof api.deleteSpace !== 'function' || !space) return;
+
+            const confirmed = window.confirm(`确认删除空间「${space.name || '新空间'}」吗？删除后其中的云端内容也会一起移除。`);
+            if (!confirmed) {
+                closeEntrySpaceMenu(true);
+                return;
+            }
+
+            try {
+                await api.deleteSpace(getUserId(), space.id);
+                entrySpaces = entrySpaces.filter(item => item.id !== space.id);
+                if (activeEntrySpaceId === space.id) {
+                    activeEntrySpaceId = null;
+                }
+                if (activeSpaceItemRef && activeSpaceItemRef.spaceId === space.id) {
+                    closeSpaceItemModal();
+                }
+                aiContextItems = aiContextItems.filter(item => !String(item.id || '').startsWith(`ai_space_${space.id}_`));
+                activeEntrySpaceMenuId = null;
+                ensureEntrySpacesState();
+                renderEntrySpacesSection();
+                renderAiSpaceItemOptions();
+                renderAiContextList();
+                renderEntryActionSpaceOptions(activeEntrySpaceId);
+            } catch (error) {
+                alert((window.SpaceCloudStore && window.SpaceCloudStore.withSuggestion)
+                    ? window.SpaceCloudStore.withSuggestion('删除空间失败', error, '请稍后重试')
+                    : '删除空间失败，请稍后重试。');
+            }
+        }
+
         function setActiveEntrySpace(spaceId) {
             if (!spaceId || !entrySpaces.find(space => space.id === spaceId)) return;
+            activeEntrySpaceMenuId = null;
             activeEntrySpaceId = spaceId;
             renderEntrySpacesSection();
             renderAiSpaceItemOptions();
+            renderEntryActionSpaceOptions(activeEntrySpaceId);
         }
 
         function openSpacePage(spaceId) {
@@ -3183,6 +4162,7 @@
                 activeEntrySpaceId = space.id;
                 renderEntrySpacesSection();
                 renderAiSpaceItemOptions();
+                renderEntryActionSpaceOptions(activeEntrySpaceId);
                 return { ok: true, space, count: Array.isArray(saved.items) ? saved.items.length : 0 };
             } catch (error) {
                 return {
@@ -3196,74 +4176,165 @@
 
         function renderEntrySpacesSection() {
             const grid = document.getElementById('entrySpaceGrid');
-            const fileList = document.getElementById('entrySpaceFileList');
-            const fileTitle = document.getElementById('entrySpaceFilesTitle');
-            if (!grid || !fileList || !fileTitle) return;
+            if (!grid) return;
 
             ensureEntrySpacesState();
+            const createCardHtml = `
+                <button type="button" class="entry-space-create-card" data-space-create="1">
+                    <span class="entry-space-create-plus">+</span>
+                    <span class="entry-space-create-text">新空间</span>
+                </button>
+            `;
 
             if (!entrySpaces.length) {
-                grid.innerHTML = '<div class="entry-space-card"><div class="entry-space-name">暂无空间</div><div class="entry-space-meta">点击右上角新建空间，或在上传时直接创建</div></div>';
-                fileTitle.textContent = '当前空间 · 文件';
-                fileList.innerHTML = '<div class="entry-space-file-item"><div class="entry-space-file-name">暂无文件</div><div class="entry-space-file-meta">文件会保存在云端，并与当前账号绑定</div></div>';
-                return;
+                grid.innerHTML = `${createCardHtml}<div class="entry-space-empty">还没有空间，点击上方卡片就能新建一个。</div>`;
+            } else {
+                grid.innerHTML = createCardHtml + getSortedEntrySpaces().map(space => {
+                    const itemCount = Array.isArray(space.items) ? space.items.length : (Number(space.itemCount) || 0);
+                    const metaText = (space.description && String(space.description).trim())
+                        ? `${String(space.description).trim()} · ${itemCount} 内容`
+                        : `${itemCount} 内容`;
+                    const activeClass = space.id === activeEntrySpaceId ? 'is-active' : '';
+                    const menuOpenClass = space.id === activeEntrySpaceMenuId ? 'is-menu-open' : '';
+                    const editingClass = space.id === editingEntrySpaceId ? 'is-editing' : '';
+                    const isEditing = space.id === editingEntrySpaceId;
+                    const isSavingRename = space.id === pendingEntrySpaceRenameId;
+                    const cardMainTag = isEditing ? 'div' : 'button';
+                    const cardMainAttrs = isEditing
+                        ? 'class="entry-space-card-main is-editing"'
+                        : `type="button" class="entry-space-card-main" data-space-open="${escapeHtml(space.id)}"`;
+                    const copyClass = isEditing ? 'entry-space-copy is-editing' : 'entry-space-copy';
+                    const metaClass = isEditing ? 'entry-space-meta is-editing' : 'entry-space-meta';
+                    return `
+                        <div class="entry-space-card ${activeClass} ${menuOpenClass} ${editingClass}" data-space-card="${escapeHtml(space.id)}">
+                            <${cardMainTag} ${cardMainAttrs}>
+                                <div class="entry-space-cover"></div>
+                                <div class="entry-space-body">
+                                    ${getEntrySpaceCardIconHtml()}
+                                    <div class="${copyClass}">
+                                        ${isEditing ? `
+                                            <input
+                                                id="entrySpaceRenameInput"
+                                                class="entry-space-inline-input"
+                                                type="text"
+                                                data-space-rename-input="${escapeHtml(space.id)}"
+                                                value="${escapeHtml(editingEntrySpaceDraft)}"
+                                                maxlength="40"
+                                                spellcheck="false"
+                                                ${isSavingRename ? 'disabled' : ''}
+                                            >
+                                        ` : `<div class="entry-space-name">${escapeHtml(space.name || '新空间')}</div>`}
+                                        <div class="${metaClass}">
+                                            <span>${escapeHtml(metaText)}</span>
+                                            ${isEditing ? `<span class="entry-space-edit-hint">${isSavingRename ? '保存中...' : '按 Enter 保存，Esc 取消'}</span>` : ''}
+                                        </div>
+                                    </div>
+                                </div>
+                            </${cardMainTag}>
+                            ${isEditing ? '' : `
+                                <button
+                                    type="button"
+                                    class="entry-space-menu-trigger"
+                                    data-space-menu-toggle="${escapeHtml(space.id)}"
+                                    aria-label="空间操作"
+                                    aria-haspopup="menu"
+                                    aria-expanded="${space.id === activeEntrySpaceMenuId ? 'true' : 'false'}"
+                                >
+                                    <span>⋮</span>
+                                </button>
+                                <div class="entry-space-menu" data-space-menu="${escapeHtml(space.id)}" role="menu">
+                                    <button type="button" class="entry-space-menu-item" data-space-action="rename" data-space-id="${escapeHtml(space.id)}">编辑</button>
+                                    <button type="button" class="entry-space-menu-item danger" data-space-action="delete" data-space-id="${escapeHtml(space.id)}">删除</button>
+                                </div>
+                            `}
+                        </div>
+                    `;
+                }).join('');
             }
 
-            const sortedSpaces = [...entrySpaces].sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
-            grid.innerHTML = sortedSpaces.map(space => {
-                const itemCount = Array.isArray(space.items) ? space.items.length : (Number(space.itemCount) || 0);
-                const activeClass = space.id === activeEntrySpaceId ? 'active' : '';
-                return `<button type="button" class="entry-space-card ${activeClass}" data-space-id="${escapeHtml(space.id)}"><div class="entry-space-name">${escapeHtml(space.name || '新空间')}</div><div class="entry-space-meta">${itemCount} 内容</div></button>`;
-            }).join('');
-
-            grid.querySelectorAll('[data-space-id]').forEach(btn => {
+            grid.querySelectorAll('[data-space-create]').forEach(btn => {
                 btn.addEventListener('click', function () {
-                    openSpacePage(this.getAttribute('data-space-id'));
+                    addEntrySpace();
                 });
             });
 
-            const activeSpace = getActiveEntrySpace();
-            const activeItems = activeSpace && Array.isArray(activeSpace.items) ? activeSpace.items : [];
-            fileTitle.textContent = `${activeSpace ? activeSpace.name : '当前空间'} · 文件`;
-
-            if (!activeItems.length) {
-                fileList.innerHTML = '<div class="entry-space-file-item"><div class="entry-space-file-name">暂无文件</div><div class="entry-space-file-meta">上传文件后会直接同步到云端空间</div></div>';
-                return;
-            }
-
-            fileList.innerHTML = activeItems.slice(0, 12).map(item => {
-                const sizeKb = Math.max(1, Math.round((Number(item.size) || 0) / 1024));
-                const timeLabel = nowLabel(item.addedAt);
-                const typeLabel = String(item.kind || 'document');
-                const snippet = getEntrySpaceItemSnippet(item);
-                return `<button type="button" class="entry-space-file-item clickable" data-space-item-id="${escapeHtml(item.id)}"><div class="entry-space-file-name">${escapeHtml(item.name || '未命名文件')}</div><div class="entry-space-file-meta">${escapeHtml(typeLabel)} · ${sizeKb} KB · ${timeLabel}</div><div class="entry-space-file-meta">${escapeHtml(snippet)}</div></button>`;
-            }).join('');
-
-            fileList.querySelectorAll('[data-space-item-id]').forEach(btn => {
+            grid.querySelectorAll('[data-space-open]').forEach(btn => {
                 btn.addEventListener('click', function () {
-                    openSpaceItemModalById(this.getAttribute('data-space-item-id'));
+                    openSpacePage(this.getAttribute('data-space-open'));
+                });
+            });
+
+            grid.querySelectorAll('[data-space-menu-toggle]').forEach(btn => {
+                btn.addEventListener('click', function (event) {
+                    event.stopPropagation();
+                    const spaceId = this.getAttribute('data-space-menu-toggle');
+                    activeEntrySpaceMenuId = activeEntrySpaceMenuId === spaceId ? null : spaceId;
+                    renderEntrySpacesSection();
+                });
+            });
+
+            grid.querySelectorAll('[data-space-action]').forEach(btn => {
+                btn.addEventListener('click', function (event) {
+                    event.stopPropagation();
+                    const spaceId = this.getAttribute('data-space-id');
+                    const action = this.getAttribute('data-space-action');
+                    if (action === 'rename') {
+                        startRenameEntrySpace(spaceId);
+                    } else if (action === 'delete') {
+                        deleteEntrySpaceAndPersist(spaceId);
+                    }
+                });
+            });
+
+            grid.querySelectorAll('[data-space-rename-input]').forEach(input => {
+                input.addEventListener('input', function () {
+                    editingEntrySpaceDraft = this.value;
+                });
+                input.addEventListener('keydown', function (event) {
+                    if (event.key === 'Enter') {
+                        event.preventDefault();
+                        submitEntrySpaceRename(this.getAttribute('data-space-rename-input'), this.value);
+                    } else if (event.key === 'Escape') {
+                        event.preventDefault();
+                        cancelEntrySpaceRename();
+                    }
+                });
+                input.addEventListener('blur', function () {
+                    submitEntrySpaceRename(this.getAttribute('data-space-rename-input'), this.value);
                 });
             });
         }
 
         async function initEntrySpacesUI() {
-            const addBtn = document.getElementById('entryAddSpaceBtn');
             const section = document.getElementById('entrySpacesSection');
+            const sortTrigger = document.getElementById('entrySpaceSortTrigger');
+            const sortMenu = document.getElementById('entrySpaceSortMenu');
             const { select } = getEntryActionSpaceInputState();
-            if (!section || !addBtn) return;
+            if (!section) return;
 
-            await loadEntrySpacesFromCloud();
-            ensureEntrySpacesState();
-            renderEntrySpacesSection();
-            renderAiSpaceItemOptions();
-            renderAiContextList();
-            renderEntryActionSpaceOptions(activeEntrySpaceId);
+            await refreshEntrySpacesUI();
 
-            if (!addBtn.dataset.bound) {
-                addBtn.addEventListener('click', function () {
-                    addEntrySpace();
+            if (sortTrigger && !sortTrigger.dataset.bound) {
+                sortTrigger.addEventListener('click', function (event) {
+                    event.stopPropagation();
+                    isEntrySpaceSortMenuOpen = !isEntrySpaceSortMenuOpen;
+                    renderEntrySpaceSortControl();
                 });
-                addBtn.dataset.bound = '1';
+                sortTrigger.dataset.bound = '1';
+            }
+
+            if (sortMenu && !sortMenu.dataset.bound) {
+                sortMenu.querySelectorAll('[data-space-sort-option]').forEach(btn => {
+                    btn.addEventListener('click', function (event) {
+                        event.stopPropagation();
+                        entrySpaceSortMode = String(this.getAttribute('data-space-sort-option') || 'latest');
+                        isEntrySpaceSortMenuOpen = false;
+                        activeEntrySpaceMenuId = null;
+                        renderEntrySpaceSortControl();
+                        renderEntrySpacesSection();
+                    });
+                });
+                sortMenu.dataset.bound = '1';
             }
 
             if (select && !select.dataset.bound) {
@@ -3271,6 +4342,42 @@
                     toggleEntryActionNewSpaceInput(this.value === ENTRY_ACTION_CREATE_SPACE_VALUE);
                 });
                 select.dataset.bound = '1';
+            }
+
+            if (!section.dataset.menuBound) {
+                document.addEventListener('click', function (event) {
+                    if (isEntrySpaceSortMenuOpen && !event.target.closest('#entrySpaceSortWrap')) {
+                        closeEntrySpaceSortMenu();
+                    }
+                    if (!activeEntrySpaceMenuId) return;
+                    if (event.target.closest('#entrySpaceGrid')) return;
+                    closeEntrySpaceMenu(true);
+                });
+                document.addEventListener('keydown', function (event) {
+                    if (event.key === 'Escape' && isEntrySpaceSortMenuOpen) {
+                        closeEntrySpaceSortMenu();
+                    }
+                    if (event.key === 'Escape' && editingEntrySpaceId) {
+                        cancelEntrySpaceRename();
+                    }
+                    if (event.key === 'Escape' && activeEntrySpaceMenuId) {
+                        closeEntrySpaceMenu(true);
+                    }
+                });
+                window.addEventListener('storage', function (event) {
+                    if (event.key === ENTRY_SPACE_SYNC_KEY) {
+                        refreshEntrySpacesUI().catch(function () {});
+                    }
+                });
+                window.addEventListener('focus', function () {
+                    refreshEntrySpacesUI().catch(function () {});
+                });
+                document.addEventListener('visibilitychange', function () {
+                    if (!document.hidden) {
+                        refreshEntrySpacesUI().catch(function () {});
+                    }
+                });
+                section.dataset.menuBound = '1';
             }
         }
 
@@ -3692,6 +4799,7 @@
             const entryLinkTool = document.getElementById('entryToolLink');
             const entryPasteTool = document.getElementById('entryToolPaste');
             const entryRecordTool = document.getElementById('entryToolRecord');
+            const entryExploreRefreshBtn = document.getElementById('entryExploreRefreshBtn');
 
             if (!entryInput || !entrySendBtn) {
                 document.body.classList.add('chat-open');
@@ -3774,6 +4882,13 @@
             if (entryRecordTool) {
                 entryRecordTool.addEventListener('click', function () {
                     openEntryActionModal('record');
+                });
+            }
+
+            if (entryExploreRefreshBtn && !entryExploreRefreshBtn.dataset.bound) {
+                entryExploreRefreshBtn.dataset.bound = 'true';
+                entryExploreRefreshBtn.addEventListener('click', function () {
+                    loadRecommendations();
                 });
             }
 
@@ -4300,17 +5415,370 @@
             }
         }
 
+        const DEFAULT_EXPLORE_ITEMS = [
+            {
+                concept: '纤维材料基础',
+                title: '纤维材料基础',
+                reason: '先建立纤维分类、性能与典型应用的整体认知',
+                resource_type: '基础导读',
+                recommend_time: '约 18 分钟',
+                strategy_tags: ['style:visual']
+            },
+            {
+                concept: '织物组织与结构',
+                title: '织物组织与结构',
+                reason: '从平纹、斜纹到缎纹，快速建立织物组织图谱',
+                resource_type: '图解卡片',
+                recommend_time: '约 15 分钟',
+                strategy_tags: ['style:visual']
+            },
+            {
+                concept: '染整工艺路线图',
+                title: '染整工艺路线图',
+                reason: '把前处理、染色、整理的关键步骤串成完整流程',
+                resource_type: '流程速览',
+                recommend_time: '约 22 分钟',
+                strategy_tags: ['style:auditory']
+            },
+            {
+                concept: '纺纱流程总览',
+                title: '纺纱流程总览',
+                reason: '按清花、梳棉、并条、粗纱、细纱建立工序认知',
+                resource_type: '工艺全景',
+                recommend_time: '约 20 分钟',
+                strategy_tags: ['style:kinesthetic']
+            },
+            {
+                concept: '纺织测试与质量控制',
+                title: '纺织测试与质量控制',
+                reason: '了解强力、色牢度和尺寸稳定性的核心检测指标',
+                resource_type: '案例拆解',
+                recommend_time: '约 16 分钟',
+                strategy_tags: ['style:visual']
+            },
+            {
+                concept: '经编与纬编入门',
+                title: '经编与纬编入门',
+                reason: '用结构对比的方式快速分清针织的两大主线',
+                resource_type: '结构对照',
+                recommend_time: '约 14 分钟',
+                strategy_tags: ['style:visual']
+            },
+            {
+                concept: 'AI 在纺织中的应用',
+                title: 'AI 在纺织中的应用',
+                reason: '从缺陷检测到智能排产，梳理 AI 的实际落地方向',
+                resource_type: '拓展专题',
+                recommend_time: '约 24 分钟',
+                strategy_tags: ['style:auditory']
+            },
+            {
+                concept: '功能性面料设计',
+                title: '功能性面料设计',
+                reason: '把防水、透湿、抗菌等功能整理路线串起来看',
+                resource_type: '专题精选',
+                recommend_time: '约 19 分钟',
+                strategy_tags: ['style:kinesthetic']
+            }
+        ];
+
+        const LOGIN_EXPLORE_IMAGE_POOL = [
+            'assets/images/explore/login-explore-01.png',
+            'assets/images/explore/login-explore-02.png',
+            'assets/images/explore/login-explore-03.png',
+            'assets/images/explore/login-explore-04.png',
+            'assets/images/explore/login-explore-05.png',
+            'assets/images/explore/login-explore-06.png',
+            'assets/images/explore/login-explore-07.png',
+            'assets/images/explore/login-explore-08.png'
+        ];
+
+        const NEURAL_NETWORK_EXPLORE_URL = 'https://www.bilibili.com/video/BV1atCRYsE7x/?spm_id_from=333.337.search-card.all.click';
+
+        function normalizeExploreTopicKey(value) {
+            return String(value || '')
+                .trim()
+                .replace(/\s+/g, '')
+                .replace(/[·•,，。:：;；!！?？'"“”‘’()（）\-_/]/g, '')
+                .toLowerCase();
+        }
+
+        const EXPLORE_ITEM_PRESETS = [
+            {
+                keys: ['纤维材料基础'],
+                cover: 'assets/images/explore/fiber-materials.png'
+            },
+            {
+                keys: ['织物组织与结构', '组织物与结构'],
+                cover: 'assets/images/explore/fabric-structure.png',
+                external_url: 'https://www.bilibili.com/video/BV1wR4y1A7Q1/?vd_source=6b840171326f6ef9ba47a1a2da6c442b'
+            },
+            {
+                keys: ['染整工艺路线图'],
+                cover: 'assets/images/explore/dyeing-finishing-process.png'
+            },
+            {
+                keys: ['纺纱流程总览'],
+                cover: 'assets/images/explore/spinning-process.png'
+            },
+            {
+                keys: ['纺织测试与质量控制'],
+                cover: 'assets/images/explore/textile-testing-quality-control.png'
+            },
+            {
+                keys: ['经编与纬编入门'],
+                cover: 'assets/images/explore/warp-knit-weft-knit.png'
+            },
+            {
+                keys: ['AI 在纺织中的应用', 'ai在纺织中的应用'],
+                cover: 'assets/images/explore/ai-in-textiles.png'
+            },
+            {
+                keys: ['功能性面料设计'],
+                cover: 'assets/images/explore/functional-fabric-design.png'
+            }
+        ];
+
+        const EXPLORE_ART_PALETTES = [
+            { start: '#0f172a', end: '#1d4ed8', accent: '#7dd3fc', glow: '#bfdbfe', text: '#ffffff' },
+            { start: '#0b3b66', end: '#0ea5e9', accent: '#c4b5fd', glow: '#67e8f9', text: '#ffffff' },
+            { start: '#122c34', end: '#0f766e', accent: '#86efac', glow: '#99f6e4', text: '#ffffff' },
+            { start: '#4c1d95', end: '#c026d3', accent: '#f0abfc', glow: '#fde68a', text: '#ffffff' },
+            { start: '#4a044e', end: '#be185d', accent: '#fdba74', glow: '#f9a8d4', text: '#ffffff' },
+            { start: '#111827', end: '#374151', accent: '#facc15', glow: '#fda4af', text: '#ffffff' }
+        ];
+
+        function hashSeed(text) {
+            const raw = String(text || '');
+            let hash = 0;
+            for (let i = 0; i < raw.length; i += 1) {
+                hash = ((hash << 5) - hash + raw.charCodeAt(i)) | 0;
+            }
+            return Math.abs(hash);
+        }
+
+        function clampText(text, maxLength) {
+            const raw = String(text || '').trim();
+            if (!raw) return '';
+            if (!Number.isFinite(maxLength) || raw.length <= maxLength) return raw;
+            return `${raw.slice(0, Math.max(0, maxLength - 1))}…`;
+        }
+
+        function splitExploreTitle(text) {
+            const chars = Array.from(clampText(text, 22));
+            if (chars.length <= 10) {
+                return [chars.join('')];
+            }
+            if (chars.length <= 18) {
+                return [chars.slice(0, 9).join(''), chars.slice(9).join('')];
+            }
+            return [chars.slice(0, 10).join(''), chars.slice(10, 20).join('')];
+        }
+
+        function getExplorePalette(item) {
+            const seed = hashSeed(`${item && item.title ? item.title : ''}|${item && item.concept ? item.concept : ''}|${item && item.resource_type ? item.resource_type : ''}`);
+            return EXPLORE_ART_PALETTES[seed % EXPLORE_ART_PALETTES.length];
+        }
+
+        function getExploreItemPreset(item) {
+            const candidates = [
+                item && item.title,
+                item && item.concept
+            ].map(normalizeExploreTopicKey).filter(Boolean);
+
+            if (!candidates.length) return null;
+
+            for (let i = 0; i < EXPLORE_ITEM_PRESETS.length; i += 1) {
+                const preset = EXPLORE_ITEM_PRESETS[i];
+                const keys = Array.isArray(preset.keys) ? preset.keys : [];
+                const matched = keys.some(function (key) {
+                    return candidates.includes(normalizeExploreTopicKey(key));
+                });
+                if (matched) return preset;
+            }
+
+            return null;
+        }
+
+        function isAuthenticatedExploreView() {
+            return !!(
+                window.UserContext &&
+                typeof window.UserContext.isAuthenticated === 'function' &&
+                window.UserContext.isAuthenticated()
+            );
+        }
+
+        function getLoginExploreArtwork(index) {
+            if (!LOGIN_EXPLORE_IMAGE_POOL.length) return '';
+            const safeIndex = Math.abs(Number(index) || 0) % LOGIN_EXPLORE_IMAGE_POOL.length;
+            return LOGIN_EXPLORE_IMAGE_POOL[safeIndex];
+        }
+
+        function isNeuralNetworkExploreItem(item) {
+            const candidates = [
+                item && item.title,
+                item && item.concept
+            ].map(normalizeExploreTopicKey).filter(Boolean);
+
+            return candidates.some(function (value) {
+                return value.includes('神经网络') || value.includes('人工神经网络') || value.includes('neuralnetwork');
+            });
+        }
+
+        function resolveExploreExternalUrl(item, preset) {
+            const configuredUrl = String(
+                (item && (item.external_url || item.url || item.href)) ||
+                (preset && preset.external_url) ||
+                ''
+            ).trim();
+
+            if (configuredUrl) return configuredUrl;
+            if (isNeuralNetworkExploreItem(item)) return NEURAL_NETWORK_EXPLORE_URL;
+            return '';
+        }
+
+        function buildExploreArtwork(item) {
+            const preset = getExploreItemPreset(item);
+            if (preset && preset.cover) {
+                return preset.cover;
+            }
+            const palette = getExplorePalette(item || {});
+            const title = String((item && (item.concept || item.title)) || '探索主题').replace(/\s*-\s*.+$/, '');
+            const titleLines = splitExploreTitle(title);
+            const badge = clampText((item && item.resource_type) || '探索推荐', 10);
+            const svg = `
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 405" role="img" aria-label="${escapeHtml(title)}">
+                    <defs>
+                        <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="${palette.start}" />
+                            <stop offset="100%" stop-color="${palette.end}" />
+                        </linearGradient>
+                        <radialGradient id="glowA" cx="18%" cy="18%" r="58%">
+                            <stop offset="0%" stop-color="${palette.glow}" stop-opacity="0.8" />
+                            <stop offset="100%" stop-color="${palette.glow}" stop-opacity="0" />
+                        </radialGradient>
+                        <radialGradient id="glowB" cx="84%" cy="20%" r="52%">
+                            <stop offset="0%" stop-color="${palette.accent}" stop-opacity="0.5" />
+                            <stop offset="100%" stop-color="${palette.accent}" stop-opacity="0" />
+                        </radialGradient>
+                    </defs>
+                    <rect width="720" height="405" rx="34" fill="url(#bg)" />
+                    <circle cx="124" cy="96" r="160" fill="url(#glowA)" />
+                    <circle cx="612" cy="102" r="160" fill="url(#glowB)" />
+                    <g opacity="0.18">
+                        <path d="M42 324C172 224 298 438 430 326C536 236 626 234 688 272" fill="none" stroke="#ffffff" stroke-width="12" stroke-linecap="round"/>
+                        <path d="M64 284C194 184 320 398 452 286C558 196 632 198 694 236" fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round"/>
+                    </g>
+                    <rect x="42" y="38" width="154" height="44" rx="22" fill="#ffffff" fill-opacity="0.16" />
+                    <text x="64" y="66" font-size="21" font-family="Noto Sans SC, Microsoft YaHei, sans-serif" fill="${palette.text}" opacity="0.96">${escapeHtml(badge)}</text>
+                    ${titleLines.map(function (line, index) {
+                        return `<text x="48" y="${index === 0 ? 246 : 302}" font-size="${index === 0 ? 64 : 58}" font-weight="700" font-family="Noto Sans SC, Microsoft YaHei, sans-serif" fill="${palette.text}" letter-spacing="-1.5">${escapeHtml(line)}</text>`;
+                    }).join('')}
+                    <rect x="48" y="334" width="188" height="10" rx="999" fill="#ffffff" fill-opacity="0.24" />
+                    <rect x="48" y="334" width="108" height="10" rx="999" fill="#ffffff" fill-opacity="0.88" />
+                </svg>
+            `;
+            return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+        }
+
+        function getExploreArtwork(item, index) {
+            if (isAuthenticatedExploreView()) {
+                const loginArtwork = getLoginExploreArtwork(index);
+                if (loginArtwork) return loginArtwork;
+            }
+            return buildExploreArtwork(item);
+        }
+
+        function getFallbackExploreItems() {
+            return DEFAULT_EXPLORE_ITEMS.map(function (item) {
+                return Object.assign({}, item);
+            });
+        }
+
+        function normalizeExploreItems(items) {
+            const merged = [];
+            const seen = new Set();
+            const sourceGroups = [
+                Array.isArray(items) ? items : [],
+                getFallbackExploreItems()
+            ];
+
+            sourceGroups.forEach(function (group) {
+                group.forEach(function (item) {
+                    const key = normalizeExploreTopicKey((item && (item.concept || item.title)) || '');
+                    if (!key || seen.has(key)) return;
+                    seen.add(key);
+                    merged.push(Object.assign({}, item));
+                });
+            });
+
+            return merged.slice(0, 8);
+        }
+
+        function renderExploreCards(items) {
+            const list = document.getElementById('recommendation-list');
+            const entryInput = document.getElementById('entryQuestionInput');
+            if (!list) return;
+
+            const safeItems = normalizeExploreItems(items);
+            if (!safeItems.length) {
+                list.innerHTML = '<div class="entry-explore-empty">还没有可展示的探索内容，先输入一个你想学的主题吧。</div>';
+                return;
+            }
+
+            list.innerHTML = safeItems.map(function (item, index) {
+                const title = clampText(String(item.title || item.concept || '探索主题').replace(/\s*-\s*.+$/, ''), 30);
+                const query = String(item.concept || title || '').trim();
+                const preset = getExploreItemPreset(item);
+                const externalUrl = resolveExploreExternalUrl(item, preset);
+                const metaParts = [
+                    clampText(item.resource_type || '个性化推荐', 12),
+                    clampText(item.recommend_time || (externalUrl ? '点击查看资源' : '点击填入输入框'), 18)
+                ].filter(Boolean);
+                const artwork = getExploreArtwork(item, index);
+                const actionHint = item.reason || (externalUrl ? '点击跳转到外部资源' : '点击将主题填入输入框');
+                return `
+                    <button type="button" class="entry-explore-card" data-explore-query="${escapeHtml(query)}" data-explore-url="${escapeHtml(externalUrl)}" title="${escapeHtml(actionHint)}">
+                        <div class="entry-explore-card-cover" style="background-image: url('${artwork}');"></div>
+                        <div class="entry-explore-card-body">
+                            <div class="entry-explore-card-play" aria-hidden="true">&#9655;</div>
+                            <div class="entry-explore-card-copy">
+                                <div class="entry-explore-card-title">${escapeHtml(title)}</div>
+                                <div class="entry-explore-card-meta">${escapeHtml(metaParts.join(' · '))}</div>
+                            </div>
+                        </div>
+                    </button>
+                `;
+            }).join('');
+
+            list.querySelectorAll('[data-explore-query]').forEach(function (card) {
+                card.addEventListener('click', function () {
+                    const externalUrl = String(this.getAttribute('data-explore-url') || '').trim();
+                    if (externalUrl) {
+                        window.location.href = externalUrl;
+                        return;
+                    }
+                    const query = String(this.getAttribute('data-explore-query') || '').trim();
+                    if (!query || !entryInput) return;
+                    entryInput.value = query;
+                    entryInput.focus();
+                    if (typeof entryInput.scrollIntoView === 'function') {
+                        entryInput.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }
+                });
+            });
+        }
+
         async function loadRecommendations() {
             const list = document.getElementById('recommendation-list');
+            const refreshBtn = document.getElementById('entryExploreRefreshBtn');
             if (!list) return;
+            list.innerHTML = '<div class="entry-explore-empty">正在为你准备探索内容...</div>';
+            if (refreshBtn) refreshBtn.disabled = true;
             try {
                 const userId = getUserId();
-                const resp = await fetch(`${API_BASE}/api/recommendations?user_id=${userId}&limit=4`);
+                const resp = await fetch(`${API_BASE}/api/recommendations?user_id=${userId}&limit=8`);
                 const data = await parseApiResponse(resp);
-                if (!data.items || data.items.length === 0) {
-                    list.textContent = '暂无推荐';
-                    return;
-                }
 
                 const filterEl = document.getElementById('recommendation-style-filter');
                 const activeStyle = filterEl ? (filterEl.value || 'all') : 'all';
@@ -4319,51 +5787,12 @@
                     const tags = Array.isArray(item.strategy_tags) ? item.strategy_tags : [];
                     return tags.some(tag => String(tag).trim() === `style:${activeStyle}`);
                 });
-
-                if (filteredItems.length === 0) {
-                    list.textContent = '当前筛选条件下暂无推荐';
-                    return;
-                }
-
-                const styleLabelMap = {
-                    visual: '视觉型',
-                    auditory: '听觉型',
-                    kinesthetic: '动觉型',
-                };
-                const channelLabelMap = {
-                    visual: '图文通道',
-                    auditory: '听讲通道',
-                    kinesthetic: '练习通道',
-                };
-                const methodLabelMap = {
-                    kmeans: '聚类画像',
-                    rule: '规则画像',
-                    rule_fallback: '回退画像',
-                };
-
-                const formatTag = (tag) => {
-                    const raw = String(tag || '');
-                    const parts = raw.split(':');
-                    if (parts.length !== 2) return raw;
-                    const k = parts[0];
-                    const v = parts[1];
-                    if (k === 'style') return styleLabelMap[v] ? `风格:${styleLabelMap[v]}` : `风格:${v}`;
-                    if (k === 'channel') return channelLabelMap[v] ? `通道:${channelLabelMap[v]}` : `通道:${v}`;
-                    if (k === 'method') return methodLabelMap[v] ? `画像:${methodLabelMap[v]}` : `画像:${v}`;
-                    return raw;
-                };
-
-                list.innerHTML = filteredItems.map(item => {
-                    const pct = Math.round((item.mastery || 0) * 100);
-                    const time = item.recommend_time || '--';
-                    const tags = Array.isArray(item.strategy_tags)
-                        ? item.strategy_tags.slice(0, 3).map(formatTag).join(' / ')
-                        : '';
-                    const evidence = item.evidence_brief ? `<br><span style="color:#0f766e; font-size:12px;">证据：${item.evidence_brief}</span>` : '';
-                    return `<div class="mini-item">${item.title}<br><span style="color:#6b7280;">${item.reason}（当前${pct}%）</span>${evidence}<br><span style="color:#64748b; font-size:12px;">建议时段：${time}${tags ? `｜${tags}` : ''}</span></div>`;
-                }).join('');
+                renderExploreCards(filteredItems.length ? filteredItems : getFallbackExploreItems());
             } catch (error) {
-                list.textContent = withSuggestion('推荐加载失败', error, '刷新页面或稍后重试');
+                console.warn('探索推荐加载失败，已切换为兜底卡片：', error);
+                renderExploreCards(getFallbackExploreItems());
+            } finally {
+                if (refreshBtn) refreshBtn.disabled = false;
             }
         }
 

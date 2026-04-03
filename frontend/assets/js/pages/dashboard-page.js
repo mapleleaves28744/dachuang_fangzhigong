@@ -11,7 +11,8 @@
     summaryPromise: null,
     summaryPollTimer: 0,
     liveStayTimer: 0,
-    activeDrawerPanel: ''
+    activeDrawerPanel: '',
+    heatmapEditMode: false
   };
 
   const styleLabelMap = {
@@ -37,6 +38,13 @@
     high: '高风险',
     medium: '需跟进',
     low: '可观察'
+  };
+
+  const recommendationFilterLabelMap = {
+    all: '全部',
+    visual: '视觉型',
+    auditory: '听觉型',
+    kinesthetic: '动觉型'
   };
 
   function getUserId() {
@@ -103,6 +111,14 @@
     return `<span class="pill${muted ? ' muted' : ''}">${escapeHtml(label)}</span>`;
   }
 
+  function createDeleteTopicButton(topic, ariaLabel, text, extraClass) {
+    const safeTopic = escapeHtml(topic || '');
+    const safeLabel = escapeHtml(ariaLabel || `删除 ${topic || '当前条目'}`);
+    const buttonText = escapeHtml(text || '删除');
+    const className = ['dashboard-delete-btn', extraClass].filter(Boolean).join(' ');
+    return `<button class="${className}" type="button" data-dashboard-delete-topic="${safeTopic}" aria-label="${safeLabel}" title="${safeLabel}">${buttonText}</button>`;
+  }
+
   function formatDateLabel(value) {
     const text = String(value || '').trim();
     if (!text) return '--';
@@ -122,6 +138,45 @@
     const maxLen = Math.max(1, toNumber(limit, 12));
     if (text.length <= maxLen) return text;
     return `${text.slice(0, maxLen)}…`;
+  }
+
+  function getRecommendationFilterLabel(value) {
+    const key = String(value || 'all').trim();
+    return recommendationFilterLabelMap[key] || recommendationFilterLabelMap.all;
+  }
+
+  function syncHeatmapEditMode() {
+    const container = document.getElementById('dashboard-mastery-heatmap');
+    const toggle = document.getElementById('dashboard-heatmap-edit-toggle');
+    const note = document.getElementById('dashboard-heatmap-edit-status');
+    const canEdit = !!(container && container.querySelector('.dashboard-delete-btn--heatmap'));
+
+    if (!canEdit) {
+      dashboardState.heatmapEditMode = false;
+    }
+
+    const isEditing = canEdit && !!dashboardState.heatmapEditMode;
+
+    if (container) {
+      container.classList.toggle('is-editing', isEditing);
+    }
+
+    if (toggle) {
+      toggle.disabled = !canEdit;
+      toggle.classList.toggle('active', isEditing);
+      toggle.setAttribute('aria-pressed', isEditing ? 'true' : 'false');
+      toggle.setAttribute('title', isEditing ? '完成热力图编辑' : '进入热力图编辑');
+    }
+
+    if (note) {
+      note.hidden = !isEditing;
+      note.textContent = isEditing ? '编辑状态已开启，点击卡片右上角可删除知识点。' : '';
+    }
+  }
+
+  function setHeatmapEditMode(nextMode) {
+    dashboardState.heatmapEditMode = !!nextMode;
+    syncHeatmapEditMode();
   }
 
   function normalizeStylePercent(styleScores) {
@@ -255,12 +310,15 @@
     const reviewForecast = graphInsights.review_forecast || {};
 
     const overallMastery = Math.round(toNumber(summary && summary.overall_mastery, 0) * 100);
-    setText('overall-mastery', `${overallMastery}%`);
-    setText('kg-overall-mastery', `${overallMastery}%`);
-    setText('graph-node-count', toNumber(graphSize.nodes, toNumber(graph.node_count, 0)));
-    setText('graph-edge-count', toNumber(graphSize.edges, toNumber(graph.edge_count, 0)));
-    setText('kg-node-count', toNumber(graphSize.nodes, toNumber(graph.node_count, 0)));
-    setText('kg-edge-count', toNumber(graphSize.edges, toNumber(graph.edge_count, 0)));
+    const graphNodeCount = toNumber(graphSize.nodes, toNumber(graph.node_count, 0));
+    const graphEdgeCount = toNumber(graphSize.edges, toNumber(graph.edge_count, 0));
+    const hasGraphData = heatmap.length > 0 || graphNodeCount > 0 || graphEdgeCount > 0;
+    setText('overall-mastery', hasGraphData ? `${overallMastery}%` : '--');
+    setText('kg-overall-mastery', hasGraphData ? `${overallMastery}%` : '--');
+    setText('graph-node-count', graphNodeCount);
+    setText('graph-edge-count', graphEdgeCount);
+    setText('kg-node-count', graphNodeCount);
+    setText('kg-edge-count', graphEdgeCount);
     setText('kg-due-count', toNumber(review.due_count, 0));
     setText('kg-upcoming-count', toNumber(review.upcoming_count, 0));
 
@@ -334,7 +392,10 @@
           return `
             <div class="mastery-cell ${escapeHtml(item.status || 'warn')}">
               <div class="mastery-cell-head">
-                <span class="mastery-cell-title">${escapeHtml(item.concept || '未命名知识点')}</span>
+                <div class="mastery-cell-title-wrap">
+                  <span class="mastery-cell-title">${escapeHtml(item.concept || '未命名知识点')}</span>
+                  ${createDeleteTopicButton(item.concept || '', `删除知识点 ${item.concept || ''}`, '删除', 'dashboard-delete-btn--heatmap')}
+                </div>
                 <span class="mastery-cell-score">${mastery}%</span>
               </div>
               <div class="mastery-cell-body">
@@ -348,6 +409,7 @@
           `;
         }).join('')
       : '<div class="empty-state">暂无学生知识点数据，后续会自动生成掌握热力图。</div>');
+    syncHeatmapEditMode();
 
     setHtml('dashboard-dependency-chain', dependencyChain.length
       ? dependencyChain.map(function (item) {
@@ -387,20 +449,29 @@
     const styleText = insights.learning_style_label || styleLabelMap[learningStyle] || '综合型学习者';
     const styleMethodText = insights.style_method_label || methodLabelMap[profile.style_method] || (profile.style_method || '--');
     const styleScores = normalizeStylePercent(insights.style_scores || profile.style_scores || {});
-    const interests = Array.isArray(insights.interests) ? insights.interests : [];
     const mediaPreferences = Array.isArray(insights.media_preferences) ? insights.media_preferences : [];
     const traits = Array.isArray(insights.profile_traits) ? insights.profile_traits : [];
     const strongestStyle = strongestStyleKey(styleScores);
     const primaryMedia = mediaPreferences.find(function (item) {
       return toNumber(item.count, 0) > 0;
     }) || null;
-    const topInterest = interests[0] || null;
     const focusText = profile.focus_minutes ? `${profile.focus_minutes} 分钟` : '--';
+    const hasProfileSignal = !!(
+      (insights && insights.has_profile_signal)
+      || learningStyle
+      || traits.length
+      || primaryMedia
+      || profile.best_time_range
+      || profile.focus_minutes
+      || styleScores.visual
+      || styleScores.auditory
+      || styleScores.kinesthetic
+    );
 
-    setText('dashboard-style', styleText);
-    setText('dashboard-style-method', `画像推断方式: ${styleMethodText}`);
-    setText('dashboard-best-time', `最佳学习时段: ${profile.best_time_range || '--'}`);
-    setText('dashboard-focus', `注意力集中时间: ${profile.focus_minutes ? `${profile.focus_minutes} 分钟` : '--'}`);
+    setText('dashboard-style', hasProfileSignal ? styleText : '--');
+    setText('dashboard-style-method', `画像推断方式: ${hasProfileSignal ? styleMethodText : '--'}`);
+    setText('dashboard-best-time', `最佳学习时段: ${hasProfileSignal ? (profile.best_time_range || '--') : '--'}`);
+    setText('dashboard-focus', `注意力集中时间: ${hasProfileSignal && profile.focus_minutes ? `${profile.focus_minutes} 分钟` : '--'}`);
 
     setText('style-score-visual', `${styleScores.visual}%`);
     setText('style-score-auditory', `${styleScores.auditory}%`);
@@ -412,56 +483,41 @@
     if (auditoryBar) auditoryBar.style.width = `${styleScores.auditory}%`;
     if (kinestheticBar) kinestheticBar.style.width = `${styleScores.kinesthetic}%`;
 
-    setHtml('dashboard-persona-stage', `
-      <div class="persona-kicker">学习者画像</div>
-      <div class="persona-title">${escapeHtml(styleText)}</div>
-      <div class="persona-desc">
-        ${escapeHtml(
-          primaryMedia
-            ? `当前最适合从“${primaryMedia.label}”切入，再围绕 ${profile.best_time_range || '稳定时段'} 安排学习。`
-            : '当前画像样本仍在积累中，系统会持续根据内容互动和作答行为更新建议。'
-        )}
-      </div>
-      <div class="persona-grid">
-        <div class="persona-metric">
-          <div class="persona-metric-label">主导风格</div>
-          <div class="persona-metric-value">${escapeHtml(styleLabelMap[strongestStyle] || styleText)}</div>
-          <div class="persona-metric-note">由内容偏好与学习行为联合推断</div>
-        </div>
-        <div class="persona-metric">
-          <div class="persona-metric-label">常用输入通道</div>
-          <div class="persona-metric-value">${escapeHtml(primaryMedia ? primaryMedia.label : '--')}</div>
-          <div class="persona-metric-note">${primaryMedia ? `占比 ${toNumber(primaryMedia.percent, 0)}%` : '等待内容交互样本'}</div>
-        </div>
-        <div class="persona-metric">
-          <div class="persona-metric-label">最佳学习时段</div>
-          <div class="persona-metric-value">${escapeHtml(profile.best_time_range || '--')}</div>
-          <div class="persona-metric-note">适合安排难题和理解型任务</div>
-        </div>
-        <div class="persona-metric">
-          <div class="persona-metric-label">建议专注时长</div>
-          <div class="persona-metric-value">${escapeHtml(focusText)}</div>
-          <div class="persona-metric-note">${topInterest ? `近期对“${topInterest.topic}”更有持续投入` : '持续积累后会更准确'}</div>
-        </div>
-      </div>
-    `);
-
-    renderPillList(
-      'dashboard-interests',
-      interests,
-      function (item) {
-        return item.count ? `${item.topic} · ${item.source} · ${toNumber(item.count, 0)}次` : `${item.topic} · ${item.source}`;
-      },
-      '暂无兴趣特征'
-    );
-
-    setHtml('dashboard-interest-cloud', interests.length
-      ? interests.slice(0, 8).map(function (item, index) {
-          const count = Math.max(1, toNumber(item.count, 1));
-          const fontSize = Math.min(17, 12 + count * 0.8 + Math.max(0, 4 - index));
-          return `<span class="interest-bubble" style="font-size:${fontSize}px;">${escapeHtml(item.topic || '--')}<small>${escapeHtml(item.source || '兴趣')}</small></span>`;
-        }).join('')
-      : '<span class="pill muted">学习兴趣还在生成中</span>');
+    setHtml('dashboard-persona-stage', hasProfileSignal
+      ? `
+          <div class="persona-kicker">学习者画像</div>
+          <div class="persona-title">${escapeHtml(styleText)}</div>
+          <div class="persona-desc">
+            ${escapeHtml(
+              primaryMedia
+                ? `当前最适合从“${primaryMedia.label}”切入，再围绕 ${profile.best_time_range || '稳定时段'} 安排学习。`
+                : '当前画像样本仍在积累中，系统会持续根据内容互动和作答行为更新建议。'
+            )}
+          </div>
+          <div class="persona-grid">
+            <div class="persona-metric">
+              <div class="persona-metric-label">主导风格</div>
+              <div class="persona-metric-value">${escapeHtml(styleLabelMap[strongestStyle] || styleText)}</div>
+              <div class="persona-metric-note">由内容偏好与学习行为联合推断</div>
+            </div>
+            <div class="persona-metric">
+              <div class="persona-metric-label">常用输入通道</div>
+              <div class="persona-metric-value">${escapeHtml(primaryMedia ? primaryMedia.label : '--')}</div>
+              <div class="persona-metric-note">${primaryMedia ? `占比 ${toNumber(primaryMedia.percent, 0)}%` : '等待内容交互样本'}</div>
+            </div>
+            <div class="persona-metric">
+              <div class="persona-metric-label">最佳学习时段</div>
+              <div class="persona-metric-value">${escapeHtml(profile.best_time_range || '--')}</div>
+              <div class="persona-metric-note">适合安排难题和理解型任务</div>
+            </div>
+            <div class="persona-metric">
+              <div class="persona-metric-label">建议专注时长</div>
+              <div class="persona-metric-value">${escapeHtml(focusText)}</div>
+              <div class="persona-metric-note">可结合当前学习节奏安排一轮高专注任务</div>
+            </div>
+          </div>
+        `
+      : '<div class="empty-state">当前账号还没有足够的学习画像样本，开始录入内容、练习或诊断后会逐步生成画像。</div>');
 
     setHtml('dashboard-media-preferences', mediaPreferences.length
       ? mediaPreferences.map(function (item) {
@@ -611,13 +667,20 @@
         return String(tag).trim() === `style:${activeStyle}`;
       });
     });
+    const filterLabel = getRecommendationFilterLabel(activeStyle);
+    const filterMeta = `
+      <div class="filter-result-meta">
+        当前筛选：<strong>${escapeHtml(filterLabel)}</strong>
+        · 匹配 ${filtered.length} 条 / 共 ${recommendations.length} 条
+      </div>
+    `;
 
     if (!filtered.length) {
-      container.innerHTML = '<div class="empty-state">当前筛选条件下暂无推荐资源，请继续积累学习画像和诊断样本。</div>';
+      container.innerHTML = `${filterMeta}<div class="empty-state">当前筛选条件下暂无推荐资源，请继续积累学习画像和诊断样本。</div>`;
       return;
     }
 
-    container.innerHTML = filtered.map(function (item) {
+    container.innerHTML = filterMeta + filtered.map(function (item) {
       const tags = Array.isArray(item && item.strategy_tags) ? item.strategy_tags.slice(0, 3) : [];
       const tagMarkup = tags.length
         ? `<div class="pill-list">${tags.map(function (tag) {
@@ -695,7 +758,6 @@
     setHtml('dashboard-dependency-chain', emptyMarkup);
     setHtml('dashboard-concept-source-trace', emptyMarkup);
     setHtml('dashboard-persona-stage', emptyMarkup);
-    setHtml('dashboard-interest-cloud', pillMarkup);
     setHtml('dashboard-media-preferences', emptyMarkup);
     setHtml('dashboard-profile-traits', emptyMarkup);
     setHtml('dashboard-diagnosis-balance', emptyMarkup);
@@ -704,6 +766,7 @@
     setHtml('dashboard-resource-mix', pillMarkup);
     setHtml('dashboard-recommendations', emptyMarkup);
     setHtml('dashboard-review-reminders', emptyMarkup);
+    syncHeatmapEditMode();
   }
 
   async function loadDashboardSummary() {
@@ -801,6 +864,26 @@
       loadDashboardTodayTasks();
     } catch (error) {
       window.alert(withSuggestion('删除任务失败', error, '确认网络正常后再试'));
+    }
+  }
+
+  async function deleteDashboardTopic(topic) {
+    const userId = getUserId();
+    const concept = String(topic || '').trim();
+    if (!concept) return;
+    if (!window.confirm(`确定要删除或屏蔽「${concept}」吗？删除后它将不再出现在知识掌握热力图中。`)) return;
+
+    try {
+      const response = await fetch(`${API_BASE}/api/knowledge_graph/node`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: userId, concept: concept })
+      });
+      await parseApiResponse(response);
+      await loadDashboardSummary();
+      window.dispatchEvent(new Event('knowledge:updated'));
+    } catch (error) {
+      window.alert(withSuggestion('删除条目失败', error, '稍后重试，或去知识图谱页继续处理'));
     }
   }
 
@@ -907,6 +990,7 @@
   }
 
   window.deleteDashboardTask = deleteDashboardTask;
+  window.deleteDashboardTopic = deleteDashboardTopic;
 
   window.addEventListener('DOMContentLoaded', function () {
     if (window.PageShell && typeof window.PageShell.initGlobalSidebar === 'function') {
@@ -918,6 +1002,7 @@
     loadDashboardTodayTasks();
     loadDashboardSummary();
     startDashboardAutoRefresh();
+    syncHeatmapEditMode();
 
     const recFilter = document.getElementById('dashboard-rec-style-filter');
     if (recFilter) {
@@ -927,6 +1012,13 @@
         } else {
           loadDashboardSummary();
         }
+      });
+    }
+
+    const heatmapEditToggle = document.getElementById('dashboard-heatmap-edit-toggle');
+    if (heatmapEditToggle) {
+      heatmapEditToggle.addEventListener('click', function () {
+        setHeatmapEditMode(!dashboardState.heatmapEditMode);
       });
     }
 
@@ -944,6 +1036,13 @@
       if (document.hidden) return;
       loadDashboardSummary();
       renderLiveStayMinutes();
+    });
+
+    document.addEventListener('click', function (event) {
+      const trigger = event.target.closest('[data-dashboard-delete-topic]');
+      if (!trigger) return;
+      event.preventDefault();
+      deleteDashboardTopic(trigger.getAttribute('data-dashboard-delete-topic'));
     });
 
     if (window.UserContext) {

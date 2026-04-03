@@ -136,6 +136,62 @@ class TestDashboardDataPoolContract(unittest.TestCase):
 
         self.assertEqual(summary.get("active_days"), 1)
 
+    def test_data_pool_summary_filters_deleted_topics_from_dashboard_views(self):
+        summary = build_data_pool_summary(
+            content_logs=[
+                {
+                    "content_type": "note",
+                    "timestamp": "2026-03-31T09:00:00",
+                    "title": "HTML 笔记",
+                    "topics": ["HTML", "CSS"],
+                }
+            ],
+            qa_logs=[],
+            behavior_logs=[],
+            question_draw_logs=[],
+            question_answer_logs=[],
+            diagnosis_logs=[],
+            wrong_question_logs=[],
+            space_payload={"spaces": []},
+            hidden_metrics={
+                "topic_total_table": [
+                    {"topic": "HTML", "count": 4},
+                    {"topic": "CSS", "count": 3},
+                ],
+            },
+            blocked_topics=["HTML"],
+            now="2026-03-31T12:00:00",
+        )
+
+        topics = [item.get("topic") for item in summary.get("top_topics", [])]
+        self.assertNotIn("HTML", topics)
+        self.assertIn("CSS", topics)
+
+    def test_data_pool_summary_keeps_new_account_empty_when_only_has_behavior_logs(self):
+        summary = build_data_pool_summary(
+            content_logs=[],
+            qa_logs=[],
+            behavior_logs=[
+                {
+                    "timestamp": "2026-03-31T10:20:00",
+                    "behavior_type": "auth_login",
+                    "page": "auth",
+                }
+            ],
+            question_draw_logs=[],
+            question_answer_logs=[],
+            diagnosis_logs=[],
+            wrong_question_logs=[],
+            space_payload={"spaces": []},
+            hidden_metrics={},
+            now="2026-03-31T12:00:00",
+        )
+
+        self.assertEqual(summary.get("total_records"), 0)
+        self.assertEqual(summary.get("active_days"), 0)
+        self.assertEqual(summary.get("study_windows"), [])
+        self.assertEqual(summary.get("top_topics"), [])
+
 @unittest.skipIf(backend_app is None, f"backend app unavailable: {_SERVER_IMPORT_ERROR}")
 class TestDashboardHiddenMetricsContract(unittest.TestCase):
     def test_hidden_tables_include_space_topics_and_windows(self):
@@ -199,6 +255,37 @@ class TestDashboardHiddenMetricsContract(unittest.TestCase):
         self.assertEqual(top_topic.get("topic"), "导数")
         self.assertEqual(top_window.get("label"), "10:00-12:00")
         self.assertGreaterEqual(top_window.get("count", 0), 2)
+
+    def test_hidden_tables_filter_chat_noise_topics(self):
+        hidden = backend_app.build_dashboard_hidden_tables(
+            content_logs=[],
+            qa_logs=[
+                {
+                    "timestamp": "2026-03-31T10:05:00",
+                    "question": "我是你爹吗",
+                    "answer": "你好呀，很高兴见到你",
+                    "topics": ["我是你爹吗", "你好呀"],
+                },
+                {
+                    "timestamp": "2026-03-31T10:10:00",
+                    "question": "请问什么是html和css",
+                    "answer": "HTML 和 CSS 是网页基础",
+                    "topics": ["HTML", "CSS"],
+                },
+            ],
+            question_draw_logs=[],
+            question_answer_logs=[],
+            diagnosis_logs=[],
+            behavior_logs=[],
+            space_payload={"spaces": []},
+            detect_topics_fn=None,
+        )
+
+        topics = [item.get("topic") for item in hidden.get("topic_total_table", [])]
+        self.assertNotIn("我是你爹吗", topics)
+        self.assertNotIn("你好呀", topics)
+        self.assertIn("HTML", topics)
+        self.assertIn("CSS", topics)
 
 
 if __name__ == "__main__":
