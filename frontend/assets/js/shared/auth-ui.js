@@ -333,8 +333,16 @@
 
   function getDefaultTipText() {
     return currentMode === 'register'
-      ? '注册后会自动登录到当前项目。'
-      : '登录后即可在所有页面共用同一账号。';
+      ? '注册成功后会自动登录，新账号默认不会自动继承当前访客数据。'
+      : '登录后会切换到当前账号自己的学习数据。';
+  }
+
+  function normalizeAuthUsername(value) {
+    return String(value || '').trim().toLowerCase();
+  }
+
+  function isValidAuthUsername(value) {
+    return /^[a-z0-9][a-z0-9_.@-]{2,31}$/.test(normalizeAuthUsername(value));
   }
 
   function setFeedback(type, message) {
@@ -355,6 +363,7 @@
   function updateModeUI() {
     const tabs = document.querySelectorAll('[data-auth-mode]');
     const displayNameField = document.getElementById('authDisplayNameField');
+    const passwordInput = document.getElementById('authPasswordInput');
     const submitBtn = document.getElementById('authSubmitBtn');
     const switchBtn = document.getElementById('authSwitchModeBtn');
     const subtitle = document.getElementById('authModalSubtitle');
@@ -364,13 +373,16 @@
     });
 
     if (displayNameField) displayNameField.hidden = currentMode !== 'register';
+    if (passwordInput) {
+      passwordInput.setAttribute('autocomplete', currentMode === 'register' ? 'new-password' : 'current-password');
+    }
     if (submitBtn) submitBtn.textContent = currentMode === 'register' ? '注册并登录' : '登录';
     if (switchBtn) switchBtn.textContent = currentMode === 'register' ? '已有账号？去登录' : '没有账号？去注册';
 
     if (subtitle) {
       subtitle.textContent = currentMode === 'register'
-        ? '注册后会自动建立会话，并把学习数据绑定到你的账号。'
-        : '登录后即可同步你的空间、图谱和学习计划。';
+        ? '注册后会自动建立会话，新账号默认不会自动继承当前访客数据。'
+        : '登录后即可访问当前账号自己的空间、图谱和学习计划。';
     }
   }
 
@@ -448,7 +460,7 @@
         <div class="auth-status-card">
           <div class="auth-status-badge is-guest">访客模式</div>
           <div class="auth-status-title">未登录</div>
-          <div class="auth-status-meta">当前仍可继续浏览，但学习空间、图谱和计划会以本地访客身份保存。登录后会自动绑定到账号。</div>
+          <div class="auth-status-meta">当前仍可继续浏览，但学习空间、图谱和计划会以本地访客身份保存。登录后会切换到账号自己的独立数据。</div>
         </div>
       `;
 
@@ -776,11 +788,20 @@
     const displayNameInput = document.getElementById('authDisplayNameInput');
     const submitBtn = document.getElementById('authSubmitBtn');
 
-    const username = String((usernameInput && usernameInput.value) || '').trim();
-    const password = String((passwordInput && passwordInput.value) || '').trim();
+    const username = normalizeAuthUsername((usernameInput && usernameInput.value) || '');
+    const password = String((passwordInput && passwordInput.value) || '');
     const displayName = String((displayNameInput && displayNameInput.value) || '').trim();
     if (!username || !password) {
       setFeedback('error', '请输入账号和密码。');
+      return;
+    }
+
+    if (usernameInput) {
+      usernameInput.value = username;
+    }
+
+    if (!isValidAuthUsername(username)) {
+      setFeedback('error', '账号格式不正确，请使用 3-32 位字母、数字或 . _ @ -。');
       return;
     }
 
@@ -1163,6 +1184,18 @@
       });
     }
   }
+
+  window.AuthUI = {
+    open: function (mode) {
+      openModal(mode === 'register' ? 'register' : 'login');
+    },
+    openLogin: function () {
+      openModal('login');
+    },
+    openRegister: function () {
+      openModal('register');
+    }
+  };
 
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', init);

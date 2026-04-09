@@ -7,6 +7,11 @@ RUN_DIR="$BACKEND_DIR/run"
 BACKEND_LOG_DIR="$BACKEND_DIR/logs"
 FRONTEND_LOG_DIR="$ROOT_DIR/frontend/logs"
 START_FRONTEND_5501="${START_FRONTEND_5501:-false}"
+PYTHON_BIN="${PYTHON_BIN:-/usr/bin/python3}"
+
+if [[ ! -x "$PYTHON_BIN" ]]; then
+  PYTHON_BIN="$(command -v python3)"
+fi
 
 mkdir -p "$RUN_DIR" "$BACKEND_LOG_DIR" "$FRONTEND_LOG_DIR"
 
@@ -77,7 +82,7 @@ ensure_celery() {
     nohup env \
       CELERY_BROKER_URL="redis://127.0.0.1:6379/0" \
       CELERY_RESULT_BACKEND="redis://127.0.0.1:6379/1" \
-      python3 -m celery -A app.server:celery_client worker -l info -P solo \
+      "$PYTHON_BIN" -m celery -A app.server:celery_client worker -l info -P solo \
       > "$BACKEND_LOG_DIR/celery.log" 2>&1 &
     echo $! > "$RUN_DIR/celery.pid"
   )
@@ -99,7 +104,7 @@ ensure_backend() {
   echo "[start] Backend API"
   (
     cd "$BACKEND_DIR"
-    nohup python3 -m app.server > "$BACKEND_LOG_DIR/backend.log" 2>&1 &
+    nohup "$PYTHON_BIN" -m app.server > "$BACKEND_LOG_DIR/backend.log" 2>&1 &
     echo $! > "$RUN_DIR/backend.pid"
   )
   if wait_for_port 5000 40 0.5; then
@@ -119,7 +124,7 @@ ensure_frontend() {
   echo "[start] Frontend static server"
   (
     cd "$ROOT_DIR"
-    nohup python3 -m http.server 5501 --directory frontend > "$FRONTEND_LOG_DIR/frontend.log" 2>&1 &
+    nohup "$PYTHON_BIN" -m http.server 5501 --directory frontend > "$FRONTEND_LOG_DIR/frontend.log" 2>&1 &
     echo $! > "$RUN_DIR/frontend.pid"
   )
   if wait_for_port 5501 20 0.5; then

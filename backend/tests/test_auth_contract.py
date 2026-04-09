@@ -252,6 +252,7 @@ class TestAuthContract(unittest.TestCase):
             self.assertTrue(ok_data.get("success"))
             self.assertEqual(ok_data.get("auth", {}).get("user", {}).get("locale"), "EN")
             self.assertTrue(ok_data.get("auth", {}).get("token"))
+            self.assertEqual(ok_data.get("binding", {}).get("message"), "登录后默认使用账号自己的学习数据")
 
     def test_login_keeps_account_data_isolated_from_guest_state(self):
         with self._patch_auth_storage(), self._patch_learning_state_storage():

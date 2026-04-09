@@ -3114,10 +3114,10 @@
     </div>
 
     <script src="assets/js/shared/user-context.js?v=20260330-authfix"></script>
-    <script src="assets/js/shared/api-utils.js?v=20260403-spaceeditfix"></script>
+    <script src="assets/js/shared/api-utils.js?v=20260409-authmsgfix"></script>
     <script src="assets/js/shared/project-local-data.js?v=20260330-authfix"></script>
     <script src="assets/js/shared/space-cloud-store.js?v=20260403-sidebarspaces"></script>
-    <script src="assets/js/shared/auth-ui.js?v=20260330-authfix"></script>
+    <script src="assets/js/shared/auth-ui.js?v=20260409-authentrygate"></script>
     <script src="assets/js/shared/page-shell.js?v=20260403-space-root-nav"></script>
     <script>
         const API_BASE = window.ApiUtils.getApiBase();
@@ -4846,6 +4846,23 @@
                 window.UserContext.onChange(refreshUserName);
             }
 
+            const openLoginModal = () => {
+                if (window.AuthUI && typeof window.AuthUI.openLogin === 'function') {
+                    window.AuthUI.openLogin();
+                    return true;
+                }
+                return false;
+            };
+
+            const requireEntryAuth = () => {
+                const isAuthenticated = window.UserContext && typeof window.UserContext.isAuthenticated === 'function'
+                    ? window.UserContext.isAuthenticated()
+                    : false;
+                if (isAuthenticated) return true;
+                openLoginModal();
+                return false;
+            };
+
             const submitEntryQuestion = () => {
                 const q = entryInput.value.trim();
                 if (!q) return;
@@ -4863,24 +4880,28 @@
 
             if (entryUploadTool) {
                 entryUploadTool.addEventListener('click', function () {
+                    if (!requireEntryAuth()) return;
                     openEntryActionModal('upload');
                 });
             }
 
             if (entryLinkTool) {
                 entryLinkTool.addEventListener('click', function () {
+                    if (!requireEntryAuth()) return;
                     openEntryActionModal('link');
                 });
             }
 
             if (entryPasteTool) {
                 entryPasteTool.addEventListener('click', function () {
+                    if (!requireEntryAuth()) return;
                     openEntryActionModal('paste');
                 });
             }
 
             if (entryRecordTool) {
                 entryRecordTool.addEventListener('click', function () {
+                    if (!requireEntryAuth()) return;
                     openEntryActionModal('record');
                 });
             }

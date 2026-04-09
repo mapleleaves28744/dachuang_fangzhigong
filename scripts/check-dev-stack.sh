@@ -2,6 +2,11 @@
 set -euo pipefail
 
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+PYTHON_BIN="${PYTHON_BIN:-/usr/bin/python3}"
+
+if [[ ! -x "$PYTHON_BIN" ]]; then
+  PYTHON_BIN="$(command -v python3)"
+fi
 
 check_url() {
   local name="$1"
@@ -23,8 +28,8 @@ check_url "health" "http://127.0.0.1:5000/health"
 
 echo "[info] Inspecting async capability..."
 health_json="$(curl -sS http://127.0.0.1:5000/health || true)"
-celery_enabled="$(HEALTH_JSON="$health_json" python3 -c "import os, json; j=json.loads(os.environ.get('HEALTH_JSON') or '{}'); print(str(bool(j.get('celery_enabled', False))).lower())" 2>/dev/null || echo false)"
-celery_worker_available="$(HEALTH_JSON="$health_json" python3 -c "import os, json; j=json.loads(os.environ.get('HEALTH_JSON') or '{}'); print(str(bool(j.get('celery_worker_available', False))).lower())" 2>/dev/null || echo false)"
+celery_enabled="$(HEALTH_JSON="$health_json" "$PYTHON_BIN" -c "import os, json; j=json.loads(os.environ.get('HEALTH_JSON') or '{}'); print(str(bool(j.get('celery_enabled', False))).lower())" 2>/dev/null || echo false)"
+celery_worker_available="$(HEALTH_JSON="$health_json" "$PYTHON_BIN" -c "import os, json; j=json.loads(os.environ.get('HEALTH_JSON') or '{}'); print(str(bool(j.get('celery_worker_available', False))).lower())" 2>/dev/null || echo false)"
 
 if [[ "$celery_enabled" == "true" && "$celery_worker_available" != "true" ]]; then
   echo "[warn] Celery client is enabled but no worker is available; graph sync will fallback to sync mode"

@@ -1071,6 +1071,22 @@ def build_auth_register_binding_summary(target_user_id):
     }
 
 
+def build_auth_login_binding_summary(target_user_id):
+    return {
+        "guest_user_id": "",
+        "user_id": normalize_request_user_id(target_user_id, fallback="default_user"),
+        "migrated": False,
+        "plans": 0,
+        "spaces": 0,
+        "space_items": 0,
+        "concepts": 0,
+        "relations": 0,
+        "knowledge_updated": False,
+        "events": 0,
+        "message": "登录后默认使用账号自己的学习数据",
+    }
+
+
 def load_simple_env_files():
     """读取本地 .env 文件（仅填充尚未设置的环境变量）。"""
     candidates = [
@@ -6302,7 +6318,7 @@ def login_auth_user_api():
     user["updated_at"] = iso_now()
     saved_user = upsert_auth_user(user)
     session_bundle = create_auth_session_payload(saved_user)
-    binding = build_auth_register_binding_summary(username)
+    binding = build_auth_login_binding_summary(username)
     append_auth_login_behavior(username, "auth_login")
 
     return jsonify(success_payload(

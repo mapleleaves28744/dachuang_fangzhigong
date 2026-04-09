@@ -110,11 +110,14 @@
       OCR_EMPTY_RESPONSE: '图像识别未返回内容，请更换图片重试'
     };
 
-    if (errorCode && codeMap[errorCode]) {
-      return `${codeMap[errorCode]} (${errorCode})`;
-    }
     if (message) {
-      return errorCode ? `${message} (${errorCode})` : message;
+      return message;
+    }
+    if (errorCode && codeMap[errorCode]) {
+      return codeMap[errorCode];
+    }
+    if (errorCode) {
+      return `请求失败：${errorCode} (${status})`;
     }
     return `请求失败(${status})`;
   }
