@@ -1,0 +1,4 @@
+*.index filter=lfs diff=lfs merge=lfs -text
+*.npz filter=lfs diff=lfs merge=lfs -text
+backend/data/pro_kb/*.jsonl filter=lfs diff=lfs merge=lfs -text
+backend/data/pro_kb/*.json filter=lfs diff=lfs merge=lfs -text
