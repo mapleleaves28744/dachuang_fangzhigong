@@ -1,0 +1,14 @@
+[
+  {
+    "id": "f1b862d5-151f-4652-b575-a89ec4c7c3e7",
+    "timestamp": "2026-04-10T16:10:41",
+    "content_type": "kb_note",
+    "title": "Chain Rule Note",
+    "content": "chain rule for derivative of composite function",
+    "source": "agent_kb",
+    "tags": [
+      "chain",
+      "rule"
+    ]
+  }
+]

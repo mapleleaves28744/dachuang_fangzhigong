@@ -1,0 +1,36 @@
+{
+  "user_id": "u2",
+  "updated_at": "2026-04-11T03:20:48.008471",
+  "learning_style": "visual",
+  "style_scores": {
+    "visual": 0.359,
+    "auditory": 0.427,
+    "kinesthetic": 0.427
+  },
+  "style_method": "kmeans",
+  "style_features": {
+    "image_count": 0,
+    "link_count": 0,
+    "qa_content_count": 3,
+    "note_count": 0,
+    "other_count": 0,
+    "qa_log_count": 3,
+    "concept_count": 5
+  },
+  "interests": [
+    "文本",
+    "OCR文本",
+    "图像题",
+    "回答",
+    "图像题已解答"
+  ],
+  "best_time_range": "02:00-04:00",
+  "focus_minutes": 45,
+  "content_type_counter": {
+    "note": 0,
+    "link": 0,
+    "image": 0,
+    "qa": 3,
+    "other": 0
+  }
+}

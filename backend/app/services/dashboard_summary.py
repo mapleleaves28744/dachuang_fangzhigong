@@ -823,7 +823,13 @@ def build_intervention_summary(profile, diagnosis_report, recommendations, remin
         if not isinstance(item, dict):
             continue
         diagnosis = item.get("diagnosis", {}) or {}
+        advice = item.get("learning_advice", {}) if isinstance(item.get("learning_advice"), dict) else {}
         category = str(diagnosis.get("category") or "unknown").strip() or "unknown"
+        recommendation_text = (
+            diagnosis.get("recommendation")
+            or advice.get("建议")
+            or RESOURCE_BY_CATEGORY.get(category, RESOURCE_BY_CATEGORY["unknown"])
+        )
         latest_cases.append({
             "timestamp": item.get("timestamp") or "",
             "category": category,
@@ -831,11 +837,40 @@ def build_intervention_summary(profile, diagnosis_report, recommendations, remin
             "error_type": diagnosis.get("error_type") or CATEGORY_LABELS.get(category, "认知诊断"),
             "question_excerpt": short_text(item.get("question") or "", 80),
             "signals": diagnosis.get("signals", [])[:3] if isinstance(diagnosis.get("signals"), list) else [],
-            "recommendation": diagnosis.get("recommendation") or RESOURCE_BY_CATEGORY.get(category, RESOURCE_BY_CATEGORY["unknown"]),
+            "recommendation": recommendation_text,
         })
 
     action_queue = []
     queued_keys = set()
+
+    style = str(profile.get("learning_style") or "").strip() or "visual"
+    focus_minutes = int(profile.get("focus_minutes", 40) or 40)
+    style_action_hint = {
+        "visual": "先看图解再口头复述",
+        "auditory": "先听讲解再复述关键点",
+        "kinesthetic": "先做1题再回看解析",
+    }.get(style, "先做后讲")
+
+    for case in latest_cases[:4]:
+        if not isinstance(case, dict):
+            continue
+        case_target = str(case.get("error_type") or case.get("category_label") or "认知诊断").strip()
+        case_recommend = str(case.get("recommendation") or "").strip()
+        if not case_target or not case_recommend:
+            continue
+        queue_key = f"diag:{case_target}:{case_recommend[:32]}"
+        if queue_key in queued_keys:
+            continue
+        queued_keys.add(queue_key)
+        action_queue.append({
+            "kind": "diagnosis_followup",
+            "title": f"{case_target} - 定向补救",
+            "target": case_target,
+            "time": profile.get("best_time_range") or "今天完成",
+            "resource": f"{style_action_hint} + {RESOURCE_BY_CATEGORY.get(str(case.get('category') or 'unknown'), RESOURCE_BY_CATEGORY['unknown'])}",
+            "reason": f"最近诊断提示：{case_recommend}",
+            "evidence": f"单次训练建议 {focus_minutes} 分钟，结合最新诊断信号执行",
+        })
     for item in recommendations[:5]:
         if not isinstance(item, dict):
             continue

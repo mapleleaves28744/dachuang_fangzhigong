@@ -1,0 +1,51 @@
+{
+  "concepts": [
+    {
+      "concept": "题目文本",
+      "first_seen": "2026-04-11T02:54:37.361850",
+      "last_seen": "2026-04-11T02:55:26.884089",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "回答",
+      "first_seen": "2026-04-11T02:54:37.361850",
+      "last_seen": "2026-04-11T02:55:26.884089",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "这是答案",
+      "first_seen": "2026-04-11T02:54:37.361850",
+      "last_seen": "2026-04-11T02:55:26.884089",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    }
+  ],
+  "relations": [
+    {
+      "source": "回答",
+      "target": "这是答案",
+      "type": "相关",
+      "score": 0.52,
+      "evidence": "文本顺序弱关联",
+      "source_text": "问题：题目文本\n回答：这是答案",
+      "created_at": "2026-04-11T02:54:37.361850",
+      "from": "agent_ocr_tutor"
+    },
+    {
+      "source": "题目文本",
+      "target": "回答",
+      "type": "相关",
+      "score": 0.52,
+      "evidence": "文本顺序弱关联",
+      "source_text": "问题：题目文本\n回答：这是答案",
+      "created_at": "2026-04-11T02:54:37.361850",
+      "from": "agent_ocr_tutor"
+    }
+  ],
+  "deleted_concepts": []
+}

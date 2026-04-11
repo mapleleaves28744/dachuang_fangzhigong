@@ -1,0 +1,104 @@
+{
+  "user_id": "sync_20260411025817",
+  "updated_at": "2026-04-11T02:59:26.805119",
+  "learning_style": "visual",
+  "style_scores": {
+    "visual": 0.35,
+    "auditory": 0.393,
+    "kinesthetic": 0.393
+  },
+  "style_method": "kmeans",
+  "style_features": {
+    "image_count": 0,
+    "link_count": 0,
+    "qa_content_count": 2,
+    "note_count": 0,
+    "other_count": 0,
+    "qa_log_count": 2,
+    "concept_count": 11
+  },
+  "interests": [
+    "一元二次方程",
+    "文言文虚词",
+    "Python循环",
+    "学习小挑战",
+    "读后续写"
+  ],
+  "best_time_range": "02:00-04:00",
+  "focus_minutes": 45,
+  "content_type_counter": {
+    "note": 0,
+    "link": 0,
+    "image": 0,
+    "qa": 2,
+    "other": 0
+  },
+  "dashboard_hidden": {
+    "updated_at": "2026-04-11T02:58:38.125616",
+    "topic_daily_table": [
+      {
+        "date": "2026-04-11",
+        "topics": [
+          {
+            "topic": "一元二次方程",
+            "count": 1
+          },
+          {
+            "topic": "文言文虚词",
+            "count": 1
+          },
+          {
+            "topic": "Python循环",
+            "count": 1
+          },
+          {
+            "topic": "学习小挑战",
+            "count": 1
+          }
+        ]
+      }
+    ],
+    "topic_total_table": [
+      {
+        "topic": "一元二次方程",
+        "count": 1
+      },
+      {
+        "topic": "文言文虚词",
+        "count": 1
+      },
+      {
+        "topic": "Python循环",
+        "count": 1
+      },
+      {
+        "topic": "学习小挑战",
+        "count": 1
+      }
+    ],
+    "study_window_daily_table": [
+      {
+        "date": "2026-04-11",
+        "label": "02:00-04:00",
+        "count": 2,
+        "duration_seconds": 0.0
+      }
+    ],
+    "study_window_total_table": [
+      {
+        "label": "02:00-04:00",
+        "count": 2,
+        "duration_seconds": 0.0
+      }
+    ],
+    "top_topic": {
+      "topic": "一元二次方程",
+      "count": 1
+    },
+    "top_study_window": {
+      "label": "02:00-04:00",
+      "count": 2,
+      "duration_seconds": 0.0
+    }
+  }
+}

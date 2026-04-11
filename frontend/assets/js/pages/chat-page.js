@@ -11,6 +11,7 @@
   const ATTACHMENT_PROMPT_TOTAL_LIMIT = 16000;
   const ATTACHMENT_KNOWLEDGE_LIMIT = 4000;
   const DEFAULT_ATTACHMENT_QUESTION = '请先总结我上传的资料，提炼关键知识点，并给出下一步学习建议。';
+  const AGENT_MODE_STORAGE_KEY = 'fangzhigong_chat_agent_mode';
   const PDF_JS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
   const PDF_JS_WORKER_URL = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
@@ -41,6 +42,7 @@
   let sidebarHistoryCollapsed = false;
   let pendingAttachments = [];
   let pdfJsLoader = null;
+  let agentModeEnabled = false;
 
   function nowLabel(date) {
     const d = date instanceof Date ? date : new Date(date || Date.now());
@@ -56,6 +58,22 @@
     return window.UserContext && typeof window.UserContext.getUserId === 'function'
       ? window.UserContext.getUserId()
       : 'default_user';
+  }
+
+  function loadAgentModeState() {
+    try {
+      agentModeEnabled = localStorage.getItem(AGENT_MODE_STORAGE_KEY) === '1';
+    } catch (error) {
+      agentModeEnabled = false;
+    }
+  }
+
+  function saveAgentModeState() {
+    try {
+      localStorage.setItem(AGENT_MODE_STORAGE_KEY, agentModeEnabled ? '1' : '0');
+    } catch (error) {
+      console.warn('保存智能体模式失败:', error);
+    }
   }
 
   function getUserLabel() {
@@ -585,13 +603,73 @@
       .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   }
 
+  function isTableSeparatorLine(line) {
+    return /^\s*\|?(?:\s*:?-{3,}:?\s*\|)+\s*:?-{3,}:?\s*\|?\s*$/.test(line);
+  }
+
+  function renderTableSegment(lines) {
+    if (lines.length < 2) return '';
+
+    const headerCells = lines[0].replace(/^\||\|$/g, '').split('|').map(function (cell) {
+      return formatInline(escapeHtml(cell.trim()));
+    });
+    const bodyRows = lines.slice(2).map(function (line) {
+      return line.replace(/^\||\|$/g, '').split('|').map(function (cell) {
+        return formatInline(escapeHtml(cell.trim()));
+      });
+    }).filter(function (cells) {
+      return cells.length && cells.some(function (cell) { return String(cell).trim() !== ''; });
+    });
+
+    return `
+      <table class="markdown-table">
+        <thead><tr>${headerCells.map(function (cell) { return `<th>${cell}</th>`; }).join('')}</tr></thead>
+        <tbody>${bodyRows.map(function (cells) {
+          return `<tr>${cells.map(function (cell) { return `<td>${cell}</td>`; }).join('')}</tr>`;
+        }).join('')}</tbody>
+      </table>
+    `;
+  }
+
+  function renderHeadingSegment(text) {
+    const match = text.match(/^(#{1,6})\s+(.+)$/);
+    if (!match) return '';
+    const level = Math.min(6, Math.max(1, match[1].length));
+    return `<h${level}>${formatInline(match[2].trim())}</h${level}>`;
+  }
+
+  function renderHeadingAndBodySegment(lines) {
+    if (!lines.length) return '';
+    const headingHtml = renderHeadingSegment(lines[0]);
+    if (!headingHtml || lines.length < 2) return '';
+
+    const bodyHtml = formatSegment(lines.slice(1).join('\n'));
+    return `${headingHtml}${bodyHtml}`;
+  }
+
   function formatSegment(segment) {
     const trimmed = segment.trim();
     if (!trimmed) return '';
 
-    const lines = trimmed.split('\n').filter(Boolean);
+    const normalized = trimmed.replace(/<br\s*\/?\s*>/gi, '\n');
+
+    const headingHtml = renderHeadingSegment(normalized);
+    if (headingHtml) {
+      return headingHtml;
+    }
+
+    const lines = normalized.split('\n').filter(Boolean);
+    const headingAndBodyHtml = renderHeadingAndBodySegment(lines);
+    if (headingAndBodyHtml) {
+      return headingAndBodyHtml;
+    }
+
     const unordered = lines.every(function (line) { return /^[-*•]\s+/.test(line); });
     const ordered = lines.every(function (line) { return /^\d+\.\s+/.test(line); });
+
+    if (lines.length >= 2 && isTableSeparatorLine(lines[1]) && lines[0].includes('|')) {
+      return renderTableSegment(lines);
+    }
 
     if (unordered) {
       return `<ul>${lines.map(function (line) {
@@ -605,11 +683,13 @@
       }).join('')}</ol>`;
     }
 
-    return `<p>${formatInline(trimmed.replace(/\n/g, '<br>'))}</p>`;
+    return `<p>${formatInline(normalized.replace(/\n/g, '<br>'))}</p>`;
   }
 
   function renderRichText(text) {
-    const safe = escapeHtml(text).replace(/\r\n/g, '\n');
+    const safe = escapeHtml(text)
+      .replace(/\r\n/g, '\n')
+      .replace(/&lt;br\s*\/?\s*&gt;/gi, '\n');
     const chunks = safe.split(/```/);
     const html = chunks.map(function (chunk, idx) {
       if (idx % 2 === 1) {
@@ -720,6 +800,421 @@
     `;
   }
 
+  function summarizeWorkflowStep(step, index) {
+    if (!step || typeof step !== 'object') {
+      return {
+        title: `步骤 ${index + 1}`,
+        detail: '无可用明细',
+        status: 'unknown'
+      };
+    }
+
+    const toolName = String(step.tool_name || step.tool || `step_${index + 1}`);
+    const status = String(step.status || 'success');
+    const latency = Number(step.latency_ms || 0);
+    const summary = String(step.tool_output_summary || '').trim();
+    return {
+      title: toolName,
+      detail: `${summary || '已执行'}${latency > 0 ? ` · ${latency}ms` : ''}`,
+      status: status
+    };
+  }
+
+  function renderWorkflowTimeline(steps) {
+    const list = Array.isArray(steps) ? steps : [];
+    if (!list.length) return '';
+
+    return `
+      <div class="message-workflow">
+        <div class="message-workflow-title">智能体执行时间线</div>
+        <div class="message-workflow-list">
+          ${list.map(function (item, index) {
+            const step = summarizeWorkflowStep(item, index);
+            const statusClass = step.status === 'failed' ? 'failed' : (step.status === 'success' ? 'success' : 'unknown');
+            return `
+              <div class="message-workflow-item ${statusClass}">
+                <div class="message-workflow-index">${index + 1}</div>
+                <div class="message-workflow-main">
+                  <div class="message-workflow-step">${escapeHtml(step.title)}</div>
+                  <div class="message-workflow-detail">${escapeHtml(step.detail)}</div>
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      </div>
+    `;
+  }
+
+  async function askTutorAgentWithImage(imageFile, question, sessionId) {
+    const formData = new FormData();
+    formData.append('image', imageFile);
+    formData.append('student_id', getUserId());
+    formData.append('session_id', sessionId || `session_${Date.now()}`);
+    formData.append('question', String(question || '').trim());
+
+    const response = await fetch(`${API_BASE}/api/agent/ocr-tutor`, {
+      method: 'POST',
+      body: formData
+    });
+    return parseApiResponse(response);
+  }
+
+  async function askTutorAgentWithText(question, sessionId) {
+    const response = await fetch(`${API_BASE}/api/agent/ocr-tutor`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        student_id: getUserId(),
+        session_id: sessionId || `session_${Date.now()}`,
+        ocr_text: String(question || '').trim(),
+        question: String(question || '').trim()
+      })
+    });
+    return parseApiResponse(response);
+  }
+
+  async function askTutorAgentStream(options) {
+    const opts = options || {};
+    const sessionId = opts.sessionId || `session_${Date.now()}`;
+    const question = String(opts.question || '').trim();
+    const onEvent = typeof opts.onEvent === 'function' ? opts.onEvent : function () {};
+    const imageFile = opts.imageFile || null;
+
+    let response;
+    if (imageFile) {
+      const formData = new FormData();
+      formData.append('image', imageFile);
+      formData.append('student_id', getUserId());
+      formData.append('session_id', sessionId);
+      formData.append('question', question);
+      formData.append('ocr_text', question);
+      formData.append('stream', 'true');
+      response = await fetch(`${API_BASE}/api/agent/ocr-tutor`, {
+        method: 'POST',
+        body: formData
+      });
+    } else {
+      response = await fetch(`${API_BASE}/api/agent/ocr-tutor`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          student_id: getUserId(),
+          session_id: sessionId,
+          ocr_text: question,
+          question: question,
+          stream: true
+        })
+      });
+    }
+
+    if (!response.ok) {
+      return parseApiResponse(response);
+    }
+
+    const reader = response.body && response.body.getReader ? response.body.getReader() : null;
+    if (!reader) {
+      throw new Error('浏览器不支持流式读取，无法启用智能体实时模式');
+    }
+
+    const decoder = new TextDecoder('utf-8');
+    let buffer = '';
+    let finalPayload = null;
+
+    while (true) {
+      const chunk = await reader.read();
+      if (chunk.done) break;
+      buffer += decoder.decode(chunk.value, { stream: true });
+
+      const events = buffer.split('\n\n');
+      buffer = events.pop() || '';
+
+      events.forEach(function (rawEvent) {
+        const lines = String(rawEvent || '').split('\n');
+        const dataLines = lines
+          .filter(function (line) {
+            return line.startsWith('data:');
+          })
+          .map(function (line) {
+            return line.slice(5).trim();
+          });
+
+        if (!dataLines.length) return;
+        const payloadText = dataLines.join('\n');
+        try {
+          const evt = JSON.parse(payloadText);
+          onEvent(evt);
+          if (evt && evt.type === 'final' && evt.payload) {
+            finalPayload = evt.payload;
+          }
+          if (evt && evt.type === 'error') {
+            throw new Error(String(evt.content || 'stream_error'));
+          }
+        } catch (error) {
+          // 允许非JSON事件静默跳过，避免中断正常流。
+        }
+      });
+    }
+
+    if (!finalPayload) {
+      throw new Error('流式会话已结束，但未收到最终结果。');
+    }
+    return finalPayload;
+  }
+
+  async function ingestKnowledgeFromInput() {
+    const input = document.getElementById('questionInput');
+    const raw = String(input && input.value || '').trim();
+    if (!raw) {
+      addMessage('请先在输入框写下要入库的知识内容，再点击“存为知识库”。', 'ai', {
+        source: 'kb_ingest',
+        aiUsed: false,
+        error: ''
+      });
+      return;
+    }
+
+    const title = raw.length > 24 ? `${raw.slice(0, 24)}...` : raw;
+    const response = await fetch(`${API_BASE}/api/agent/kb/ingest`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        student_id: getUserId(),
+        title: title,
+        content: raw,
+        source: 'chat_page'
+      })
+    });
+    const data = await parseApiResponse(response);
+    addMessage(`知识库已写入：${title}`, 'ai', {
+      source: 'kb_ingest',
+      aiUsed: false,
+      error: '',
+      evidence: {
+        tool_calls: ['kb_ingest'],
+        trace_count: 1
+      }
+    });
+    return data;
+  }
+
+  const KB_SEARCH_MODES = {
+    HYBRID: 'hybrid',
+    DENSE_VECTOR: 'dense_vector',
+    LEXICAL: 'lexical'
+  };
+  let currentKbSearchMode = KB_SEARCH_MODES.HYBRID;
+
+  async function searchKnowledgeFromInput() {
+    const input = document.getElementById('questionInput');
+    const query = String(input && input.value || '').trim();
+    
+    if (!query) {
+      addMessage('请先输入检索问题，再点击"检索知识库"。', 'ai', {
+        source: 'kb_search',
+        aiUsed: false,
+        error: ''
+      });
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/api/agent/kb/search`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          student_id: getUserId(),
+          query: query,
+          top_k: 5,
+          search_mode: currentKbSearchMode
+        })
+      });
+
+      const data = await parseApiResponse(response);
+      const hits = Array.isArray(data.hits) ? data.hits : [];
+      
+      const resultHtml = generateEnhancedSearchResultsHTML(query, hits, data);
+
+      addMessage(resultHtml, 'ai', {
+        source: 'kb_search',
+        aiUsed: false,
+        renderAsHtml: true,
+        error: '',
+        evidence: {
+          tool_calls: ['kb_search'],
+          trace_count: hits.length
+        },
+        metadata: {
+          search_mode: currentKbSearchMode,
+          response_time_ms: data.query_time_ms || 0,
+          results_count: hits.length
+        }
+      });
+
+      return data;
+
+    } catch (error) {
+      addMessage(
+        '知识库检索失败: ' + (error && error.message || 'Unknown error'),
+        'ai',
+        {
+          source: 'kb_search',
+          aiUsed: false,
+          error: error && error.message ? error.message : ''
+        }
+      );
+    }
+  }
+
+  function generateEnhancedSearchResultsHTML(query, hits, metadata) {
+    if (!hits || hits.length === 0) {
+      return `<div class="kb-enhanced-result" style="padding: 12px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
+        <div style="color: #856404;">未找到与 "<strong>${escapeHtmlForKB(query)}</strong>" 相关的知识</div>
+        <div style="color: #856404; font-size: 12px; margin-top: 6px;">建议：尝试换个关键词或更长的表述</div>
+      </div>`;
+    }
+
+    const modeLabel = currentKbSearchMode === 'dense_vector' ? '🔍 向量搜索' :
+                      currentKbSearchMode === 'lexical' ? '📝 词法搜索' :
+                      '⚡ 混合搜索';
+
+    const responseTime = metadata.query_time_ms ? `${metadata.query_time_ms}ms` : '计算中...';
+
+    let resultHtml = `
+      <div class="kb-enhanced-result">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #e0e0e0;">
+          <div style="font-weight: bold; color: #1976D2; font-size: 14px;">
+            ${modeLabel}
+          </div>
+          <div style="display: flex; gap: 16px; align-items: center;">
+            <span style="color: #666; font-size: 12px;">找到 ${hits.length} 个结果</span>
+            <span style="color: #2E7D32; font-size: 12px; font-weight: bold;">响应: ${responseTime}</span>
+          </div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+    `;
+
+    hits.forEach((hit, index) => {
+      resultHtml += generateSearchResultItemHTML(hit, index + 1);
+    });
+
+    resultHtml += `
+        </div>
+        <div style="margin-top: 12px; padding-top: 8px; border-top: 1px solid #e0e0e0; text-align: center; color: #999; font-size: 12px;">
+          💡 这是使用高效的向量检索技术获取的结果，能够理解语义相似性。
+        </div>
+      </div>
+    `;
+
+    return resultHtml;
+  }
+
+  function generateSearchResultItemHTML(hit, index) {
+    const sourceType = String(hit.source_type || hit.channel || hit.source || '').toLowerCase();
+    const sourceLabel = sourceType.indexOf('vector') >= 0 ? '向量' :
+                        sourceType.indexOf('graph') >= 0 ? '图谱' :
+                        sourceType.indexOf('private') >= 0 ? '私有' :
+                        sourceType.indexOf('lexical') >= 0 ? '词法' : '混合';
+
+    const vectorPercent = hit.vector_score ? Math.round(hit.vector_score * 100) : null;
+    const lexicalPercent = hit.lexical_score ? Math.round(hit.lexical_score * 100) : null;
+    const hybridPercent = Math.round((hit.score || 0) * 100);
+
+    let scoreHtml = '';
+    if (vectorPercent) {
+      scoreHtml += `<span style="background: #E3F2FD; color: #1976D2; padding: 2px 6px; border-radius: 3px; font-size: 11px;">向量: ${vectorPercent}%</span>`;
+    }
+    if (lexicalPercent) {
+      scoreHtml += `<span style="background: #FFF3E0; color: #F57C00; padding: 2px 6px; border-radius: 3px; font-size: 11px;">词法: ${lexicalPercent}%</span>`;
+    }
+    scoreHtml += `<span style="background: #E8F5E9; color: #2E7D32; padding: 2px 6px; border-radius: 3px; font-size: 11px; font-weight: bold;">综合: ${hybridPercent}%</span>`;
+
+    let metadataHtml = `<span style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 11px; color: #999;">源: ${sourceLabel}</span>`;
+    
+    if (hit.discipline) {
+      metadataHtml += `<span style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 11px; color: #999;">${hit.discipline}</span>`;
+    }
+    
+    if (hit.chapter) {
+      metadataHtml += `<span style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 11px; color: #999;">${hit.chapter}</span>`;
+    }
+
+    if (hit.subject_route) {
+      metadataHtml += `<span style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 11px; color: #999;">${hit.subject_route}</span>`;
+    }
+
+    const snippetRaw = hit.snippet || hit.content || '（无内容预览）';
+    const snippet = String(snippetRaw || '').slice(0, 420);
+    const title = hit.title || '知识片段';
+
+    return `
+      <div style="padding: 12px; background: white; border: 1px solid #e0e0e0; border-radius: 4px; transition: all 0.2s;">
+        <div style="display: flex; gap: 10px; align-items: flex-start;">
+          <div style="min-width: 30px; height: 30px; background: #4CAF50; color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 14px; flex-shrink: 0;">
+            ${index}
+          </div>
+          <div style="flex: 1;">
+            <div style="font-weight: bold; color: #1976D2; margin-bottom: 6px;">
+              ${escapeHtmlForKB(title)}
+            </div>
+            <div style="display: flex; gap: 8px; margin: 6px 0; flex-wrap: wrap;">
+              ${scoreHtml}
+            </div>
+            <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap; font-size: 11px;">
+              ${metadataHtml}
+            </div>
+            ${(hit.chapter || hit.discipline) ? `<div style="color:#5f738c;font-size:11px;margin:2px 0 6px;">定位：${escapeHtmlForKB(hit.discipline || '未标注')} / ${escapeHtmlForKB(hit.chapter || '未标注')}</div>` : ''}
+            <div style="color: #666; font-size: 12px; line-height: 1.45; margin: 8px 0; padding: 6px; background: #fafafa; border-radius: 3px; max-height: 110px; overflow: hidden;">
+              ${escapeHtmlForKB(snippet)}
+            </div>
+            <button onclick="insertKBResultToInput('${escapeJsString(title)}')" 
+                    style="background: #4CAF50; color: white; border: none; padding: 6px 12px; border-radius: 3px; cursor: pointer; font-size: 12px; transition: background 0.2s; margin-top: 4px;">
+              引用这个答案
+            </button>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function escapeHtmlForKB(text) {
+    const map = {
+      '&': '&amp;',
+      '<': '&lt;',
+      '>': '&gt;',
+      '"': '&quot;',
+      "'": '&#039;'
+    };
+    return String(text || '').replace(/[&<>"']/g, m => map[m]);
+  }
+
+  function escapeJsString(str) {
+    return String(str || '')
+      .replace(/\\/g, '\\\\')
+      .replace(/'/g, "\\'")
+      .replace(/"/g, '\\"')
+      .replace(/\n/g, '\\n')
+      .replace(/\r/g, '\\r');
+  }
+
+  function insertKBResultToInput(title) {
+    const input = document.getElementById('questionInput');
+    if (input) {
+      const currentValue = input.value.trim();
+      const newValue = currentValue + (currentValue ? '\n\n' : '') + '📚 来自知识库: ' + title;
+      input.value = newValue;
+      input.focus();
+    }
+  }
+  window.insertKBResultToInput = insertKBResultToInput;
+
+  function switchKBSearchMode(mode) {
+    if (KB_SEARCH_MODES[mode] || Object.values(KB_SEARCH_MODES).includes(mode)) {
+      currentKbSearchMode = mode;
+    }
+  }
+  window.switchKBSearchMode = switchKBSearchMode;
+
   function createMessageRow(text, sender, options) {
     const opts = options || {};
     const row = document.createElement('div');
@@ -736,6 +1231,8 @@
     textDiv.className = 'message-text';
     if (sender === 'user') {
       textDiv.innerHTML = `<p>${escapeHtml(text)}</p>`;
+    } else if (opts.renderAsHtml) {
+      textDiv.innerHTML = String(text || '');
     } else {
       textDiv.innerHTML = renderRichText(text);
     }
@@ -749,6 +1246,14 @@
       }
     }
 
+    if (sender === 'ai' && Array.isArray(opts.workflowSteps) && opts.workflowSteps.length) {
+      const workflowWrap = document.createElement('div');
+      workflowWrap.innerHTML = renderWorkflowTimeline(opts.workflowSteps);
+      if (workflowWrap.firstElementChild) {
+        bubble.appendChild(workflowWrap.firstElementChild);
+      }
+    }
+
     const metaItems = [];
     if (sender === 'ai' && opts.source) {
       metaItems.push(`<span class="meta-chip">来源：${escapeHtml(opts.source)}</span>`);
@@ -758,6 +1263,25 @@
     }
     if (sender === 'ai' && opts.error) {
       metaItems.push(`<span class="meta-chip error">${escapeHtml(opts.error)}</span>`);
+    }
+    if (sender === 'ai' && opts.evidence && typeof opts.evidence === 'object') {
+      if (Array.isArray(opts.evidence.tool_calls) && opts.evidence.tool_calls.length) {
+        metaItems.push(`<span class="meta-chip">工具链：${escapeHtml(opts.evidence.tool_calls.join(' -> '))}</span>`);
+      }
+      if (typeof opts.evidence.trace_count === 'number') {
+        metaItems.push(`<span class="meta-chip">轨迹步数：${escapeHtml(String(opts.evidence.trace_count))}</span>`);
+      }
+      if (typeof opts.evidence.has_kb === 'boolean') {
+        metaItems.push(`<span class="meta-chip">知识库：${opts.evidence.has_kb ? '已命中' : '未命中'}</span>`);
+      }
+    }
+    if (sender === 'ai' && opts.meta && typeof opts.meta === 'object') {
+      if (opts.meta.kb_routing_required) {
+        metaItems.push('<span class="meta-chip">路由：要求知识库</span>');
+      }
+      if (opts.meta.kb_retry_triggered) {
+        metaItems.push('<span class="meta-chip">补偿：已触发重试</span>');
+      }
     }
     if (sender === 'ai' && opts.graphSync && typeof opts.graphSync === 'object') {
       const mode = opts.graphSync.mode || 'unknown';
@@ -855,6 +1379,35 @@
     }
   }
 
+  function scrollChatToLatest() {
+    const chatMessages = document.getElementById('chatMessages');
+    if (!chatMessages) return;
+
+    let attempts = 0;
+    const doScroll = () => {
+      // 1. 如果是容器内局部滚动
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      
+      // 2. 如果因为 css 布局问题变成了全局 / window 级别的滚动，则兜底强制底部元素进入视野
+      if (chatMessages.lastElementChild && typeof chatMessages.lastElementChild.scrollIntoView === 'function') {
+        chatMessages.lastElementChild.scrollIntoView({ behavior: 'auto', block: 'end' });
+      } else {
+        window.scrollTo(0, document.body.scrollHeight);
+      }
+    };
+    
+    doScroll();
+    
+    // 持续 1.5 秒尝试滚动到底部，保证包含任何图片、公式等异步撑开高度后的节点都能被定位
+    const interval = setInterval(() => {
+      doScroll();
+      attempts++;
+      if (attempts >= 30) {
+        clearInterval(interval);
+      }
+    }, 50);
+  }
+
   function ensureWelcomeMessage() {
     const session = ensureActiveSession();
     if (Array.isArray(session.messages) && session.messages.length > 0) return;
@@ -863,6 +1416,7 @@
     activeSessionId = session.id;
     saveSessionsToLocal();
     addMessage(WELCOME_MESSAGE, 'ai', { source: 'system', aiUsed: true, error: '' });
+    scrollChatToLatest();
   }
 
   function renderActiveSessionMessages() {
@@ -872,6 +1426,7 @@
       addMessage(message.text, message.sender, message.options || {}, false);
     });
     renderSessionList();
+    scrollChatToLatest();
   }
 
   function renderSessionList() {
@@ -1175,6 +1730,20 @@
     chatMessages.scrollTop = chatMessages.scrollHeight;
   }
 
+  function setTypingMessageText(text) {
+    const typingRow = document.getElementById('typingRow');
+    if (!typingRow) return;
+
+    const bubble = typingRow.querySelector('.message-bubble');
+    if (!bubble) return;
+
+    const safe = escapeHtml(String(text || '正在分析中...'));
+    bubble.innerHTML = `
+      <div class="typing-dots"><span></span><span></span><span></span></div>
+      <div class="typing-status">${safe}</div>
+    `;
+  }
+
   function removeTypingMessage() {
     const typingRow = document.getElementById('typingRow');
     if (typingRow && typingRow.parentNode) {
@@ -1249,6 +1818,28 @@
     }
   }
 
+  function renderAdviceHint(data, sourceTag) {
+    const diagnosis = data && typeof data.diagnosis === 'object' ? data.diagnosis : {};
+    const advice = data && typeof data.learning_advice === 'object' ? data.learning_advice : {};
+    const lines = [];
+
+    if (diagnosis && diagnosis.error_type) {
+      lines.push(`诊断结论：${diagnosis.error_type}`);
+    }
+    if (advice && advice.建议) {
+      lines.push(`学习建议：${advice.建议}`);
+    } else if (diagnosis && diagnosis.recommendation) {
+      lines.push(`学习建议：${diagnosis.recommendation}`);
+    }
+
+    if (!lines.length) return;
+    addMessage(lines.join('\n'), 'ai', {
+      source: sourceTag || 'diagnosis_hint',
+      aiUsed: true,
+      error: ''
+    });
+  }
+
   async function askQuestion(prefilledQuestion) {
     if (isAskingQuestion) return;
 
@@ -1273,10 +1864,150 @@
     addTypingMessage();
 
     try {
+      const imageAttachment = attachmentsToSend.find(function (item) {
+        return item && item.kind === 'image';
+      });
+
+      if (imageAttachment) {
+        const session = ensureActiveSession();
+        const streamEvents = [];
+        const agentData = await askTutorAgentStream({
+          imageFile: imageAttachment.file,
+          question: question || DEFAULT_ATTACHMENT_QUESTION,
+          sessionId: session ? session.id : '',
+          onEvent: function (evt) {
+            if (!evt || typeof evt !== 'object') return;
+            if (evt.type === 'start') {
+              setTypingMessageText('智能体已启动，正在读取题目...');
+              return;
+            }
+            if (evt.type === 'tool_start') {
+              const toolName = String(evt.tool || '工具');
+              streamEvents.push({ tool_name: toolName, status: 'running', tool_output_summary: '执行中' });
+              setTypingMessageText(`正在调用 ${toolName}...`);
+              return;
+            }
+            if (evt.type === 'tool_end') {
+              setTypingMessageText('工具调用完成，正在整理答案...');
+              return;
+            }
+            if (evt.type === 'token') {
+              setTypingMessageText('正在生成讲解内容...');
+              return;
+            }
+            if (evt.type === 'error') {
+              setTypingMessageText('智能体运行异常，准备降级提示...');
+            }
+          }
+        });
+
+        removeTypingMessage();
+        addMessage(normalizeAiAnswerText(agentData.answer || ''), 'ai', {
+          source: 'agent_ocr_tutor',
+          aiUsed: true,
+          error: '',
+          evidence: agentData.evidence || null,
+          meta: agentData.meta || null
+        });
+
+        const workflow = Array.isArray(agentData.steps_log) && agentData.steps_log.length
+          ? agentData.steps_log
+          : streamEvents;
+        if (Array.isArray(workflow) && workflow.length) {
+          addMessage('已生成本次辅导的可视化执行轨迹：', 'ai', {
+            source: 'agent_workflow',
+            aiUsed: true,
+            workflowSteps: workflow,
+            evidence: agentData.evidence || null,
+            meta: agentData.meta || null
+          });
+        }
+
+        const ignoredCount = attachmentsToSend.filter(function (item) {
+          return item && item.kind !== 'image';
+        }).length;
+        if (ignoredCount > 0) {
+          addMessage(`本次智能体通道优先处理了图片题目，另有 ${ignoredCount} 个非图片附件未参与 OCR。`, 'ai', {
+            source: 'agent_notice',
+            aiUsed: false,
+            error: ''
+          });
+        }
+        return;
+      }
+
       const attachmentResult = attachmentsToSend.length
         ? await prepareAttachmentsForQuestion(attachmentsToSend)
         : { attachments: [], warnings: [] };
       const questionForApi = buildPromptTextFromPreparedAttachments(question, attachmentResult.attachments);
+
+      if (agentModeEnabled) {
+        const session = ensureActiveSession();
+        const streamEvents = [];
+        const agentData = await askTutorAgentStream({
+          question: questionForApi,
+          sessionId: session ? session.id : '',
+          onEvent: function (evt) {
+            if (!evt || typeof evt !== 'object') return;
+            if (evt.type === 'start') {
+              setTypingMessageText('智能体已启动，正在分析问题...');
+              return;
+            }
+            if (evt.type === 'tool_start') {
+              const toolName = String(evt.tool || '工具');
+              streamEvents.push({ tool_name: toolName, status: 'running', tool_output_summary: '执行中' });
+              setTypingMessageText(`正在调用 ${toolName}...`);
+              return;
+            }
+            if (evt.type === 'tool_end') {
+              setTypingMessageText('工具调用完成，正在整合证据...');
+              return;
+            }
+            if (evt.type === 'token') {
+              setTypingMessageText('正在生成讲解内容...');
+              return;
+            }
+            if (evt.type === 'error') {
+              setTypingMessageText('智能体运行异常，准备降级提示...');
+            }
+          }
+        });
+
+        removeTypingMessage();
+        addMessage(normalizeAiAnswerText(agentData.answer || ''), 'ai', {
+          source: 'agent_text_tutor',
+          aiUsed: true,
+          error: '',
+          graphSync: (agentData.knowledge_extract && agentData.knowledge_extract.graph_sync) || null,
+          evidence: agentData.evidence || null,
+          meta: agentData.meta || null
+        });
+        renderAdviceHint(agentData, 'agent_diagnosis_hint');
+
+        const workflow = Array.isArray(agentData.steps_log) && agentData.steps_log.length
+          ? agentData.steps_log
+          : streamEvents;
+        if (Array.isArray(workflow) && workflow.length) {
+          addMessage('已生成本次辅导的可视化执行轨迹：', 'ai', {
+            source: 'agent_workflow',
+            aiUsed: true,
+            workflowSteps: workflow,
+            evidence: agentData.evidence || null,
+            meta: agentData.meta || null
+          });
+        }
+
+        if (attachmentResult.warnings.length) {
+          addMessage(`附件处理提醒：\n${attachmentResult.warnings.map(function (item, index) {
+            return `${index + 1}. ${item}`;
+          }).join('\n')}`, 'ai', {
+            source: 'attachment',
+            aiUsed: false,
+            error: ''
+          });
+        }
+        return;
+      }
 
       let response = await fetch(`${API_BASE}/api/ask`, {
         method: 'POST',
@@ -1299,9 +2030,12 @@
 
       const data = await parseApiResponse(response);
       const knowledgeSeed = buildKnowledgeSeedText(question, attachmentResult.attachments);
-      const extractData = knowledgeSeed
-        ? await autoExtractKnowledge(knowledgeSeed, attachmentsToSend.length ? 'chat_attachment' : 'qa')
-        : {};
+      let extractData = data.knowledge_extract || {};
+      if (!extractData || typeof extractData !== 'object' || !Object.keys(extractData).length) {
+        extractData = knowledgeSeed
+          ? await autoExtractKnowledge(knowledgeSeed, attachmentsToSend.length ? 'chat_attachment' : 'qa')
+          : {};
+      }
       const attachmentGraphSync = attachmentResult.attachments.find(function (attachment) {
         return attachment.graphSync;
       });
@@ -1311,8 +2045,19 @@
         source: data.source,
         aiUsed: data.ai_used,
         error: data.error,
-        graphSync: extractData.graph_sync || (attachmentGraphSync ? attachmentGraphSync.graphSync : null)
+        graphSync: extractData.graph_sync || (attachmentGraphSync ? attachmentGraphSync.graphSync : null),
+        evidence: data.evidence || null
       });
+      renderAdviceHint(data, 'qa_diagnosis_hint');
+
+      if (Array.isArray(data.steps_log) && data.steps_log.length) {
+        addMessage('已生成本次辅导的可视化执行轨迹：', 'ai', {
+          source: 'agent_workflow',
+          aiUsed: true,
+          workflowSteps: data.steps_log,
+          evidence: data.evidence || null
+        });
+      }
 
       if (attachmentResult.warnings.length) {
         addMessage(`附件处理提醒：\n${attachmentResult.warnings.map(function (item, index) {
@@ -1416,6 +2161,72 @@
     renderPendingAttachments();
   }
 
+  function initAgentExperienceControls() {
+    loadAgentModeState();
+    const toggle = document.getElementById('agentModeToggle');
+    const kbSaveBtn = document.getElementById('kbSaveBtn');
+    const kbSearchBtn = document.getElementById('kbSearchBtn');
+    const kbSearchModeSelect = document.getElementById('kbSearchModeSelect');
+
+    if (toggle) {
+      toggle.checked = agentModeEnabled;
+      if (!toggle.dataset.bound) {
+        toggle.addEventListener('change', function () {
+          agentModeEnabled = !!toggle.checked;
+          saveAgentModeState();
+          addMessage(`已切换为${agentModeEnabled ? '智能体模式（文本也走工具链）' : '普通问答模式（走 /api/ask）'}。`, 'ai', {
+            source: 'agent_mode',
+            aiUsed: false,
+            error: ''
+          });
+        });
+        toggle.dataset.bound = '1';
+      }
+    }
+
+    if (kbSaveBtn && !kbSaveBtn.dataset.bound) {
+      kbSaveBtn.addEventListener('click', async function () {
+        if (isAskingQuestion) return;
+        try {
+          await ingestKnowledgeFromInput();
+        } catch (error) {
+          addMessage(withSuggestion('知识库写入失败', error, '确认后端可用并重试'), 'ai', {
+            source: 'kb_ingest',
+            aiUsed: false,
+            error: error && error.message ? error.message : 'kb_ingest_error'
+          });
+        }
+      });
+      kbSaveBtn.dataset.bound = '1';
+    }
+
+    if (kbSearchBtn && !kbSearchBtn.dataset.bound) {
+      kbSearchBtn.addEventListener('click', async function () {
+        if (isAskingQuestion) return;
+        try {
+          await searchKnowledgeFromInput();
+        } catch (error) {
+          addMessage(withSuggestion('知识库检索失败', error, '确认后端可用并重试'), 'ai', {
+            source: 'kb_search',
+            aiUsed: false,
+            error: error && error.message ? error.message : 'kb_search_error'
+          });
+        }
+      });
+      kbSearchBtn.dataset.bound = '1';
+    }
+
+    if (kbSearchModeSelect) {
+      kbSearchModeSelect.value = currentKbSearchMode;
+      if (!kbSearchModeSelect.dataset.bound) {
+        kbSearchModeSelect.addEventListener('change', function () {
+          switchKBSearchMode(String(kbSearchModeSelect.value || '').trim());
+        });
+        kbSearchModeSelect.dataset.bound = '1';
+      }
+    }
+  }
+
   function initTaskModal() {
     const modal = document.getElementById('taskStatusModal');
     const closeButton = document.getElementById('taskModalCloseBtn');
@@ -1510,6 +2321,7 @@
     initConversationUI();
     initComposer();
     initAttachmentComposer();
+    initAgentExperienceControls();
     initTaskModal();
     initGlobalSidebar();
     initReactiveBindings();

@@ -8,8 +8,12 @@ $envFiles = @(
 )
 $condaExe = "D:/anaconda/Scripts/conda.exe"
 $pythonExe = "D:/anaconda/python.exe"
+$workspaceVenvPython = Join-Path $projectRoot ".venv/Scripts/python.exe"
+$parentVenvPython = Join-Path (Split-Path -Parent $projectRoot) ".venv/Scripts/python.exe"
 
 function Resolve-PythonExe {
+  if (Test-Path $workspaceVenvPython) { return $workspaceVenvPython }
+  if (Test-Path $parentVenvPython) { return $parentVenvPython }
   if (Test-Path $pythonExe) { return $pythonExe }
   $pyCmd = Get-Command python -ErrorAction SilentlyContinue
   if ($pyCmd) { return $pyCmd.Source }

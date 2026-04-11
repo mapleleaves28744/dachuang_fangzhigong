@@ -1,5 +1,5 @@
 ﻿{
-    "user_id":  "reg4_20260316182918",
+    "user_id":  "reg4_20260411030241",
     "total":  19,
     "passed":  19,
     "failed":  0,
@@ -18,7 +18,7 @@
                   {
                       "name":  "plans.post",
                       "ok":  true,
-                      "detail":  "id=b25efcce-00f3-4d96-b3c1-d661334236e5"
+                      "detail":  "id=3453da59-8be0-45fa-86a0-46e6d9fc278c"
                   },
                   {
                       "name":  "plans.put",
@@ -43,7 +43,7 @@
                   {
                       "name":  "ingest.async",
                       "ok":  true,
-                      "detail":  "task=28f01c1b-d482-4c69-84b6-4dab760f325d"
+                      "detail":  "task=292f2961-1b0a-4b28-a0b5-9711fcad8917"
                   },
                   {
                       "name":  "tasks.poll",
@@ -53,12 +53,12 @@
                   {
                       "name":  "graph.get",
                       "ok":  true,
-                      "detail":  "nodes=3"
+                      "detail":  "nodes=7"
                   },
                   {
                       "name":  "graph.extract",
                       "ok":  true,
-                      "detail":  "new=2"
+                      "detail":  "new=0"
                   },
                   {
                       "name":  "graph.mastery",
@@ -68,7 +68,7 @@
                   {
                       "name":  "graph.path",
                       "ok":  true,
-                      "detail":  "len=0"
+                      "detail":  "len=2"
                   },
                   {
                       "name":  "diagnosis.analyze",

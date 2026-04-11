@@ -301,6 +301,34 @@ class TestLearningProfileContract(unittest.TestCase):
 
         self.assertEqual(items, [])
 
+    def test_weak_recommendation_reason_varies_by_context(self):
+        runtime = build_recommendation_runtime({
+            "learning_style": "visual",
+            "style_method": "rule",
+            "style_scores": {"visual": 0.7, "auditory": 0.2, "kinesthetic": 0.1},
+            "style_features": {"image_count": 2, "link_count": 1, "note_count": 0, "qa_content_count": 1},
+            "best_time_range": "19:00-21:00",
+        })
+
+        item_a = build_weak_recommendation_item(
+            concept_name="电流",
+            mastery=0.3,
+            runtime=runtime,
+            diagnosis_examples=[{"category": "knowledge"}],
+            recent_category_count={"knowledge": 2, "skill": 0, "habit": 0, "unknown": 0},
+        )
+        item_b = build_weak_recommendation_item(
+            concept_name="电压",
+            mastery=0.55,
+            runtime=runtime,
+            diagnosis_examples=[],
+            recent_category_count={"knowledge": 0, "skill": 2, "habit": 0, "unknown": 0},
+        )
+
+        self.assertNotEqual(item_a.get("reason"), item_b.get("reason"))
+        self.assertIn("mode:", "|".join(item_a.get("strategy_tags", [])))
+        self.assertIn("focus:", "|".join(item_a.get("strategy_tags", [])))
+
 
 if __name__ == "__main__":
     unittest.main()

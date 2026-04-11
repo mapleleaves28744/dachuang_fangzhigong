@@ -1,0 +1,28 @@
+[
+  {
+    "id": "1f3f31b4-e9cd-4129-9e95-fca3034422bb",
+    "timestamp": "2026-04-11T02:54:36.222368",
+    "content_type": "qa",
+    "title": "智能体问答记录",
+    "content": "题目文本",
+    "source": "agent_ocr_tutor",
+    "topics": [
+      "题目文本",
+      "回答",
+      "这是答案"
+    ]
+  },
+  {
+    "id": "5543bdef-4113-4426-a6e8-0096d11ea4db",
+    "timestamp": "2026-04-11T02:55:25.795848",
+    "content_type": "qa",
+    "title": "智能体问答记录",
+    "content": "题目文本",
+    "source": "agent_ocr_tutor",
+    "topics": [
+      "题目文本",
+      "回答",
+      "这是答案"
+    ]
+  }
+]

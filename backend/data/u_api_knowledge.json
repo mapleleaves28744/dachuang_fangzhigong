@@ -1,0 +1,27 @@
+{
+  "concepts": [
+    {
+      "concept": "导数",
+      "first_seen": "2026-04-10T09:45:12.175537",
+      "mastery": 0.883,
+      "mastery_status": "熟练",
+      "accuracy": 1.0,
+      "raw_accuracy": 1.0,
+      "recent_accuracy": 1.0,
+      "practice_count": 1,
+      "time_score": 0.8,
+      "practice_score": 0.55,
+      "forgetting_factor": 1.0,
+      "base_mastery": 0.883,
+      "median_answer_seconds": null,
+      "standard_answer_seconds": 60.0,
+      "time_ratio": null,
+      "last_seen": "2026-04-11T03:20:39.877306",
+      "last_practiced": "2026-04-11T03:20:39.877306",
+      "last_reviewed": "2026-04-11T03:20:39.877306",
+      "review_count": 1
+    }
+  ],
+  "relations": [],
+  "deleted_concepts": []
+}

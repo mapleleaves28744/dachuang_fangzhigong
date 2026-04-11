@@ -1,0 +1,36 @@
+{
+  "user_id": "check_20260411025909",
+  "updated_at": "2026-04-11T02:59:20.908308",
+  "learning_style": "visual",
+  "style_scores": {
+    "visual": 0.358,
+    "auditory": 0.386,
+    "kinesthetic": 0.386
+  },
+  "style_method": "kmeans",
+  "style_features": {
+    "image_count": 0,
+    "link_count": 0,
+    "qa_content_count": 1,
+    "note_count": 0,
+    "other_count": 0,
+    "qa_log_count": 1,
+    "concept_count": 7
+  },
+  "interests": [
+    "函数",
+    "导数",
+    "力学",
+    "英语语法",
+    "循环结构"
+  ],
+  "best_time_range": "02:00-04:00",
+  "focus_minutes": 45,
+  "content_type_counter": {
+    "note": 0,
+    "link": 0,
+    "image": 0,
+    "qa": 1,
+    "other": 0
+  }
+}

@@ -4938,13 +4938,71 @@
                 .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
         }
 
+        function isTableSeparatorLine(line) {
+            return /^\s*\|?(?:\s*:?-{3,}:?\s*\|)+\s*:?-{3,}:?\s*\|?\s*$/.test(line);
+        }
+
+        function renderTableSegment(lines) {
+            if (lines.length < 2) return '';
+
+            const headerCells = lines[0].replace(/^\||\|$/g, '').split('|').map(cell => {
+                return formatInline(escapeHtml(cell.trim()));
+            });
+            const bodyRows = lines.slice(2).map(line => {
+                return line.replace(/^\||\|$/g, '').split('|').map(cell => {
+                    return formatInline(escapeHtml(cell.trim()));
+                });
+            }).filter(cells => cells.length && cells.some(cell => String(cell).trim() !== ''));
+
+            return `
+                <table class="markdown-table">
+                    <thead><tr>${headerCells.map(cell => `<th>${cell}</th>`).join('')}</tr></thead>
+                    <tbody>${bodyRows.map(cells => {
+                        return `<tr>${cells.map(cell => `<td>${cell}</td>`).join('')}</tr>`;
+                    }).join('')}</tbody>
+                </table>
+            `;
+        }
+
+        function renderHeadingSegment(text) {
+            const match = text.match(/^(#{1,6})\s+(.+)$/);
+            if (!match) return '';
+            const level = Math.min(6, Math.max(1, match[1].length));
+            return `<h${level}>${formatInline(match[2].trim())}</h${level}>`;
+        }
+
+        function renderHeadingAndBodySegment(lines) {
+            if (!lines.length) return '';
+            const headingHtml = renderHeadingSegment(lines[0]);
+            if (!headingHtml || lines.length < 2) return '';
+
+            const bodyHtml = formatSegment(lines.slice(1).join('\n'));
+            return `${headingHtml}${bodyHtml}`;
+        }
+
         function formatSegment(segment) {
             const trimmed = segment.trim();
             if (!trimmed) return '';
 
-            const lines = trimmed.split('\n').filter(Boolean);
+            const normalized = trimmed.replace(/<br\s*\/??\s*>/gi, '\n');
+
+            const headingHtml = renderHeadingSegment(normalized);
+            if (headingHtml) {
+                return headingHtml;
+            }
+
+            const lines = normalized.split('\n').filter(Boolean);
+            const headingAndBodyHtml = renderHeadingAndBodySegment(lines);
+            if (headingAndBodyHtml) {
+                return headingAndBodyHtml;
+            }
+
             const ul = lines.every(line => /^[-*•]\s+/.test(line));
             const ol = lines.every(line => /^\d+\.\s+/.test(line));
+
+            if (lines.length >= 2 && isTableSeparatorLine(lines[1]) && lines[0].includes('|')) {
+                return renderTableSegment(lines);
+            }
 
             if (ul) {
                 return `<ul>${lines.map(line => `<li>${formatInline(line.replace(/^[-*•]\s+/, ''))}</li>`).join('')}</ul>`;
@@ -4954,11 +5012,13 @@
                 return `<ol>${lines.map(line => `<li>${formatInline(line.replace(/^\d+\.\s+/, ''))}</li>`).join('')}</ol>`;
             }
 
-            return `<p>${formatInline(trimmed.replace(/\n/g, '<br>'))}</p>`;
+            return `<p>${formatInline(normalized.replace(/\n/g, '<br>'))}</p>`;
         }
 
         function renderRichText(text) {
-            const safe = escapeHtml(text).replace(/\r\n/g, '\n');
+            const safe = escapeHtml(text)
+                .replace(/\r\n/g, '\n')
+                .replace(/&lt;br\s*\/?\s*&gt;/gi, '\n');
             const chunks = safe.split(/```/);
             const html = chunks.map((chunk, idx) => {
                 if (idx % 2 === 1) {

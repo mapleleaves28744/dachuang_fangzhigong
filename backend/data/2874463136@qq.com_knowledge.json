@@ -1,0 +1,545 @@
+{
+  "concepts": [
+    {
+      "concept": "链式法则",
+      "first_seen": "2026-04-10T10:54:55.084289",
+      "last_seen": "2026-04-10T16:13:31.174231",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "傅里叶变换",
+      "first_seen": "2026-04-10T14:57:31.818864",
+      "last_seen": "2026-04-10T14:57:31.818864",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "信号处理",
+      "first_seen": "2026-04-10T14:59:18.893551",
+      "last_seen": "2026-04-10T14:59:18.893551",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "通信原理",
+      "first_seen": "2026-04-10T14:59:18.893551",
+      "last_seen": "2026-04-10T14:59:18.893551",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "上下文记忆",
+      "first_seen": "2026-04-10T15:10:05.277836",
+      "last_seen": "2026-04-10T15:10:05.277836",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "具体函数",
+      "first_seen": "2026-04-10T15:55:02.890834",
+      "last_seen": "2026-04-10T15:55:02.890834",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "导数推导",
+      "first_seen": "2026-04-10T15:55:02.890834",
+      "last_seen": "2026-04-10T15:55:02.890834",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "智能体",
+      "first_seen": "2026-04-10T16:12:37.644201",
+      "last_seen": "2026-04-10T16:12:37.644201",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "复合函数",
+      "first_seen": "2026-04-10T16:13:31.174231",
+      "last_seen": "2026-04-10T16:13:31.174231",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "函数求导",
+      "first_seen": "2026-04-11T01:18:49.495365",
+      "last_seen": "2026-04-11T01:18:49.495365",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "电流",
+      "first_seen": "2026-04-11T12:12:42.419163",
+      "last_seen": "2026-04-11T12:12:42.419163",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "电荷定向移动",
+      "first_seen": "2026-04-11T12:12:42.419163",
+      "last_seen": "2026-04-11T12:12:42.419163",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "安培",
+      "first_seen": "2026-04-11T12:12:42.419163",
+      "last_seen": "2026-04-11T12:12:42.419163",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "电路",
+      "first_seen": "2026-04-11T12:12:42.419163",
+      "last_seen": "2026-04-11T12:12:42.419163",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "单位换算",
+      "first_seen": "2026-04-11T12:12:42.419163",
+      "last_seen": "2026-04-11T12:12:42.419163",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "错因诊断",
+      "first_seen": "2026-04-11T12:12:42.419163",
+      "last_seen": "2026-04-11T12:12:42.419163",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "知识库污染",
+      "first_seen": "2026-04-11T12:12:42.419163",
+      "last_seen": "2026-04-11T12:12:42.419163",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "HTML",
+      "first_seen": "2026-04-11T12:55:33.859767",
+      "last_seen": "2026-04-11T13:05:42.221365",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "标记语言",
+      "first_seen": "2026-04-11T12:55:33.859767",
+      "last_seen": "2026-04-11T13:05:42.221365",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "标签",
+      "first_seen": "2026-04-11T12:55:33.859767",
+      "last_seen": "2026-04-11T12:55:33.859767",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "超文本",
+      "first_seen": "2026-04-11T12:55:33.859767",
+      "last_seen": "2026-04-11T12:55:33.859767",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "网页结构",
+      "first_seen": "2026-04-11T12:55:33.859767",
+      "last_seen": "2026-04-11T12:55:33.859767",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "CSS",
+      "first_seen": "2026-04-11T12:55:33.862370",
+      "last_seen": "2026-04-11T13:05:42.221365",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "JavaScript",
+      "first_seen": "2026-04-11T12:55:33.862370",
+      "last_seen": "2026-04-11T13:35:28.779466",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "声明式样式语言",
+      "first_seen": "2026-04-11T13:05:42.221365",
+      "last_seen": "2026-04-11T13:05:42.221365",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "网页内容结构",
+      "first_seen": "2026-04-11T13:05:42.221365",
+      "last_seen": "2026-04-11T13:05:42.221365",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "网页视觉样式",
+      "first_seen": "2026-04-11T13:05:42.221365",
+      "last_seen": "2026-04-11T13:05:42.221365",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "Node.js",
+      "first_seen": "2026-04-11T13:27:24.103758",
+      "last_seen": "2026-04-11T13:35:28.779466",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "V8引擎",
+      "first_seen": "2026-04-11T13:27:24.103758",
+      "last_seen": "2026-04-11T13:35:28.779466",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "事件驱动",
+      "first_seen": "2026-04-11T13:27:24.103758",
+      "last_seen": "2026-04-11T13:27:24.103758",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "CommonJS",
+      "first_seen": "2026-04-11T13:27:24.103758",
+      "last_seen": "2026-04-11T13:27:24.103758",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "npm",
+      "first_seen": "2026-04-11T13:27:24.103758",
+      "last_seen": "2026-04-11T13:27:24.103758",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "运行时环境",
+      "first_seen": "2026-04-11T13:35:28.779466",
+      "last_seen": "2026-04-11T13:35:28.779466",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "服务器端",
+      "first_seen": "2026-04-11T13:35:28.779466",
+      "last_seen": "2026-04-11T13:35:28.779466",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    }
+  ],
+  "relations": [
+    {
+      "source": "信号处理",
+      "target": "傅里叶变换",
+      "type": "前置",
+      "score": 0.9,
+      "evidence": "傅里叶变换是基础工具",
+      "source_text": "开始接触信号处理，正在学通信原理",
+      "created_at": "2026-04-10T14:59:18.893551",
+      "from": "qa"
+    },
+    {
+      "source": "通信原理",
+      "target": "信号处理",
+      "type": "前置",
+      "score": 0.85,
+      "evidence": "需先掌握信号处理",
+      "source_text": "开始接触信号处理，正在学通信原理",
+      "created_at": "2026-04-10T14:59:18.894086",
+      "from": "qa"
+    },
+    {
+      "source": "智能体",
+      "target": "上下文记忆",
+      "type": "相关",
+      "score": 0.75,
+      "evidence": "智能体需上下文记忆",
+      "source_text": "什么是智能体",
+      "created_at": "2026-04-10T16:12:37.644201",
+      "from": "qa"
+    },
+    {
+      "source": "链式法则",
+      "target": "复合函数",
+      "type": "前置",
+      "score": 0.92,
+      "evidence": "链式法则用于复合函数求导",
+      "source_text": "chain rule derivative composite function",
+      "created_at": "2026-04-10T16:13:31.174231",
+      "from": "targeted_diag"
+    },
+    {
+      "source": "函数求导",
+      "target": "函数",
+      "type": "前置",
+      "score": 0.9,
+      "evidence": "求导对象是函数",
+      "source_text": "什么是函数求导",
+      "created_at": "2026-04-11T01:18:49.495365",
+      "from": "qa"
+    },
+    {
+      "source": "函数求导",
+      "target": "链式法则",
+      "type": "相关",
+      "score": 0.75,
+      "evidence": "链式法则用于复合函数求导",
+      "source_text": "什么是函数求导",
+      "created_at": "2026-04-11T01:18:49.495365",
+      "from": "qa"
+    },
+    {
+      "source": "电流",
+      "target": "电荷定向移动",
+      "type": "前置",
+      "score": 0.95,
+      "evidence": "定义依赖",
+      "source_text": "问题：什么是电流\n回答：# 3 天精准学习计划（已优化）  \n⚠️ 原计划存在**重复性高、缺乏认知进阶、未隔离知识库污染风险**等问题。现依据「学生无掌握度数据→按P1低掌握度策略」，结合错因诊断前置原则，**重生成结构化、防错型、证据驱",
+      "created_at": "2026-04-11T12:12:42.419163",
+      "from": "agent_ocr_tutor_stream"
+    },
+    {
+      "source": "电流",
+      "target": "安培",
+      "type": "相关",
+      "score": 0.88,
+      "evidence": "单位是安培",
+      "source_text": "问题：什么是电流\n回答：# 3 天精准学习计划（已优化）  \n⚠️ 原计划存在**重复性高、缺乏认知进阶、未隔离知识库污染风险**等问题。现依据「学生无掌握度数据→按P1低掌握度策略」，结合错因诊断前置原则，**重生成结构化、防错型、证据驱",
+      "created_at": "2026-04-11T12:12:42.419163",
+      "from": "agent_ocr_tutor_stream"
+    },
+    {
+      "source": "错因诊断",
+      "target": "知识库污染",
+      "type": "因果",
+      "score": 0.9,
+      "evidence": "污染导致错因",
+      "source_text": "问题：什么是电流\n回答：# 3 天精准学习计划（已优化）  \n⚠️ 原计划存在**重复性高、缺乏认知进阶、未隔离知识库污染风险**等问题。现依据「学生无掌握度数据→按P1低掌握度策略」，结合错因诊断前置原则，**重生成结构化、防错型、证据驱",
+      "created_at": "2026-04-11T12:12:42.419163",
+      "from": "agent_ocr_tutor_stream"
+    },
+    {
+      "source": "电路",
+      "target": "电流",
+      "type": "相关",
+      "score": 0.8,
+      "evidence": "电流存在于电路",
+      "source_text": "问题：什么是电流\n回答：# 3 天精准学习计划（已优化）  \n⚠️ 原计划存在**重复性高、缺乏认知进阶、未隔离知识库污染风险**等问题。现依据「学生无掌握度数据→按P1低掌握度策略」，结合错因诊断前置原则，**重生成结构化、防错型、证据驱",
+      "created_at": "2026-04-11T12:12:42.419163",
+      "from": "agent_ocr_tutor_stream"
+    },
+    {
+      "source": "HTML",
+      "target": "标记语言",
+      "type": "相关",
+      "score": 0.95,
+      "evidence": "HTML是标记语言",
+      "source_text": "问题：什么是html\n回答：# 分析\n\n学生ID：2874463136@qq.com  \n提问主题：「什么是HTML」  \n- **掌握度**：未查到该生在「HTML基础概念」的掌握度数据（即为未知）→ 需按「未知」规则，先查询再路由；已执",
+      "created_at": "2026-04-11T12:55:33.862370",
+      "from": "agent_ocr_tutor_stream"
+    },
+    {
+      "source": "HTML",
+      "target": "标签",
+      "type": "前置",
+      "score": 0.92,
+      "evidence": "通过标签定义结构",
+      "source_text": "问题：什么是html\n回答：# 分析\n\n学生ID：2874463136@qq.com  \n提问主题：「什么是HTML」  \n- **掌握度**：未查到该生在「HTML基础概念」的掌握度数据（即为未知）→ 需按「未知」规则，先查询再路由；已执",
+      "created_at": "2026-04-11T12:55:33.862370",
+      "from": "agent_ocr_tutor_stream"
+    },
+    {
+      "source": "HTML",
+      "target": "超文本",
+      "type": "相关",
+      "score": 0.88,
+      "evidence": "HyperText Markup Language",
+      "source_text": "问题：什么是html\n回答：# 分析\n\n学生ID：2874463136@qq.com  \n提问主题：「什么是HTML」  \n- **掌握度**：未查到该生在「HTML基础概念」的掌握度数据（即为未知）→ 需按「未知」规则，先查询再路由；已执",
+      "created_at": "2026-04-11T12:55:33.862370",
+      "from": "agent_ocr_tutor_stream"
+    },
+    {
+      "source": "HTML",
+      "target": "网页结构",
+      "type": "相关",
+      "score": 0.94,
+      "evidence": "描述网页结构与内容",
+      "source_text": "问题：什么是html\n回答：# 分析\n\n学生ID：2874463136@qq.com  \n提问主题：「什么是HTML」  \n- **掌握度**：未查到该生在「HTML基础概念」的掌握度数据（即为未知）→ 需按「未知」规则，先查询再路由；已执",
+      "created_at": "2026-04-11T12:55:33.862370",
+      "from": "agent_ocr_tutor_stream"
+    },
+    {
+      "source": "HTML",
+      "target": "CSS",
+      "type": "前置",
+      "score": 0.85,
+      "evidence": "必须先掌握HTML",
+      "source_text": "问题：什么是html\n回答：# 分析\n\n学生ID：2874463136@qq.com  \n提问主题：「什么是HTML」  \n- **掌握度**：未查到该生在「HTML基础概念」的掌握度数据（即为未知）→ 需按「未知」规则，先查询再路由；已执",
+      "created_at": "2026-04-11T12:55:33.862370",
+      "from": "agent_ocr_tutor_stream"
+    },
+    {
+      "source": "HTML",
+      "target": "JavaScript",
+      "type": "前置",
+      "score": 0.85,
+      "evidence": "必须先掌握HTML",
+      "source_text": "问题：什么是html\n回答：# 分析\n\n学生ID：2874463136@qq.com  \n提问主题：「什么是HTML」  \n- **掌握度**：未查到该生在「HTML基础概念」的掌握度数据（即为未知）→ 需按「未知」规则，先查询再路由；已执",
+      "created_at": "2026-04-11T12:55:33.862370",
+      "from": "agent_ocr_tutor_stream"
+    },
+    {
+      "source": "CSS",
+      "target": "声明式样式语言",
+      "type": "相关",
+      "score": 0.93,
+      "evidence": "CSS是声明式样式语言",
+      "source_text": "问题：什么是HTML/CSS\n回答：# 分析（更新）\n\n✅ **错因诊断完成**：  \n- 学生原回答：“HTML/CSS是一种编程语言，用来做网页的。”  \n- 归因结论：**知识性错误（high 严重度）** → 混淆「标记语言/样式表",
+      "created_at": "2026-04-11T13:05:42.221365",
+      "from": "agent_ocr_tutor_stream"
+    },
+    {
+      "source": "HTML",
+      "target": "网页内容结构",
+      "type": "相关",
+      "score": 0.94,
+      "evidence": "HTML定义网页内容结构",
+      "source_text": "问题：什么是HTML/CSS\n回答：# 分析（更新）\n\n✅ **错因诊断完成**：  \n- 学生原回答：“HTML/CSS是一种编程语言，用来做网页的。”  \n- 归因结论：**知识性错误（high 严重度）** → 混淆「标记语言/样式表",
+      "created_at": "2026-04-11T13:05:42.221365",
+      "from": "agent_ocr_tutor_stream"
+    },
+    {
+      "source": "CSS",
+      "target": "网页视觉样式",
+      "type": "相关",
+      "score": 0.96,
+      "evidence": "CSS定义网页视觉样式",
+      "source_text": "问题：什么是HTML/CSS\n回答：# 分析（更新）\n\n✅ **错因诊断完成**：  \n- 学生原回答：“HTML/CSS是一种编程语言，用来做网页的。”  \n- 归因结论：**知识性错误（high 严重度）** → 混淆「标记语言/样式表",
+      "created_at": "2026-04-11T13:05:42.221365",
+      "from": "agent_ocr_tutor_stream"
+    },
+    {
+      "source": "Node.js",
+      "target": "JavaScript",
+      "type": "前置",
+      "score": 0.95,
+      "evidence": "Node.js是JS运行环境",
+      "source_text": "问题：什么是node.js\n回答：# 分析\n\n学生ID `2874463136@qq.com` 当前**未在系统中记录对“Node.js”的掌握度数据**（「学生掌握度】未查到...」），知识图谱亦无结构化关联（「知识点“Node.js”暂",
+      "created_at": "2026-04-11T13:27:24.103758",
+      "from": "agent_ocr_tutor_stream"
+    },
+    {
+      "source": "Node.js",
+      "target": "V8引擎",
+      "type": "前置",
+      "score": 0.92,
+      "evidence": "基于Chrome V8引擎",
+      "source_text": "问题：什么是node.js\n回答：# 分析\n\n学生ID `2874463136@qq.com` 当前**未在系统中记录对“Node.js”的掌握度数据**（「学生掌握度】未查到...」），知识图谱亦无结构化关联（「知识点“Node.js”暂",
+      "created_at": "2026-04-11T13:27:24.103758",
+      "from": "agent_ocr_tutor_stream"
+    },
+    {
+      "source": "Node.js",
+      "target": "事件驱动",
+      "type": "相关",
+      "score": 0.88,
+      "evidence": "核心模型为事件驱动",
+      "source_text": "问题：什么是node.js\n回答：# 分析\n\n学生ID `2874463136@qq.com` 当前**未在系统中记录对“Node.js”的掌握度数据**（「学生掌握度】未查到...」），知识图谱亦无结构化关联（「知识点“Node.js”暂",
+      "created_at": "2026-04-11T13:27:24.103758",
+      "from": "agent_ocr_tutor_stream"
+    },
+    {
+      "source": "Node.js",
+      "target": "CommonJS",
+      "type": "相关",
+      "score": 0.85,
+      "evidence": "内置CommonJS模块系统",
+      "source_text": "问题：什么是node.js\n回答：# 分析\n\n学生ID `2874463136@qq.com` 当前**未在系统中记录对“Node.js”的掌握度数据**（「学生掌握度】未查到...」），知识图谱亦无结构化关联（「知识点“Node.js”暂",
+      "created_at": "2026-04-11T13:27:24.103758",
+      "from": "agent_ocr_tutor_stream"
+    },
+    {
+      "source": "Node.js",
+      "target": "npm",
+      "type": "相关",
+      "score": 0.9,
+      "evidence": "内置npm包管理器",
+      "source_text": "问题：什么是node.js\n回答：# 分析\n\n学生ID `2874463136@qq.com` 当前**未在系统中记录对“Node.js”的掌握度数据**（「学生掌握度】未查到...」），知识图谱亦无结构化关联（「知识点“Node.js”暂",
+      "created_at": "2026-04-11T13:27:24.103758",
+      "from": "agent_ocr_tutor_stream"
+    },
+    {
+      "source": "Node.js",
+      "target": "运行时环境",
+      "type": "相关",
+      "score": 0.97,
+      "evidence": "官方定义为JS运行时环境",
+      "source_text": "问题：什么是node.js\n回答：# 分析\n\n学生ID `2874463136@qq.com` 在「Node.js」知识点上掌握度为 **0.35（偏低）**，图谱确认其前置依赖为 **JavaScript 与 V8 引擎**，且存在明确「",
+      "created_at": "2026-04-11T13:35:28.779466",
+      "from": "agent_ocr_tutor_stream"
+    },
+    {
+      "source": "Node.js",
+      "target": "服务器端",
+      "type": "相关",
+      "score": 0.91,
+      "evidence": "官网称可构建网络应用",
+      "source_text": "问题：什么是node.js\n回答：# 分析\n\n学生ID `2874463136@qq.com` 在「Node.js」知识点上掌握度为 **0.35（偏低）**，图谱确认其前置依赖为 **JavaScript 与 V8 引擎**，且存在明确「",
+      "created_at": "2026-04-11T13:35:28.779466",
+      "from": "agent_ocr_tutor_stream"
+    }
+  ],
+  "deleted_concepts": [
+    "下一题",
+    "零基础",
+    "导数",
+    "自学",
+    "电场"
+  ]
+}

@@ -370,6 +370,26 @@ def collect_concept_diagnosis_evidence(concept_name, recent_diagnosis, max_examp
     return matched
 
 
+def _dominant_recent_category(recent_category_count):
+    counts = recent_category_count if isinstance(recent_category_count, dict) else {}
+    keys = ["knowledge", "skill", "habit"]
+    best_key = "unknown"
+    best_count = 0
+    for key in keys:
+        value = int(counts.get(key, 0) or 0)
+        if value > best_count:
+            best_key = key
+            best_count = value
+    return best_key, best_count
+
+
+def _pick_phrase(options, seed_text):
+    if not isinstance(options, list) or not options:
+        return ""
+    seed = sum(ord(ch) for ch in str(seed_text or ""))
+    return options[seed % len(options)]
+
+
 def build_weak_recommendation_item(concept_name, mastery, runtime, diagnosis_examples, recent_category_count):
     """构建薄弱知识点推荐项。"""
     style = runtime["style"]
@@ -382,11 +402,32 @@ def build_weak_recommendation_item(concept_name, mastery, runtime, diagnosis_exa
     best_time_range = runtime["best_time_range"]
 
     matched_count = len(diagnosis_examples)
+    dominant_category, dominant_count = _dominant_recent_category(recent_category_count)
+    category_label = {
+        "knowledge": "知识建模",
+        "skill": "解题步骤",
+        "habit": "审题与复核",
+        "unknown": "综合巩固",
+    }.get(dominant_category, "综合巩固")
+
+    if mastery < 0.35:
+        action_mode = "基础回补"
+        action_target = "先补概念后做题"
+    elif mastery < 0.5:
+        action_mode = "结构修复"
+        action_target = "分层练习+错因复盘"
+    else:
+        action_mode = "稳定强化"
+        action_target = "变式迁移训练"
     diagnosis_weight = 1.0 + min(0.25, matched_count * 0.08)
     base_priority = (1.0 - mastery) * 100
     personalized_priority = base_priority * (0.65 + style_conf * 0.35) * style_method_weight * diagnosis_weight
     personalized_priority = round(personalized_priority, 2)
     resource_type = resource_matrix.get((style, behavior_channel), "图解微课")
+    if dominant_category == "skill":
+        resource_type = f"{resource_type}+步骤清单"
+    elif dominant_category == "habit":
+        resource_type = f"{resource_type}+审题核对卡"
 
     evidence_brief_parts = [
         f"画像:{style_label.get(style, '综合')}({style_method})",
@@ -395,18 +436,30 @@ def build_weak_recommendation_item(concept_name, mastery, runtime, diagnosis_exa
     if matched_count > 0:
         evidence_brief_parts.append(f"诊断:命中{matched_count}条")
 
+    personalized_reason_templates = [
+        f"{concept_name} 当前掌握度 {int(mastery * 100)}%，建议采用{style_label.get(style, '综合')}路径做{action_mode}，重点放在{action_target}。",
+        f"结合你在{category_label}维度的近期表现，{concept_name} 需要优先安排一轮{action_mode}，先做小步快跑练习再回看概念。",
+        f"基于{style_label.get(style, '综合')}偏好与最近诊断信号，建议把 {concept_name} 放到今日高效时段做{action_mode}，目标是{action_target}。",
+    ]
+    reason = _pick_phrase(
+        personalized_reason_templates,
+        f"{concept_name}|{style}|{behavior_channel}|{dominant_category}|{matched_count}|{int(mastery*100)}",
+    )
+
     return {
         "concept": concept_name,
         "mastery": mastery,
         "resource_type": resource_type,
-        "title": f"{concept_name} - {resource_type}",
-        "reason": f"掌握度仅 {int(mastery * 100)}%，结合{style_label.get(style, '综合')}学习偏好优先巩固",
+        "title": f"{concept_name} - {action_mode}({resource_type})",
+        "reason": reason,
         "priority": personalized_priority,
         "recommend_time": best_time_range,
         "strategy_tags": [
             f"style:{style}",
             f"channel:{behavior_channel}",
             f"method:{style_method}",
+            f"focus:{dominant_category}",
+            f"mode:{action_mode}",
         ],
         "evidence_brief": " | ".join(evidence_brief_parts),
         "source_evidence": {
@@ -424,6 +477,8 @@ def build_weak_recommendation_item(concept_name, mastery, runtime, diagnosis_exa
             "diagnosis": {
                 "matched_count": matched_count,
                 "recent_category_count": recent_category_count,
+                "dominant_category": dominant_category,
+                "dominant_count": dominant_count,
                 "examples": diagnosis_examples,
             },
         },
@@ -442,18 +497,39 @@ def build_interest_recommendation_item(topic, runtime, recent_category_count):
     best_time_range = runtime["best_time_range"]
 
     resource_type = resource_matrix.get((style, behavior_channel), "图解微课")
+    dominant_category, _ = _dominant_recent_category(recent_category_count)
+    if dominant_category == "knowledge":
+        interest_mode = "概念拓展"
+    elif dominant_category == "skill":
+        interest_mode = "题型迁移"
+    elif dominant_category == "habit":
+        interest_mode = "策略优化"
+    else:
+        interest_mode = "综合提升"
+
+    interest_reason_templates = [
+        f"你在该阶段暂无明显薄弱点，建议围绕 {topic} 做{interest_mode}，保持知识网络的广度与连通性。",
+        f"按{style_label.get(style, '综合')}学习风格，把 {topic} 作为本周进阶主题，采用“输入+输出”双环节巩固。",
+        f"结合近期学习节奏，{topic} 适合用于{interest_mode}训练，帮助你把已有优势迁移到新场景。",
+    ]
+    reason = _pick_phrase(
+        interest_reason_templates,
+        f"{topic}|{style}|{behavior_channel}|{dominant_category}|interest",
+    )
+
     return {
         "concept": topic,
         "mastery": 0.75,
         "resource_type": resource_type,
-        "title": f"{topic} - 进阶学习包",
-        "reason": f"保持优势，按{style_label.get(style, '综合')}风格进行拓展学习",
+        "title": f"{topic} - {interest_mode}学习包",
+        "reason": reason,
         "priority": round(20 * style_method_weight, 2),
         "recommend_time": best_time_range,
         "strategy_tags": [
             f"style:{style}",
             f"channel:{behavior_channel}",
             f"method:{style_method}",
+            f"mode:{interest_mode}",
         ],
         "evidence_brief": f"画像:{style_label.get(style, '综合')}({style_method}) | 图谱:暂无薄弱点",
         "source_evidence": {

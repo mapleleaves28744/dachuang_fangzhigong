@@ -1,0 +1,41 @@
+[
+  {
+    "id": "6d1ee701-06d5-48a3-b18e-e2ab47af55ca",
+    "timestamp": "2026-04-10T17:15:21",
+    "content_type": "kb_note",
+    "title": "链式法则图谱笔记",
+    "content": "复合函数求导要用链式法则，先外后内，最后乘以内函数导数。",
+    "source": "eval_graph",
+    "tags": [
+      "导数",
+      "链式法则",
+      "复合函数"
+    ]
+  },
+  {
+    "id": "704ca69a-e281-4af2-b2ea-4d38bba02156",
+    "timestamp": "2026-04-10T17:22:13",
+    "content_type": "kb_note",
+    "title": "链式法则图谱笔记",
+    "content": "复合函数求导要用链式法则，先外后内，最后乘以内函数导数。",
+    "source": "eval_graph",
+    "tags": [
+      "导数",
+      "链式法则",
+      "复合函数"
+    ]
+  },
+  {
+    "id": "0506ec55-939f-4e97-b943-f1012ad083d5",
+    "timestamp": "2026-04-10T17:25:25",
+    "content_type": "kb_note",
+    "title": "链式法则图谱笔记",
+    "content": "复合函数求导要用链式法则，先外后内，最后乘以内函数导数。",
+    "source": "eval_graph",
+    "tags": [
+      "导数",
+      "链式法则",
+      "复合函数"
+    ]
+  }
+]

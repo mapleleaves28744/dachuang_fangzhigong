@@ -1,0 +1,24 @@
+[
+  {
+    "user_id": "u1",
+    "timestamp": "2026-04-11T02:54:36.223363",
+    "question": "题目文本",
+    "answer": "这是答案",
+    "topics": [
+      "题目文本"
+    ],
+    "is_confusion_request": false,
+    "type": "qa_interaction"
+  },
+  {
+    "user_id": "u1",
+    "timestamp": "2026-04-11T02:55:25.796854",
+    "question": "题目文本",
+    "answer": "这是答案",
+    "topics": [
+      "题目文本"
+    ],
+    "is_confusion_request": false,
+    "type": "qa_interaction"
+  }
+]

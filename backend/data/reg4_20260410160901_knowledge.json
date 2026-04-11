@@ -1,0 +1,69 @@
+{
+  "concepts": [
+    {
+      "concept": "derivative",
+      "first_seen": "2026-04-10T16:09:16.161879",
+      "last_seen": "2026-04-10T16:09:27.271890",
+      "mastery": 0.62,
+      "review_count": 1,
+      "last_reviewed": "2026-04-10T16:09:21.492580"
+    },
+    {
+      "concept": "limit",
+      "first_seen": "2026-04-10T16:09:16.161879",
+      "last_seen": "2026-04-10T16:09:20.776125",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "integral",
+      "first_seen": "2026-04-10T16:09:16.161879",
+      "last_seen": "2026-04-10T16:09:16.161879",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "f(x)=x^2",
+      "first_seen": "2026-04-10T16:09:27.271890",
+      "last_seen": "2026-04-10T16:09:27.271890",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    }
+  ],
+  "relations": [
+    {
+      "source": "derivative",
+      "target": "limit",
+      "type": "前置",
+      "score": 0.95,
+      "evidence": "derivative depends on limit",
+      "source_text": "derivative depends on limit and integral",
+      "created_at": "2026-04-10T16:09:16.161879",
+      "from": "content_note"
+    },
+    {
+      "source": "derivative",
+      "target": "integral",
+      "type": "相关",
+      "score": 0.85,
+      "evidence": "derivative depends on integral",
+      "source_text": "derivative depends on limit and integral",
+      "created_at": "2026-04-10T16:09:16.161879",
+      "from": "content_note"
+    },
+    {
+      "source": "f(x)=x^2",
+      "target": "derivative",
+      "type": "前置",
+      "score": 0.95,
+      "evidence": "given to find derivative",
+      "source_text": "given f(x)=x^2 find derivative",
+      "created_at": "2026-04-10T16:09:27.271890",
+      "from": "diagnosis"
+    }
+  ],
+  "deleted_concepts": []
+}

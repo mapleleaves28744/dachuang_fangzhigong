@@ -11,5 +11,28 @@
       "limit",
       "integral"
     ]
+  },
+  {
+    "id": "20012b77-f940-43a2-a3a1-3f9b366b21f4",
+    "timestamp": "2026-04-10T10:03:29",
+    "content_type": "kb_note",
+    "title": "??????",
+    "content": "????????????",
+    "source": "agent_kb",
+    "tags": [
+      "??",
+      "????"
+    ]
+  },
+  {
+    "id": "2726ddb6-1ad7-4afa-a47e-e71deb0572e0",
+    "timestamp": "2026-04-10T10:34:17",
+    "content_type": "kb_note",
+    "title": "chain rule note",
+    "content": "chain rule derivative of composite function",
+    "source": "agent_kb",
+    "tags": [
+      "calculus"
+    ]
   }
 ]

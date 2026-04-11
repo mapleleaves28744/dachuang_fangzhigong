@@ -1,0 +1,35 @@
+[
+  {
+    "id": "f5ec5397-f712-4aea-aa75-cc4338c6c837",
+    "timestamp": "2026-04-11T02:54:30.586817",
+    "content_type": "qa",
+    "title": "智能体问答记录",
+    "content": "请解释链式法则",
+    "source": "agent_ocr_tutor",
+    "topics": [
+      "链式法则"
+    ]
+  },
+  {
+    "id": "c84c6539-18d8-4b9d-ae1e-cf2f238b1467",
+    "timestamp": "2026-04-11T02:55:16.810210",
+    "content_type": "qa",
+    "title": "智能体问答记录",
+    "content": "请解释链式法则",
+    "source": "agent_ocr_tutor",
+    "topics": [
+      "链式法则"
+    ]
+  },
+  {
+    "id": "f1dfae99-f238-43f7-9eb4-331c465cb9d3",
+    "timestamp": "2026-04-11T03:20:41.382962",
+    "content_type": "qa",
+    "title": "智能体问答记录",
+    "content": "请解释链式法则",
+    "source": "agent_ocr_tutor",
+    "topics": [
+      "链式法则"
+    ]
+  }
+]

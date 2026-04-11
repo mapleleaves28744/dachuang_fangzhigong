@@ -1,0 +1,29 @@
+[
+  {
+    "user_id": "default_student",
+    "timestamp": "2026-04-11T02:54:30.586817",
+    "question": "请解释链式法则",
+    "answer": "已按文本降级回答",
+    "topics": [],
+    "is_confusion_request": false,
+    "type": "qa_interaction"
+  },
+  {
+    "user_id": "default_student",
+    "timestamp": "2026-04-11T02:55:16.811207",
+    "question": "请解释链式法则",
+    "answer": "已按文本降级回答",
+    "topics": [],
+    "is_confusion_request": false,
+    "type": "qa_interaction"
+  },
+  {
+    "user_id": "default_student",
+    "timestamp": "2026-04-11T03:20:41.383960",
+    "question": "请解释链式法则",
+    "answer": "已按文本降级回答",
+    "topics": [],
+    "is_confusion_request": false,
+    "type": "qa_interaction"
+  }
+]

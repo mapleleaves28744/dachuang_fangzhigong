@@ -1,0 +1,40 @@
+{
+  "timestamp": "2026-04-11T01:30:19.323368",
+  "checks": [
+    [
+      "chat_page_exists",
+      true
+    ],
+    [
+      "new_search_function",
+      true
+    ],
+    [
+      "search_modes_var",
+      true
+    ],
+    [
+      "helper_functions",
+      true
+    ],
+    [
+      "script_linked",
+      false
+    ],
+    [
+      "api_fields",
+      false
+    ],
+    [
+      "modern_js",
+      true
+    ]
+  ],
+  "summary": {
+    "total": 7,
+    "passed": 5,
+    "failed": 2,
+    "partial": 0,
+    "progress_percentage": 71.42857142857143
+  }
+}

@@ -1,10 +1,11 @@
 import unittest
 
 try:
-    from app.services.dashboard_summary import build_data_pool_summary
+    from app.services.dashboard_summary import build_data_pool_summary, build_intervention_summary
     _SUMMARY_IMPORT_ERROR = ""
 except Exception as e:
     build_data_pool_summary = None
+    build_intervention_summary = None
     _SUMMARY_IMPORT_ERROR = str(e)
 
 try:
@@ -191,6 +192,64 @@ class TestDashboardDataPoolContract(unittest.TestCase):
         self.assertEqual(summary.get("active_days"), 0)
         self.assertEqual(summary.get("study_windows"), [])
         self.assertEqual(summary.get("top_topics"), [])
+
+    def test_intervention_summary_uses_learning_advice_fallback(self):
+        summary = build_intervention_summary(
+            profile={"best_time_range": "19:00-21:00"},
+            diagnosis_report={
+                "category_count": {"knowledge": 1, "skill": 0, "habit": 0},
+                "latest": [
+                    {
+                        "timestamp": "2026-03-31T10:09:00",
+                        "question": "导数定义题",
+                        "diagnosis": {
+                            "category": "knowledge",
+                            "error_type": "知识性错误",
+                            "signals": ["concept_miss"],
+                        },
+                        "learning_advice": {
+                            "建议": "先复习导数定义，再做2道基础题",
+                        },
+                    }
+                ],
+            },
+            recommendations=[],
+            reminders={"due_items": []},
+        )
+
+        self.assertIn("latest_cases", summary)
+        self.assertEqual(len(summary.get("latest_cases", [])), 1)
+        self.assertEqual(
+            summary.get("latest_cases", [])[0].get("recommendation"),
+            "先复习导数定义，再做2道基础题",
+        )
+
+    def test_intervention_summary_builds_followup_actions_from_latest_cases(self):
+        summary = build_intervention_summary(
+            profile={"best_time_range": "20:00-21:00", "learning_style": "kinesthetic", "focus_minutes": 35},
+            diagnosis_report={
+                "category_count": {"knowledge": 1, "skill": 1, "habit": 0},
+                "latest": [
+                    {
+                        "timestamp": "2026-03-31T11:00:00",
+                        "question": "电流方向判定",
+                        "diagnosis": {
+                            "category": "skill",
+                            "error_type": "步骤跳步",
+                            "recommendation": "按步骤先列已知再判断方向",
+                            "signals": ["step_missing"],
+                        },
+                        "learning_advice": {},
+                    }
+                ],
+            },
+            recommendations=[],
+            reminders={"due_items": []},
+        )
+
+        action_queue = summary.get("action_queue", [])
+        self.assertTrue(any(item.get("kind") == "diagnosis_followup" for item in action_queue))
+        self.assertTrue(any("定向补救" in str(item.get("title") or "") for item in action_queue))
 
 @unittest.skipIf(backend_app is None, f"backend app unavailable: {_SERVER_IMPORT_ERROR}")
 class TestDashboardHiddenMetricsContract(unittest.TestCase):

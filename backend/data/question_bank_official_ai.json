@@ -388,7 +388,216 @@
       "created_by": "official_ai",
       "is_public": true,
       "bank_source": "official_ai"
+    },
+    {
+      "id": "qb-ai-058ebbfc81e6",
+      "concept": "导数",
+      "difficulty": "medium",
+      "question_type": "single_choice",
+      "question": "设函数 $ f(x) = x^2 e^x $，则 $ f'(1) $ 的值为？",
+      "options": [
+        "A. $ 3e $",
+        "B. $ 2e $",
+        "C. $ e $",
+        "D. $ 4e $"
+      ],
+      "answer": "A",
+      "analysis": "使用乘积法则：$ f'(x) = 2x e^x + x^2 e^x = e^x (2x + x^2) $，代入 $ x = 1 $ 得 $ f'(1) = e(2 + 1) = 3e $。",
+      "created_at": "2026-04-10T09:45:39.154893",
+      "created_by": "official_ai",
+      "is_public": true,
+      "bank_source": "official_ai"
+    },
+    {
+      "id": "qb-ai-0fcc569c67a6",
+      "concept": "导数",
+      "difficulty": "medium",
+      "question_type": "single_choice",
+      "question": "设函数 $ f(x) = x^2 e^x $，则 $ f'(1) $ 的值为？",
+      "options": [
+        "A. $ 3e $",
+        "B. $ 2e $",
+        "C. $ e $",
+        "D. $ 4e $"
+      ],
+      "answer": "A",
+      "analysis": "使用乘积法则：$ f'(x) = 2x e^x + x^2 e^x = e^x (2x + x^2) $，代入 $ x = 1 $ 得 $ f'(1) = e(2 + 1) = 3e $。",
+      "created_at": "2026-04-10T17:17:15.782627",
+      "created_by": "official_ai",
+      "is_public": true,
+      "bank_source": "official_ai"
+    },
+    {
+      "id": "qb-ai-8aaa288674f6",
+      "concept": "导数",
+      "difficulty": "medium",
+      "question_type": "single_choice",
+      "question": "设函数 $ f(x) = x^2 \\cdot e^x $，则 $ f'(1) $ 的值为？",
+      "options": [
+        "A. $ 3e $",
+        "B. $ 2e $",
+        "C. $ e $",
+        "D. $ 4e $"
+      ],
+      "answer": "A",
+      "analysis": "使用乘积法则：$ f'(x) = 2x e^x + x^2 e^x = e^x (2x + x^2) $，代入 $ x = 1 $ 得 $ f'(1) = e(2 + 1) = 3e $。",
+      "created_at": "2026-04-10T20:52:54.330821",
+      "created_by": "official_ai",
+      "is_public": true,
+      "bank_source": "official_ai"
+    },
+    {
+      "id": "qb-ai-89ea421334b6",
+      "concept": "导数",
+      "difficulty": "medium",
+      "question_type": "single_choice",
+      "question": "设函数 $ f(x) = x^2 e^x $，则 $ f'(1) $ 的值为？",
+      "options": [
+        "A. $ 3e $",
+        "B. $ 2e $",
+        "C. $ e $",
+        "D. $ 4e $"
+      ],
+      "answer": "A",
+      "analysis": "使用乘积法则：$ f'(x) = 2x e^x + x^2 e^x = e^x (2x + x^2) $，代入 $ x = 1 $ 得 $ f'(1) = e(2 + 1) = 3e $。",
+      "created_at": "2026-04-10T22:29:36.450766",
+      "created_by": "official_ai",
+      "is_public": true,
+      "bank_source": "official_ai"
+    },
+    {
+      "id": "qb-ai-c6b4e18412b3",
+      "concept": "导数",
+      "difficulty": "medium",
+      "question_type": "single_choice",
+      "question": "设函数 $ f(x) = x^2 e^x $，则 $ f'(1) $ 的值为？",
+      "options": [
+        "A. $ 3e $",
+        "B. $ 2e $",
+        "C. $ e $",
+        "D. $ 4e $"
+      ],
+      "answer": "A",
+      "analysis": "使用乘积法则：$ f'(x) = 2x e^x + x^2 e^x = e^x (2x + x^2) $，代入 $ x = 1 $ 得 $ f'(1) = e(2 + 1) = 3e $。",
+      "created_at": "2026-04-10T22:29:57.557390",
+      "created_by": "official_ai",
+      "is_public": true,
+      "bank_source": "official_ai"
+    },
+    {
+      "id": "qb-ai-2cae0136157c",
+      "concept": "导数",
+      "difficulty": "medium",
+      "question_type": "single_choice",
+      "question": "设函数 $ f(x) = x^2 e^x $，则 $ f'(1) $ 的值为？",
+      "options": [
+        "A. $ 3e $",
+        "B. $ 2e $",
+        "C. $ e $",
+        "D. $ 4e $"
+      ],
+      "answer": "A",
+      "analysis": "使用乘积法则：$ f'(x) = 2x e^x + x^2 e^x = e^x (2x + x^2) $，代入 $ x = 1 $ 得 $ f'(1) = e(2 + 1) = 3e $。",
+      "created_at": "2026-04-10T22:30:09.023434",
+      "created_by": "official_ai",
+      "is_public": true,
+      "bank_source": "official_ai"
+    },
+    {
+      "id": "qb-ai-fd0b426907f6",
+      "concept": "电场",
+      "difficulty": "medium",
+      "question_type": "single_choice",
+      "question": "在真空中，两个点电荷 +Q 和 -Q 分别固定在 x 轴上的 x = -a 和 x = +a 处。在原点 O 处的电场强度方向为：",
+      "options": [
+        "A. 沿 +x 方向",
+        "B. 沿 -x 方向",
+        "C. 为零",
+        "D. 沿 +y 方向"
+      ],
+      "answer": "B",
+      "analysis": "正电荷 +Q 在 x = -a 处，其在原点产生的电场方向为 +x；负电荷 -Q 在 x = +a 处，其在原点产生的电场方向指向自身，即 -x 方向。二者大小相等（E = k|Q|/a²），故合场强为 -x 方向。",
+      "created_at": "2026-04-10T22:31:08.656656",
+      "created_by": "official_ai",
+      "is_public": true,
+      "bank_source": "official_ai"
+    },
+    {
+      "id": "qb-ai-cf4c01fdec66",
+      "concept": "导数",
+      "difficulty": "medium",
+      "question_type": "single_choice",
+      "question": "设函数 $ f(x) = x^2 e^x $，则 $ f'(1) $ 的值为？",
+      "options": [
+        "A. $ 3e $",
+        "B. $ 2e $",
+        "C. $ e $",
+        "D. $ 4e $"
+      ],
+      "answer": "A",
+      "analysis": "使用乘积法则：$ f'(x) = 2x e^x + x^2 e^x = e^x (2x + x^2) $，代入 $ x = 1 $ 得 $ f'(1) = e(2 + 1) = 3e $。",
+      "created_at": "2026-04-10T22:31:47.495203",
+      "created_by": "official_ai",
+      "is_public": true,
+      "bank_source": "official_ai"
+    },
+    {
+      "id": "qb-ai-60387e74e38a",
+      "concept": "导数",
+      "difficulty": "medium",
+      "question_type": "single_choice",
+      "question": "设函数 $ f(x) = x^2 e^x $，则 $ f'(1) $ 的值为？",
+      "options": [
+        "A. $ 3e $",
+        "B. $ 2e $",
+        "C. $ e $",
+        "D. $ 4e $"
+      ],
+      "answer": "A",
+      "analysis": "使用乘积法则：$ f'(x) = 2x e^x + x^2 e^x = e^x (2x + x^2) $，代入 $ x = 1 $ 得 $ f'(1) = e(2 + 1) = 3e $。",
+      "created_at": "2026-04-10T22:31:56.491249",
+      "created_by": "official_ai",
+      "is_public": true,
+      "bank_source": "official_ai"
+    },
+    {
+      "id": "qb-ai-2daeadfd0da9",
+      "concept": "导数",
+      "difficulty": "medium",
+      "question_type": "single_choice",
+      "question": "设函数 $ f(x) = x^2 e^x $，则 $ f'(1) $ 的值为？",
+      "options": [
+        "A. $ 3e $",
+        "B. $ 2e $",
+        "C. $ e $",
+        "D. $ 4e $"
+      ],
+      "answer": "A",
+      "analysis": "使用乘积法则：$ f'(x) = 2x e^x + x^2 e^x = e^x (2x + x^2) $，代入 $ x = 1 $ 得 $ f'(1) = e(2 + 1) = 3e $。",
+      "created_at": "2026-04-10T22:32:08.379491",
+      "created_by": "official_ai",
+      "is_public": true,
+      "bank_source": "official_ai"
+    },
+    {
+      "id": "qb-ai-a5dec7b228ca",
+      "concept": "导数",
+      "difficulty": "medium",
+      "question_type": "single_choice",
+      "question": "设函数 $ f(x) = x^2 e^x $，则 $ f'(1) $ 的值为？",
+      "options": [
+        "A. $ 3e $",
+        "B. $ 2e $",
+        "C. $ e $",
+        "D. $ 4e $"
+      ],
+      "answer": "A",
+      "analysis": "使用乘积法则：$ f'(x) = (x^2)' e^x + x^2 (e^x)' = 2x e^x + x^2 e^x = e^x (2x + x^2) $。代入 $ x = 1 $ 得 $ f'(1) = e^1 (2 + 1) = 3e $。",
+      "created_at": "2026-04-10T22:33:04.308976",
+      "created_by": "official_ai",
+      "is_public": true,
+      "bank_source": "official_ai"
     }
   ],
-  "updated_at": "2026-04-03T09:14:11.799696"
+  "updated_at": "2026-04-10T22:33:04.314001"
 }

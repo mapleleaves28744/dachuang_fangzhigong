@@ -1,0 +1,475 @@
+{
+  "user_id": "2874463136@qq.com",
+  "updated_at": "2026-04-11T13:47:28.431480",
+  "learning_style": "visual",
+  "style_scores": {
+    "visual": 0.308,
+    "auditory": 0.378,
+    "kinesthetic": 0.378
+  },
+  "style_method": "kmeans",
+  "style_features": {
+    "image_count": 0,
+    "link_count": 0,
+    "qa_content_count": 5,
+    "note_count": 0,
+    "other_count": 0,
+    "qa_log_count": 20,
+    "concept_count": 34
+  },
+  "interests": [
+    "什么是",
+    "HTML",
+    "标记语言",
+    "Node.js",
+    "V8引擎"
+  ],
+  "best_time_range": "13:00-15:00",
+  "focus_minutes": 45,
+  "content_type_counter": {
+    "note": 0,
+    "link": 0,
+    "image": 0,
+    "qa": 5,
+    "other": 0
+  },
+  "dashboard_hidden": {
+    "updated_at": "2026-04-11T13:39:32.048644",
+    "topic_daily_table": [
+      {
+        "date": "2026-04-10",
+        "topics": [
+          {
+            "topic": "导数",
+            "count": 32
+          },
+          {
+            "topic": "函数",
+            "count": 7
+          },
+          {
+            "topic": "电场",
+            "count": 5
+          },
+          {
+            "topic": "正在学通信原理",
+            "count": 1
+          },
+          {
+            "topic": "自学",
+            "count": 1
+          },
+          {
+            "topic": "没有任何基础",
+            "count": 1
+          },
+          {
+            "topic": "多长",
+            "count": 1
+          },
+          {
+            "topic": "继续下一题",
+            "count": 1
+          },
+          {
+            "topic": "在真空中",
+            "count": 1
+          },
+          {
+            "topic": "两个点电荷",
+            "count": 1
+          },
+          {
+            "topic": "分别固定在",
+            "count": 1
+          },
+          {
+            "topic": "轴上的",
+            "count": 1
+          },
+          {
+            "topic": "的核心定义",
+            "count": 1
+          },
+          {
+            "topic": "并给出",
+            "count": 1
+          },
+          {
+            "topic": "个应用场景",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "date": "2026-04-11",
+        "topics": [
+          {
+            "topic": "什么是",
+            "count": 10
+          },
+          {
+            "topic": "什么是电流",
+            "count": 2
+          },
+          {
+            "topic": "HTML",
+            "count": 2
+          },
+          {
+            "topic": "标记语言",
+            "count": 2
+          },
+          {
+            "topic": "Node.js",
+            "count": 2
+          },
+          {
+            "topic": "V8引擎",
+            "count": 2
+          },
+          {
+            "topic": "导数",
+            "count": 2
+          },
+          {
+            "topic": "电流",
+            "count": 1
+          },
+          {
+            "topic": "电荷定向移动",
+            "count": 1
+          },
+          {
+            "topic": "安培",
+            "count": 1
+          },
+          {
+            "topic": "电路",
+            "count": 1
+          },
+          {
+            "topic": "单位换算",
+            "count": 1
+          },
+          {
+            "topic": "标签",
+            "count": 1
+          },
+          {
+            "topic": "超文本",
+            "count": 1
+          },
+          {
+            "topic": "网页结构",
+            "count": 1
+          },
+          {
+            "topic": "CSS",
+            "count": 1
+          },
+          {
+            "topic": "声明式样式语言",
+            "count": 1
+          },
+          {
+            "topic": "网页内容结构",
+            "count": 1
+          },
+          {
+            "topic": "事件驱动",
+            "count": 1
+          },
+          {
+            "topic": "CommonJS",
+            "count": 1
+          },
+          {
+            "topic": "npm",
+            "count": 1
+          },
+          {
+            "topic": "JavaScript",
+            "count": 1
+          },
+          {
+            "topic": "运行时环境",
+            "count": 1
+          },
+          {
+            "topic": "服务器端",
+            "count": 1
+          },
+          {
+            "topic": "函数",
+            "count": 1
+          }
+        ]
+      }
+    ],
+    "topic_total_table": [
+      {
+        "topic": "导数",
+        "count": 34
+      },
+      {
+        "topic": "什么是",
+        "count": 10
+      },
+      {
+        "topic": "函数",
+        "count": 8
+      },
+      {
+        "topic": "电场",
+        "count": 5
+      },
+      {
+        "topic": "什么是电流",
+        "count": 2
+      },
+      {
+        "topic": "HTML",
+        "count": 2
+      },
+      {
+        "topic": "标记语言",
+        "count": 2
+      },
+      {
+        "topic": "Node.js",
+        "count": 2
+      },
+      {
+        "topic": "V8引擎",
+        "count": 2
+      },
+      {
+        "topic": "正在学通信原理",
+        "count": 1
+      },
+      {
+        "topic": "自学",
+        "count": 1
+      },
+      {
+        "topic": "没有任何基础",
+        "count": 1
+      },
+      {
+        "topic": "多长",
+        "count": 1
+      },
+      {
+        "topic": "继续下一题",
+        "count": 1
+      },
+      {
+        "topic": "在真空中",
+        "count": 1
+      },
+      {
+        "topic": "两个点电荷",
+        "count": 1
+      },
+      {
+        "topic": "分别固定在",
+        "count": 1
+      },
+      {
+        "topic": "轴上的",
+        "count": 1
+      },
+      {
+        "topic": "的核心定义",
+        "count": 1
+      },
+      {
+        "topic": "并给出",
+        "count": 1
+      },
+      {
+        "topic": "个应用场景",
+        "count": 1
+      },
+      {
+        "topic": "电流",
+        "count": 1
+      },
+      {
+        "topic": "电荷定向移动",
+        "count": 1
+      },
+      {
+        "topic": "安培",
+        "count": 1
+      },
+      {
+        "topic": "电路",
+        "count": 1
+      },
+      {
+        "topic": "单位换算",
+        "count": 1
+      },
+      {
+        "topic": "标签",
+        "count": 1
+      },
+      {
+        "topic": "超文本",
+        "count": 1
+      },
+      {
+        "topic": "网页结构",
+        "count": 1
+      },
+      {
+        "topic": "CSS",
+        "count": 1
+      },
+      {
+        "topic": "声明式样式语言",
+        "count": 1
+      },
+      {
+        "topic": "网页内容结构",
+        "count": 1
+      },
+      {
+        "topic": "事件驱动",
+        "count": 1
+      },
+      {
+        "topic": "CommonJS",
+        "count": 1
+      },
+      {
+        "topic": "npm",
+        "count": 1
+      },
+      {
+        "topic": "JavaScript",
+        "count": 1
+      },
+      {
+        "topic": "运行时环境",
+        "count": 1
+      },
+      {
+        "topic": "服务器端",
+        "count": 1
+      }
+    ],
+    "study_window_daily_table": [
+      {
+        "date": "2026-04-10",
+        "label": "22:00-00:00",
+        "count": 109,
+        "duration_seconds": 34.676
+      },
+      {
+        "date": "2026-04-11",
+        "label": "13:00-15:00",
+        "count": 81,
+        "duration_seconds": 2399.113
+      }
+    ],
+    "study_window_total_table": [
+      {
+        "label": "22:00-00:00",
+        "count": 109,
+        "duration_seconds": 34.676
+      },
+      {
+        "label": "13:00-15:00",
+        "count": 81,
+        "duration_seconds": 2399.113
+      },
+      {
+        "label": "12:00-14:00",
+        "count": 77,
+        "duration_seconds": 265.613
+      },
+      {
+        "label": "21:00-23:00",
+        "count": 62,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "15:00-17:00",
+        "count": 36,
+        "duration_seconds": 40.694
+      },
+      {
+        "label": "01:00-03:00",
+        "count": 30,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "23:00-01:00",
+        "count": 29,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "02:00-04:00",
+        "count": 25,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "11:00-13:00",
+        "count": 23,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "14:00-16:00",
+        "count": 19,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "10:00-12:00",
+        "count": 17,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "09:00-11:00",
+        "count": 14,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "16:00-18:00",
+        "count": 13,
+        "duration_seconds": 1362.665
+      },
+      {
+        "label": "03:00-05:00",
+        "count": 12,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "17:00-19:00",
+        "count": 11,
+        "duration_seconds": 4604.217
+      },
+      {
+        "label": "20:00-22:00",
+        "count": 7,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "18:00-20:00",
+        "count": 2,
+        "duration_seconds": 5041.764
+      }
+    ],
+    "top_topic": {
+      "topic": "导数",
+      "count": 34
+    },
+    "top_study_window": {
+      "label": "22:00-00:00",
+      "count": 109,
+      "duration_seconds": 34.676
+    }
+  }
+}

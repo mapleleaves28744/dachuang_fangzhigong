@@ -1,0 +1,85 @@
+{
+  "concepts": [
+    {
+      "concept": "函数单调性",
+      "first_seen": "2026-04-11T03:04:02.296289",
+      "last_seen": "2026-04-11T03:04:02.296289",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "for循环",
+      "first_seen": "2026-04-11T03:04:02.296289",
+      "last_seen": "2026-04-11T03:04:02.296289",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "完形填空",
+      "first_seen": "2026-04-11T03:04:02.296289",
+      "last_seen": "2026-04-11T03:04:02.296289",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "学习计划",
+      "first_seen": "2026-04-11T03:04:02.296289",
+      "last_seen": "2026-04-11T03:04:02.296289",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "记忆技巧",
+      "first_seen": "2026-04-11T03:04:02.296289",
+      "last_seen": "2026-04-11T03:04:02.296289",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "例题精讲",
+      "first_seen": "2026-04-11T03:04:02.296289",
+      "last_seen": "2026-04-11T03:04:02.296289",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    }
+  ],
+  "relations": [
+    {
+      "source": "函数单调性",
+      "target": "单调性",
+      "type": "相关",
+      "score": 0.95,
+      "evidence": "直接提及",
+      "source_text": "问题：???????,?????\n回答：你好呀～看到你发来了几个问号，我猜你可能是在输入时遇到了小卡顿，或者还没想好具体想问什么 😊  \n别着急，学习路上的每个小疑问都特别珍贵——无论是概念没理清、题目不会做、方法找不到，还是单纯想聊聊怎么",
+      "created_at": "2026-04-11T03:04:02.296289",
+      "from": "qa_qwen"
+    },
+    {
+      "source": "函数单调性",
+      "target": "函数",
+      "type": "相关",
+      "score": 0.95,
+      "evidence": "直接提及",
+      "source_text": "问题：???????,?????\n回答：你好呀～看到你发来了几个问号，我猜你可能是在输入时遇到了小卡顿，或者还没想好具体想问什么 😊  \n别着急，学习路上的每个小疑问都特别珍贵——无论是概念没理清、题目不会做、方法找不到，还是单纯想聊聊怎么",
+      "created_at": "2026-04-11T03:04:02.296289",
+      "from": "qa_qwen"
+    },
+    {
+      "source": "函数单调性",
+      "target": "导数",
+      "type": "前置",
+      "score": 0.85,
+      "evidence": "常用判断方法",
+      "source_text": "问题：???????,?????\n回答：你好呀～看到你发来了几个问号，我猜你可能是在输入时遇到了小卡顿，或者还没想好具体想问什么 😊  \n别着急，学习路上的每个小疑问都特别珍贵——无论是概念没理清、题目不会做、方法找不到，还是单纯想聊聊怎么",
+      "created_at": "2026-04-11T03:04:02.296289",
+      "from": "qa_qwen"
+    }
+  ],
+  "deleted_concepts": []
+}

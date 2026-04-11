@@ -1,0 +1,35 @@
+[
+  {
+    "user_id": "u2",
+    "timestamp": "2026-04-11T02:54:34.508270",
+    "question": "OCR文本",
+    "answer": "图像题已解答",
+    "topics": [
+      "文本"
+    ],
+    "is_confusion_request": false,
+    "type": "qa_interaction"
+  },
+  {
+    "user_id": "u2",
+    "timestamp": "2026-04-11T02:55:21.023233",
+    "question": "OCR文本",
+    "answer": "图像题已解答",
+    "topics": [
+      "文本"
+    ],
+    "is_confusion_request": false,
+    "type": "qa_interaction"
+  },
+  {
+    "user_id": "u2",
+    "timestamp": "2026-04-11T03:20:43.771695",
+    "question": "OCR文本",
+    "answer": "图像题已解答",
+    "topics": [
+      "文本"
+    ],
+    "is_confusion_request": false,
+    "type": "qa_interaction"
+  }
+]

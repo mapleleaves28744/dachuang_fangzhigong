@@ -1574,11 +1574,137 @@
             padding: 6px 0;
         }
 
+        .capability-alignment {
+            margin-top: 22px;
+            display: grid;
+            gap: 16px;
+        }
+
+        .capability-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+        }
+
+        .capability-panel {
+            padding: 18px;
+            border-radius: 18px;
+            border: 1px solid #dfebf8;
+            background: linear-gradient(180deg, #f8fbff, #fdfefe);
+        }
+
+        .capability-panel-title {
+            font-size: 15px;
+            font-weight: 800;
+            color: #123250;
+            margin-bottom: 12px;
+        }
+
+        .capability-heatmap {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+            gap: 10px;
+        }
+
+        .capability-heatmap-tile {
+            padding: 10px;
+            border-radius: 12px;
+            border: 1px solid transparent;
+            min-height: 82px;
+        }
+
+        .capability-heatmap-tile-title {
+            font-size: 12px;
+            font-weight: 700;
+            line-height: 1.5;
+            color: #173355;
+            margin-bottom: 4px;
+        }
+
+        .capability-heatmap-tile-score {
+            font-size: 22px;
+            font-weight: 900;
+            line-height: 1.2;
+            color: #122f4d;
+        }
+
+        .capability-heatmap-tile-meta {
+            margin-top: 4px;
+            font-size: 11px;
+            color: #5f748d;
+        }
+
+        .capability-heatmap-tile.level-0 { background: #fee2e2; border-color: #fecaca; }
+        .capability-heatmap-tile.level-1 { background: #ffedd5; border-color: #fed7aa; }
+        .capability-heatmap-tile.level-2 { background: #fef9c3; border-color: #fde68a; }
+        .capability-heatmap-tile.level-3 { background: #dcfce7; border-color: #bbf7d0; }
+        .capability-heatmap-tile.level-4 { background: #bbf7d0; border-color: #86efac; }
+
+        .capability-progress-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .capability-progress-item {
+            display: grid;
+            gap: 6px;
+        }
+
+        .capability-progress-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #2a4462;
+            font-weight: 700;
+        }
+
+        .capability-progress-bar {
+            height: 10px;
+            border-radius: 999px;
+            background: #e5edf6;
+            overflow: hidden;
+        }
+
+        .capability-progress-fill {
+            height: 100%;
+            border-radius: 999px;
+            background: linear-gradient(90deg, #3159d5, #1f8da4);
+            transition: width 0.35s ease;
+        }
+
+        .capability-chart-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .capability-chart-card {
+            border: 1px solid #e3ebf3;
+            border-radius: 14px;
+            padding: 12px;
+            background: #ffffff;
+        }
+
+        .capability-chart-title {
+            font-size: 12px;
+            color: #4c647f;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+
+        .capability-chart-wrap {
+            position: relative;
+            height: 180px;
+        }
+
         @media (max-width: 1200px) {
             .cards-grid,
             .dashboard-focus-grid,
             .action-grid,
-            .hero-metrics {
+            .hero-metrics,
+            .capability-grid,
+            .capability-chart-grid {
                 grid-template-columns: 1fr;
             }
 
@@ -1629,6 +1755,10 @@
             .dashboard-drawer-shell {
                 border-radius: 24px 0 0 24px;
             }
+
+            .capability-heatmap {
+                grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+            }
         }
 
         @media (max-width: 720px) {
@@ -1662,6 +1792,10 @@
 
             .dashboard-drawer-title {
                 font-size: 24px;
+            }
+
+            .capability-panel {
+                padding: 14px;
             }
         }
     </style>
@@ -1872,6 +2006,47 @@
                 </div>
             </section>
         </div>
+
+        <section class="card capability-alignment">
+            <h2 class="card-title">前后端能力对齐视图</h2>
+            <p class="card-desc">以下四项能力由主仪表盘直接展示并绑定后端汇总数据，不再依赖独立演示页面。</p>
+            <div class="capability-grid">
+                <div class="capability-panel">
+                    <div class="capability-panel-title">📊 知识点热力图（5级掌握度可视化）</div>
+                    <div id="dashboard-capability-heatmap" class="capability-heatmap">
+                        <div class="empty-state">加载中...</div>
+                    </div>
+                </div>
+
+                <div class="capability-panel">
+                    <div class="capability-panel-title">📈 学习进度条动画</div>
+                    <div id="dashboard-learning-progress" class="capability-progress-list">
+                        <div class="empty-state">加载中...</div>
+                    </div>
+                </div>
+
+                <div class="capability-panel">
+                    <div class="capability-panel-title">📉 数据分析图表（Chart.js集成）</div>
+                    <div class="capability-chart-grid">
+                        <div class="capability-chart-card">
+                            <div class="capability-chart-title">掌握度分层</div>
+                            <div class="capability-chart-wrap"><canvas id="dashboard-mastery-chart"></canvas></div>
+                        </div>
+                        <div class="capability-chart-card">
+                            <div class="capability-chart-title">诊断类别分布</div>
+                            <div class="capability-chart-wrap"><canvas id="dashboard-diagnosis-chart"></canvas></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="capability-panel">
+                    <div class="capability-panel-title">🛤️ AI推荐学习路径（Timeline视图）</div>
+                    <div id="dashboard-learning-path-timeline" class="timeline-list">
+                        <div class="empty-state">加载中...</div>
+                    </div>
+                </div>
+            </div>
+        </section>
     </div>
 
     <div class="dashboard-drawer-backdrop" id="dashboardDrawerBackdrop"></div>
@@ -2003,6 +2178,7 @@
     <script src="assets/js/shared/space-cloud-store.js?v=20260403-sidebarspaces"></script>
     <script src="assets/js/shared/auth-ui.js?v=20260409-authentrygate"></script>
     <script src="assets/js/shared/page-shell.js?v=20260403-space-root-nav"></script>
-    <script src="assets/js/pages/dashboard-page.js?v=20260331-drawerpanel"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
+    <script src="assets/js/pages/dashboard-page.js?v=20260411-recfix"></script>
 </body>
 </html>

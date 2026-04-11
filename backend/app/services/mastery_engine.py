@@ -589,55 +589,71 @@ def classify_error_by_rules(
 
 
 def build_learning_advice(error_type, mastery_score=None, concept="", attempt_count=None):
+    def pick_variant(options, seed_text):
+        pool = options if isinstance(options, list) and options else [""]
+        seed = sum(ord(ch) for ch in str(seed_text or ""))
+        return pool[seed % len(pool)]
+
     mastery = clamp01(mastery_score) if mastery_score is not None else None
     concept_text = str(concept or "").strip() or "该知识点"
     attempts = max(0, int(attempt_count or 0))
     status = mastery_status(mastery) if mastery is not None else "一般"
+    attempt_hint = ""
+    if attempts >= 6:
+        attempt_hint = "（近期已多次暴露同类问题）"
+    elif attempts >= 3:
+        attempt_hint = "（近期出现过重复卡点）"
 
     if error_type == "知识性错误":
         if mastery is None or mastery < 0.5:
-            reason = f"{concept_text}的定义、公式或判断条件还没有真正建立，看到题目时不知道该从哪里开始。"
-            suggestion = (
-                f"先暂停刷题，先把“{concept_text}”补清楚。先看 1 个 5-8 分钟讲解视频，"
-                "再整理 1 张概念/公式卡片，然后做 2 道基础例题，最后当天重做这道题。"
-            )
+            reason = f"{concept_text}的定义、公式或判断条件还没有真正建立，看到题目时不知道该从哪里开始。{attempt_hint}"
+            suggestion = pick_variant([
+                f"先暂停刷题，先把“{concept_text}”补清楚。先看 1 个 5-8 分钟讲解视频，再整理 1 张概念/公式卡片，然后做 2 道基础例题，最后当天重做这道题。",
+                f"建议先用 10 分钟补“{concept_text}”核心定义，再做 2 道最基础题校准，再回到原题复盘错因。",
+                f"先不要追求做多题，先把“{concept_text}”的关键概念讲给自己听，再做 2 道同类型入门题确认是否真正理解。",
+            ], f"{concept_text}|{error_type}|{status}|{attempts}|low")
             actions = ["看该知识点5-8分钟讲解视频", "整理1张公式/概念卡片", "做2道基础例题并对照答案", "当天再复做原题1次"]
         else:
-            reason = f"{concept_text}并非完全陌生，但某个关键定义或条件点还没补齐，所以一遇到题目就容易卡住。"
-            suggestion = (
-                f"先回到“{concept_text}”最核心的定义和判定条件，"
-                "先对照本题找出缺失点，再做 2 道同小类基础题，晚上再复做原题。"
-            )
+            reason = f"{concept_text}并非完全陌生，但某个关键定义或条件点还没补齐，所以一遇到题目就容易卡住。{attempt_hint}"
+            suggestion = pick_variant([
+                f"先回到“{concept_text}”最核心的定义和判定条件，先对照本题找出缺失点，再做 2 道同小类基础题，晚上再复做原题。",
+                f"建议把“{concept_text}”拆成“定义-条件-结论”三步，再用本题逐步映射，最后补 2 道同型题巩固。",
+                f"先复盘本题中{concept_text}对应的关键条件，再做 2 道变式题，确保同一概念在不同问法下都能识别。",
+            ], f"{concept_text}|{error_type}|{status}|{attempts}|mid")
             actions = ["回看本题涉及的定义或公式2分钟", "做2道同一小类基础题", "把错题和正确解法写成对照", "晚上再复做原题"]
     elif error_type == "技能性错误":
         if mastery is None or mastery < 0.5:
-            reason = f"你对{concept_text}有一点印象，但还不会把方法真正用到题目里，解题步骤容易中断。"
-            suggestion = (
-                "先学标准步骤，再按步骤练，不要只看最终答案。先看 1 道完整例题，"
-                "把步骤写成 3 步模板，再按模板做 3 道同类型题。"
-            )
+            reason = f"你对{concept_text}有一点印象，但还不会把方法真正用到题目里，解题步骤容易中断。{attempt_hint}"
+            suggestion = pick_variant([
+                "先学标准步骤，再按步骤练，不要只看最终答案。先看 1 道完整例题，把步骤写成 3 步模板，再按模板做 3 道同类型题。",
+                f"建议把{concept_text}的解题流程写成“读题-选法-执行-检查”四格卡片，再做 3 道流程一致的题目训练稳定性。",
+                "先做一题全程慢解并标注每一步目的，再做两题限时练，把“卡住点”集中在同一处复盘。",
+            ], f"{concept_text}|{error_type}|{status}|{attempts}|skill-low")
             actions = ["看1道完整例题讲解", "把解题步骤写成3步模板", "按模板做3道同类型题", "每题做完对照步骤自查"]
         else:
-            reason = f"{concept_text}已经有基础，但迁移到题目里时还不够稳定，容易在变形、代入或审题环节出错。"
-            suggestion = (
-                "先不要盲目加量，先限定题型练习。先做 3 道同题型题并写出关键步骤，"
-                "再做 1 道限时题，要求先做对再做快。"
-            )
+            reason = f"{concept_text}已经有基础，但迁移到题目里时还不够稳定，容易在变形、代入或审题环节出错。{attempt_hint}"
+            suggestion = pick_variant([
+                "先不要盲目加量，先限定题型练习。先做 3 道同题型题并写出关键步骤，再做 1 道限时题，要求先做对再做快。",
+                f"建议先做 2 道{concept_text}同构题，重点标注每一步依据；再做 1 道综合题检验迁移能力。",
+                "先按固定模板练 3 题，再做 1 题无模板复现，检查是否真的内化而非机械套步骤。",
+            ], f"{concept_text}|{error_type}|{status}|{attempts}|skill-mid")
             actions = ["做3道同题型题并写出关键步骤", "对照标准答案标记丢步骤的位置", "再做1道限时题", "把本题常用步骤总结成清单"]
     else:
         if mastery is not None and mastery >= 0.8:
-            reason = f"{concept_text}整体掌握较好，这次更像是求快、漏看条件、符号或单位上的偶发失误。"
-            suggestion = (
-                "不需要重学大段内容，固定检查流程更有效。重做原题 1 遍并说出错因，"
-                "再做 2 道限时题，每题结束都按“条件-符号-单位-结果”顺序检查。"
-            )
+            reason = f"{concept_text}整体掌握较好，这次更像是求快、漏看条件、符号或单位上的偶发失误。{attempt_hint}"
+            suggestion = pick_variant([
+                "不需要重学大段内容，固定检查流程更有效。重做原题 1 遍并说出错因，再做 2 道限时题，每题结束都按“条件-符号-单位-结果”顺序检查。",
+                "建议维持强度但强化复核：每题最后 30 秒专查条件、符号与单位，避免高掌握度下的低级失分。",
+                f"先复做 1 道{concept_text}题并口述检查点，再做 2 道短时题，重点练“先审后算”。",
+            ], f"{concept_text}|{error_type}|{status}|{attempts}|habit-high")
             actions = ["重做原题1遍并口头说明错因", "做2道限时题训练稳定性", "每题结束按“条件-符号-单位-结果”检查", "下一次同类题先审题再下笔"]
         else:
-            reason = f"{concept_text}基本会做，但做题节奏还不够稳，容易因为急躁出现低级错误。"
-            suggestion = (
-                "这时重点不是再学新内容，而是把检查动作做实。先重做原题并圈出出错点，"
-                "再做 2 道同类题，每题固定留 30 秒检查。"
-            )
+            reason = f"{concept_text}基本会做，但做题节奏还不够稳，容易因为急躁出现低级错误。{attempt_hint}"
+            suggestion = pick_variant([
+                "这时重点不是再学新内容，而是把检查动作做实。先重做原题并圈出出错点，再做 2 道同类题，每题固定留 30 秒检查。",
+                "建议先做一题“慢而准”的示范题，再做两题限时题，把错误集中在“审题-计算-回看”三步定位。",
+                f"对{concept_text}先做 1 次完整复现，再做 2 题短练，要求每题写出一个“自检点”。",
+            ], f"{concept_text}|{error_type}|{status}|{attempts}|habit-mid")
             actions = ["重做原题并圈出出错点", "做2道同类题且每题留30秒检查", "重点检查符号/单位/小数点/抄写", "记录本次粗心标签"]
 
     if status == "薄弱" and error_type != "知识性错误":

@@ -1,0 +1,80 @@
+[
+  {
+    "id": "f2205738-fdfc-4fac-8f7f-d2c711f8536d",
+    "user_id": "guest_e05dae3cf9a53c24",
+    "timestamp": "2026-04-10T22:03:35.582233",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "dashboard",
+    "target": "",
+    "label": "page_view",
+    "title": "学习仪表盘 - 智能学习伴侣",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "f86abe4b-eb76-4d47-96dc-b54ff5e132ce",
+    "user_id": "guest_e05dae3cf9a53c24",
+    "timestamp": "2026-04-10T22:03:38.595602",
+    "type": "navigation_click",
+    "behavior_type": "navigation_click",
+    "page": "dashboard",
+    "target": "chat",
+    "label": "◎ 智能问答",
+    "title": "学习仪表盘 - 智能学习伴侣",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {}
+  },
+  {
+    "id": "265627ba-ba74-4a0b-b06c-30f3ce98677d",
+    "user_id": "guest_e05dae3cf9a53c24",
+    "timestamp": "2026-04-10T22:03:38.658095",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "chat",
+    "target": "",
+    "label": "page_view",
+    "title": "智能问答 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": "http://127.0.0.1:5501/dashboard.html"
+    }
+  },
+  {
+    "id": "96bb9242-cf63-43a2-9a30-3e77d895f5ef",
+    "user_id": "guest_e05dae3cf9a53c24",
+    "timestamp": "2026-04-10T22:04:32.138794",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "chat",
+    "target": "",
+    "label": "page_view",
+    "title": "智能问答 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": "http://127.0.0.1:5501/dashboard.html"
+    }
+  },
+  {
+    "id": "18efeb86-8113-4740-bddc-e7554ebb17cc",
+    "user_id": "guest_e05dae3cf9a53c24",
+    "timestamp": "2026-04-10T22:08:08.895881",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "index",
+    "target": "",
+    "label": "page_view",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": ""
+    }
+  }
+]

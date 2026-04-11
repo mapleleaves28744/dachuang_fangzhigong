@@ -1,0 +1,34 @@
+{
+  "user_id": "u1",
+  "updated_at": "2026-04-11T02:55:27.589758",
+  "learning_style": "visual",
+  "style_scores": {
+    "visual": 0.363,
+    "auditory": 0.403,
+    "kinesthetic": 0.403
+  },
+  "style_method": "kmeans",
+  "style_features": {
+    "image_count": 0,
+    "link_count": 0,
+    "qa_content_count": 2,
+    "note_count": 0,
+    "other_count": 0,
+    "qa_log_count": 2,
+    "concept_count": 3
+  },
+  "interests": [
+    "题目文本",
+    "回答",
+    "这是答案"
+  ],
+  "best_time_range": "02:00-04:00",
+  "focus_minutes": 45,
+  "content_type_counter": {
+    "note": 0,
+    "link": 0,
+    "image": 0,
+    "qa": 2,
+    "other": 0
+  }
+}

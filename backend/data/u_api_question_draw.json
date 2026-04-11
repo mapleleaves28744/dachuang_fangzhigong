@@ -78,5 +78,85 @@
     "concept": "导数",
     "difficulty": "easy",
     "question_type": "short_answer"
+  },
+  {
+    "id": "81fa892a-16e8-41a9-b615-8d299c4d704c",
+    "timestamp": "2026-04-10T09:45:13.274237",
+    "question_id": "qb-ai-51262cee4351",
+    "concept": "导数",
+    "difficulty": "medium",
+    "question_type": "single_choice"
+  },
+  {
+    "id": "49bcf63d-7863-4cb6-962c-eacae7e1fd18",
+    "timestamp": "2026-04-10T09:45:39.184875",
+    "question_id": "qb-ai-6d87bbfbbd7a",
+    "concept": "导数",
+    "difficulty": "medium",
+    "question_type": "single_choice"
+  },
+  {
+    "id": "949b416f-81b3-418d-bc9e-46dcb9be4b87",
+    "timestamp": "2026-04-10T17:16:39.430246",
+    "question_id": "qb-ai-04a4524fb7cf",
+    "concept": "导数",
+    "difficulty": "medium",
+    "question_type": "single_choice"
+  },
+  {
+    "id": "0a8ca534-17e1-4b40-88d2-aa415f6d13e9",
+    "timestamp": "2026-04-10T17:17:15.805285",
+    "question_id": "qb-ai-f22f11bb809a",
+    "concept": "导数",
+    "difficulty": "medium",
+    "question_type": "single_choice"
+  },
+  {
+    "id": "7d62ef4a-a9e4-4751-9554-442b44432916",
+    "timestamp": "2026-04-10T17:17:36.149824",
+    "question_id": "qb-derivative-001",
+    "concept": "导数",
+    "difficulty": "medium",
+    "question_type": "single_choice"
+  },
+  {
+    "id": "3f821731-9e56-484b-b75f-7952266377a2",
+    "timestamp": "2026-04-10T17:18:02.592592",
+    "question_id": "qb-ai-65bbfb51ad46",
+    "concept": "导数",
+    "difficulty": "medium",
+    "question_type": "short_answer"
+  },
+  {
+    "id": "6d6b1d24-a953-44df-baf3-4ccfef74cbb6",
+    "timestamp": "2026-04-10T17:19:38.418713",
+    "question_id": "qb-ai-6d87bbfbbd7a",
+    "concept": "导数",
+    "difficulty": "medium",
+    "question_type": "single_choice"
+  },
+  {
+    "id": "75a0f7ea-4c4b-46b7-bf43-dfa86d31f338",
+    "timestamp": "2026-04-10T20:52:54.347288",
+    "question_id": "qb-ai-5092c515343a",
+    "concept": "导数",
+    "difficulty": "medium",
+    "question_type": "single_choice"
+  },
+  {
+    "id": "4157d66d-e50d-4061-908f-80674dbb8839",
+    "timestamp": "2026-04-10T20:53:46.497842",
+    "question_id": "qb-ai-e9c58ce4ebf2",
+    "concept": "导数",
+    "difficulty": "medium",
+    "question_type": "single_choice"
+  },
+  {
+    "id": "ed882805-6661-415a-bf3c-59c93854707f",
+    "timestamp": "2026-04-11T03:20:41.180797",
+    "question_id": "qb-ai-89ea421334b6",
+    "concept": "导数",
+    "difficulty": "medium",
+    "question_type": "single_choice"
   }
 ]

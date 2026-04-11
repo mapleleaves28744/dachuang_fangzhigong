@@ -30,6 +30,8 @@ from .services.concept_mapping import (
 )
 from .services.dashboard_summary import build_dashboard_sections, has_learning_evidence
 from .services.neo4j_store import Neo4jGraphStore
+from .services.ocr_service import extract_text_from_image as extract_text_from_image_service
+from .api.agent_routes import agent_bp
 import logging
 import time
 from werkzeug.security import check_password_hash, generate_password_hash
@@ -73,6 +75,7 @@ except Exception:
 
 app = Flask(__name__)
 CORS(app)  # 允许跨域请求
+app.register_blueprint(agent_bp)
 
 TASK_META = {}
 TASK_META_MAX_SIZE = 500
@@ -812,7 +815,7 @@ def merge_user_knowledge_payloads(existing_knowledge, incoming_knowledge):
         if not isinstance(item, dict):
             continue
         concept = normalize_concept_name(item.get("concept"))
-        if not concept or concept in concept_map:
+        if not concept or concept in concept_map or not is_learning_topic(concept):
             continue
         payload = deep_copy_data(item, {})
         payload["concept"] = concept
@@ -824,7 +827,7 @@ def merge_user_knowledge_payloads(existing_knowledge, incoming_knowledge):
         if not isinstance(item, dict):
             continue
         concept = normalize_concept_name(item.get("concept"))
-        if not concept:
+        if not concept or not is_learning_topic(concept):
             continue
 
         payload = deep_copy_data(item, {})
@@ -864,7 +867,7 @@ def merge_user_knowledge_payloads(existing_knowledge, incoming_knowledge):
             normalize_concept_name(rel.get("target")),
             str(rel.get("type") or "相关").strip() or "相关",
         )
-        if not key[0] or not key[1]:
+        if not key[0] or not key[1] or not is_learning_topic(key[0]) or not is_learning_topic(key[1]):
             continue
         payload = deep_copy_data(rel, {})
         payload["source"] = key[0]
@@ -882,7 +885,13 @@ def merge_user_knowledge_payloads(existing_knowledge, incoming_knowledge):
             normalize_concept_name(rel.get("target")),
             str(rel.get("type") or "相关").strip() or "相关",
         )
-        if not key[0] or not key[1] or key[0] == key[1]:
+        if (
+            not key[0]
+            or not key[1]
+            or key[0] == key[1]
+            or not is_learning_topic(key[0])
+            or not is_learning_topic(key[1])
+        ):
             continue
 
         payload = deep_copy_data(rel, {})
@@ -1105,9 +1114,18 @@ def load_simple_env_files():
                     line = raw_line.strip()
                     if not line or line.startswith("#") or "=" not in line:
                         continue
+
+                    if line.startswith("export "):
+                        line = line[len("export "):].strip()
+
                     key, value = line.split("=", 1)
                     key = key.strip()
+
+                    value = value.strip()
+                    if value and not (value.startswith('"') or value.startswith("'")) and " #" in value:
+                        value = value.split(" #", 1)[0].rstrip()
                     value = value.strip().strip('"').strip("'")
+
                     if key and not os.getenv(key):
                         os.environ[key] = value
         except Exception:
@@ -1181,6 +1199,22 @@ def init_data():
 init_data()
 diagnosis_engine = CognitiveDiagnosis()
 neo4j_store = Neo4jGraphStore()
+
+
+@app.route('/api/system/neo4j-health', methods=['GET'])
+def api_neo4j_health():
+    """Neo4j 健康检查：用于定位环境配置缺失或连通失败。"""
+    request_id = get_request_id()
+    force = str(request.args.get("force", "false")).strip().lower() in {"1", "true", "yes", "on"}
+    report = neo4j_store.get_health_report(force=force)
+
+    return jsonify(success_payload(
+        request_id,
+        message="neo4j 健康检查完成",
+        neo4j=report,
+        error_code="",
+        error_message="",
+    ))
 
 
 # ===== 知识图谱初始化 =====
@@ -1303,7 +1337,12 @@ def sync_user_mastery_to_graph(kg, user_id):
         concept_name = (concept_item.get("concept") or "").strip()
         mastery = concept_item.get("mastery", 0.3)
         # 过滤异常编码内容，避免出现 "??" 这类无意义节点
-        if concept_name and concept_name != "??" and concept_name not in deleted_concepts:
+        if (
+            concept_name
+            and concept_name != "??"
+            and concept_name not in deleted_concepts
+            and is_learning_topic(concept_name)
+        ):
             if concept_name not in kg.graph.nodes:
                 kg.add_concept(
                     concept=concept_name,
@@ -1324,6 +1363,8 @@ def to_graph_payload(kg, user_id):
 
     nodes = []
     for concept, attrs in kg.graph.nodes(data=True):
+        if not is_learning_topic(concept):
+            continue
         mastery_item = user_mastery.get(concept, {})
         nodes.append({
             "id": concept,
@@ -1336,6 +1377,8 @@ def to_graph_payload(kg, user_id):
 
     links = []
     for source, target in kg.graph.edges():
+        if not is_learning_topic(source) or not is_learning_topic(target):
+            continue
         links.append({
             "source": source,
             "target": target,
@@ -4297,96 +4340,7 @@ def ask_ai_question(question, user_id):
 
 def extract_text_from_image(file_storage):
     """OCR：从图片中提取文本。支持 mock 与 qwen_vl。"""
-    if not file_storage:
-        return {
-            "success": False,
-            "text": "",
-            "ai_used": False,
-            "provider": OCR_PROVIDER,
-            "error_code": "OCR_EMPTY_FILE",
-            "error_message": "未提供图片文件",
-        }
-
-    if OCR_PROVIDER != "qwen_vl":
-        return {
-            "success": False,
-            "text": "",
-            "ai_used": False,
-            "provider": OCR_PROVIDER,
-            "error_code": "OCR_PROVIDER_DISABLED",
-            "error_message": "OCR_PROVIDER 不是 qwen_vl，已禁用真实OCR",
-        }
-
-    if not QWEN_API_KEY:
-        return {
-            "success": False,
-            "text": "",
-            "ai_used": False,
-            "provider": "qwen_vl",
-            "error_code": "OCR_KEY_MISSING",
-            "error_message": "未配置 QWEN_API_KEY",
-        }
-
-    file_storage.stream.seek(0)
-    raw = file_storage.read()
-    file_storage.stream.seek(0)
-
-    try:
-        ext = os.path.splitext(file_storage.filename or "")[1].lower()
-        mime = "image/png" if ext == ".png" else "image/jpeg"
-        b64 = base64.b64encode(raw).decode("utf-8")
-        data_url = f"data:{mime};base64,{b64}"
-
-        headers = {
-            "Content-Type": "application/json",
-            "Authorization": f"Bearer {QWEN_API_KEY}",
-        }
-        payload = {
-            "model": QWEN_VL_MODEL_NAME,
-            "messages": [
-                {
-                    "role": "user",
-                    "content": [
-                        {"type": "text", "text": "请提取图片中的学习相关文字，只返回纯文本。"},
-                        {"type": "image_url", "image_url": {"url": data_url}},
-                    ],
-                }
-            ],
-            "temperature": 0.2,
-            "max_tokens": 800,
-        }
-        resp = requests.post(QWEN_API_URL, headers=headers, json=payload, timeout=45)
-        resp.raise_for_status()
-        data = resp.json()
-        text = (data.get("choices", [{}])[0].get("message", {}).get("content", "") or "").strip()
-        if not text:
-            return {
-                "success": False,
-                "text": "",
-                "ai_used": False,
-                "provider": "qwen_vl",
-                "error_code": "OCR_EMPTY_RESPONSE",
-                "error_message": "OCR返回内容为空",
-            }
-
-        return {
-            "success": True,
-            "text": text,
-            "ai_used": True,
-            "provider": "qwen_vl",
-            "error_code": "",
-            "error_message": "",
-        }
-    except Exception as e:
-        print(f"Qwen OCR失败: {e}")
-        return {
-            "success": False,
-            "text": "",
-            "ai_used": False,
-            "provider": "qwen_vl",
-            "error_code": "OCR_UPSTREAM_ERROR",
-            "error_message": str(e),
-        }
+    return extract_text_from_image_service(file_storage)
 
 # ===== 学习计划 API 接口 =====
 
@@ -4586,29 +4540,23 @@ def ask_question():
         )
     answer = result.get("answer", "")
     source = result.get("provider", "unknown")
-    
-    # 记录问答行为
-    qa_behavior = record_qa_behavior(user_id, question, answer)
-    if contains_confusion_signal(question):
-        topics = normalize_topic_list((qa_behavior or {}).get("topics"))[:6]
-        append_user_event(user_id, "wrong_question", build_wrong_question_entry(
-            source="qa_confusion",
-            question=question,
-            user_answer="不会/看不懂",
-            concept=topics[0] if topics else "",
-            topics=topics,
-            extra={
-                "source_key": f"qa_confusion::{(qa_behavior or {}).get('timestamp', '')}::{question[:80]}",
-                "answer_excerpt": answer[:400],
-                "is_correct": False,
-            },
-        ))
+    post_process = post_process_qa_interaction(
+        user_id=user_id,
+        question=question,
+        answer=answer,
+        source=f"qa_{source}",
+        include_wrong_question=True,
+        suggested_advice_text=extract_learning_advice_from_answer(answer),
+    )
     
     return jsonify(success_payload(
         request_id,
         message="问答成功",
         answer=answer,
         source=source,
+        knowledge_extract=(post_process or {}).get("knowledge_extract", {}),
+        diagnosis=(post_process or {}).get("diagnosis"),
+        learning_advice=(post_process or {}).get("learning_advice"),
         ai_used=True,
         error_code="",
         error_message="",
@@ -4984,6 +4932,12 @@ def answer_question_bank_question_api():
             concept=concept,
             attempt_count=mastery_assessment.get("作答次数", len(concept_history)),
         )
+        diagnosis = {
+            **(diagnosis if isinstance(diagnosis, dict) else {}),
+            "recommendation": (learning_advice or {}).get("建议") or (diagnosis or {}).get("recommendation", ""),
+            "reason": (learning_advice or {}).get("原因") or (diagnosis or {}).get("reason", ""),
+            "recommended_actions": (learning_advice or {}).get("推荐行动") or (diagnosis or {}).get("recommended_actions", []),
+        }
 
         wrong_item = build_wrong_question_entry(
             source="question_answer",
@@ -5011,6 +4965,7 @@ def answer_question_bank_question_api():
             "user_answer": user_answer[:200],
             "concept": concept,
             "diagnosis": diagnosis,
+            "learning_advice": learning_advice,
             "mastery_assessment": mastery_assessment,
         })
 
@@ -5876,6 +5831,12 @@ def cognitive_diagnosis_api():
         concept=concept,
         attempt_count=(mastery_assessment.get("作答次数") if isinstance(mastery_assessment, dict) else len(concept_history)),
     )
+    diagnosis = {
+        **(diagnosis if isinstance(diagnosis, dict) else {}),
+        "recommendation": (learning_advice or {}).get("建议") or (diagnosis or {}).get("recommendation", ""),
+        "reason": (learning_advice or {}).get("原因") or (diagnosis or {}).get("reason", ""),
+        "recommended_actions": (learning_advice or {}).get("推荐行动") or (diagnosis or {}).get("recommended_actions", []),
+    }
     record = {
         "id": str(uuid.uuid4()),
         "timestamp": datetime.now().isoformat(),
@@ -5884,6 +5845,7 @@ def cognitive_diagnosis_api():
         "user_answer": user_answer[:200],
         "concept": concept,
         "diagnosis": diagnosis,
+        "learning_advice": learning_advice,
         "mastery_assessment": mastery_assessment,
     }
     append_user_event(user_id, "diagnosis", record)
@@ -6443,6 +6405,180 @@ def record_qa_behavior(user_id, question, answer):
     
     db_append_user_event(user_id, "qa", behavior)
     return behavior
+
+
+def extract_learning_advice_from_answer(answer):
+    """从回答文本中提取建议片段，便于同步到仪表盘建议数据源。"""
+    text = str(answer or "").strip()
+    if not text:
+        return ""
+
+    inline_patterns = [
+        r"(?:学习建议|复习建议|建议|下一步建议)\s*[:：]\s*([^\n]{4,220})",
+    ]
+    for pattern in inline_patterns:
+        match = re.search(pattern, text, flags=re.IGNORECASE)
+        if not match:
+            continue
+        candidate = re.sub(r"\s+", " ", str(match.group(1) or "").strip())
+        if candidate:
+            return candidate[:220]
+
+    lines = [str(x or "").strip() for x in text.splitlines()]
+    section_markers = {"建议", "学习建议", "复习建议", "行动建议", "下一步建议"}
+    stop_markers = ("分析", "讲解", "练习", "总结", "结论", "注意", "复盘")
+    for idx, line in enumerate(lines):
+        normalized = line.strip().strip("：:")
+        if normalized not in section_markers:
+            continue
+        chunks = []
+        for follow in lines[idx + 1: idx + 6]:
+            if not follow:
+                if chunks:
+                    break
+                continue
+            head = follow.lstrip("#*-1234567890.、 ")
+            if any(head.startswith(flag) for flag in stop_markers):
+                break
+            chunks.append(follow.lstrip("-•* "))
+
+        candidate = re.sub(r"\s+", " ", " ".join(chunks)).strip()
+        if candidate:
+            return candidate[:220]
+
+    return ""
+
+
+def post_process_qa_interaction(
+    user_id,
+    question,
+    answer,
+    source="qa",
+    include_wrong_question=True,
+    suggested_advice_text="",
+):
+    """统一问答后处理：记录行为、抽取知识、沉淀建议与刷新画像。"""
+    now_iso = datetime.now().isoformat()
+    qa_behavior = record_qa_behavior(user_id, question, answer)
+    topics = normalize_topic_list((qa_behavior or {}).get("topics"))[:6]
+    content_title = "智能问答记录"
+    if str(source or "").strip().startswith("agent"):
+        content_title = "智能体问答记录"
+
+    qa_text_for_extract = f"问题：{str(question or '').strip()}\n回答：{str(answer or '').strip()[:1200]}"
+    extract_result = extract_knowledge_from_text_api_inner(user_id, qa_text_for_extract, str(source or "qa"))
+    extracted_concepts = normalize_topic_list((extract_result or {}).get("detected_concepts"))[:6]
+    merged_topics = normalize_topic_list(topics + extracted_concepts)[:6]
+
+    append_user_event(user_id, "content", {
+        "id": str(uuid.uuid4()),
+        "timestamp": now_iso,
+        "content_type": "qa",
+        "title": content_title,
+        "content": str(question or "")[:500],
+        "source": str(source or "qa"),
+        "topics": merged_topics,
+    })
+
+    diagnosis = None
+    learning_advice = None
+    extracted_advice_text = str(suggested_advice_text or "").strip()
+    if contains_confusion_signal(question):
+        concept = merged_topics[0] if merged_topics else ""
+        concept_history = collect_concept_question_history(user_id, concept, current_record=None, limit=10) if concept else []
+        concept_mastery = get_concept_mastery_from_knowledge(user_id, concept)
+        diagnosis = diagnosis_engine.analyze_error(
+            question=question,
+            answer=answer,
+            user_answer="不会/看不懂",
+            concept=concept,
+            concept_mastery=concept_mastery,
+            attempt_count=len(concept_history),
+            history_records=concept_history,
+        )
+        learning_advice = build_learning_advice(
+            error_type=(diagnosis or {}).get("error_type", "知识性错误"),
+            mastery_score=concept_mastery,
+            concept=concept,
+            attempt_count=len(concept_history),
+        )
+        if extracted_advice_text and not str((learning_advice or {}).get("建议") or "").strip():
+            learning_advice = {**(learning_advice or {}), "建议": extracted_advice_text}
+        diagnosis = {
+            **(diagnosis if isinstance(diagnosis, dict) else {}),
+            "recommendation": (learning_advice or {}).get("建议") or (diagnosis or {}).get("recommendation", ""),
+            "reason": (learning_advice or {}).get("原因") or (diagnosis or {}).get("reason", ""),
+            "recommended_actions": (learning_advice or {}).get("推荐行动") or (diagnosis or {}).get("recommended_actions", []),
+        }
+
+        append_user_event(user_id, "diagnosis", {
+            "id": str(uuid.uuid4()),
+            "timestamp": now_iso,
+            "question": str(question or "")[:300],
+            "correct_answer": str(answer or "")[:200],
+            "user_answer": "不会/看不懂",
+            "concept": concept,
+            "diagnosis": diagnosis,
+            "learning_advice": learning_advice,
+            "mastery_assessment": {
+                "知识点": concept,
+                "掌握度": concept_mastery if concept_mastery is not None else 0.0,
+                "状态": "薄弱" if concept_mastery is None or float(concept_mastery) < 0.6 else "一般",
+            },
+            "source": str(source or "qa"),
+        })
+
+        if include_wrong_question:
+            append_user_event(user_id, "wrong_question", build_wrong_question_entry(
+                source="qa_confusion",
+                question=question,
+                user_answer="不会/看不懂",
+                concept=concept,
+                topics=merged_topics,
+                extra={
+                    "source_key": f"qa_confusion::{now_iso}::{str(question or '')[:80]}",
+                    "answer_excerpt": str(answer or "")[:400],
+                    "is_correct": False,
+                },
+            ))
+
+    elif extracted_advice_text:
+        concept = merged_topics[0] if merged_topics else ""
+        learning_advice = {"建议": extracted_advice_text}
+        diagnosis = {
+            "category": "knowledge",
+            "error_type": "学习建议",
+            "confidence": 0.55,
+            "signals": ["answer_recommendation"],
+            "recommendation": extracted_advice_text,
+            "reason": "从问答回复中提取到建议并同步到诊断看板。",
+            "recommended_actions": [extracted_advice_text],
+        }
+        append_user_event(user_id, "diagnosis", {
+            "id": str(uuid.uuid4()),
+            "timestamp": now_iso,
+            "question": str(question or "")[:300],
+            "correct_answer": str(answer or "")[:200],
+            "user_answer": "",
+            "concept": concept,
+            "diagnosis": diagnosis,
+            "learning_advice": learning_advice,
+            "mastery_assessment": {
+                "知识点": concept,
+                "掌握度": get_concept_mastery_from_knowledge(user_id, concept) if concept else 0.0,
+                "状态": "待跟进",
+            },
+            "source": str(source or "qa"),
+        })
+
+    profile = build_learning_profile(user_id)
+    return {
+        "qa_behavior": qa_behavior,
+        "knowledge_extract": extract_result,
+        "diagnosis": diagnosis,
+        "learning_advice": learning_advice,
+        "profile": profile,
+    }
 
 def update_user_knowledge(user_id, concepts):
     """更新用户知识图谱"""

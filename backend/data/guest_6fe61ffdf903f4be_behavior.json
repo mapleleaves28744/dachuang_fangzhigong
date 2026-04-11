@@ -1,0 +1,34 @@
+[
+  {
+    "id": "1c680676-7948-4226-9c9d-8096a0ac20c2",
+    "user_id": "guest_6fe61ffdf903f4be",
+    "timestamp": "2026-04-10T22:11:11.499165",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "dashboard",
+    "target": "",
+    "label": "page_view",
+    "title": "学习仪表盘 - 智能学习伴侣",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "7c90d7f6-c269-4e08-ae3d-fa27d5245254",
+    "user_id": "guest_6fe61ffdf903f4be",
+    "timestamp": "2026-04-10T22:19:40.606588",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "index",
+    "target": "",
+    "label": "page_view",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": ""
+    }
+  }
+]

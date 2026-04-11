@@ -12,7 +12,11 @@
     summaryPollTimer: 0,
     liveStayTimer: 0,
     activeDrawerPanel: '',
-    heatmapEditMode: false
+    heatmapEditMode: false,
+    capabilityCharts: {
+      mastery: null,
+      diagnosis: null
+    }
   };
 
   const styleLabelMap = {
@@ -656,18 +660,28 @@
     const container = document.getElementById('dashboard-recommendations');
     if (!container) return;
 
-    const recommendations = Array.isArray(summary && summary.recommendations) ? summary.recommendations : [];
+    const recommendations = getMergedRecommendations(summary);
     const filterEl = document.getElementById('dashboard-rec-style-filter');
     const activeStyle = filterEl ? String(filterEl.value || 'all').trim() : 'all';
 
-    const filtered = recommendations.filter(function (item) {
+    let effectiveStyle = activeStyle;
+    let filtered = recommendations.filter(function (item) {
       if (activeStyle === 'all') return true;
-      const tags = Array.isArray(item && item.strategy_tags) ? item.strategy_tags : [];
-      return tags.some(function (tag) {
-        return String(tag).trim() === `style:${activeStyle}`;
-      });
+      const styleKeys = getRecommendationStyleKeys(item);
+      return styleKeys.includes(activeStyle);
     });
-    const filterLabel = getRecommendationFilterLabel(activeStyle);
+
+    // If tags are incomplete or style labels are missing, fallback to all
+    // so newly generated personalized suggestions are not hidden in UI.
+    if (!filtered.length && activeStyle !== 'all' && recommendations.length) {
+      effectiveStyle = 'all';
+      filtered = recommendations.slice();
+      if (filterEl) {
+        filterEl.value = 'all';
+      }
+    }
+
+    const filterLabel = getRecommendationFilterLabel(effectiveStyle);
     const filterMeta = `
       <div class="filter-result-meta">
         当前筛选：<strong>${escapeHtml(filterLabel)}</strong>
@@ -691,14 +705,247 @@
         <div class="mini-item">
           <div class="mini-item-head">
             <span class="mini-item-title">${escapeHtml(item.title || '个性化学习资源')}</span>
-            ${createPillMarkup(item.recommend_time || '--', false)}
+            ${createPillMarkup(item.recommend_time || item.time || '--', false)}
           </div>
           <div class="mini-item-desc">${escapeHtml(item.reason || '结合当前学习状态生成的补救建议')}</div>
-          <div class="mini-item-meta">资源类型 ${escapeHtml(item.resource_type || '个性化学习包')} · ${escapeHtml(item.evidence_brief || '暂无补充证据')}</div>
+          <div class="mini-item-meta">资源类型 ${escapeHtml(item.resource_type || item.resource || '个性化学习包')} · ${escapeHtml(item.evidence_brief || item.evidence || '暂无补充证据')}</div>
           ${tagMarkup}
         </div>
       `;
     }).join('');
+  }
+
+  function getRecommendationStyleKeys(item) {
+    const styleKeys = [];
+    const tags = Array.isArray(item && item.strategy_tags) ? item.strategy_tags : [];
+    tags.forEach(function (tag) {
+      const text = String(tag || '').trim();
+      if (!text.startsWith('style:')) return;
+      const key = text.slice('style:'.length).trim();
+      if (key) styleKeys.push(key);
+    });
+
+    const styleFromProfile = String(
+      item
+      && item.source_evidence
+      && item.source_evidence.profile
+      && item.source_evidence.profile.learning_style
+      ? item.source_evidence.profile.learning_style
+      : ''
+    ).trim();
+    if (styleFromProfile) {
+      styleKeys.push(styleFromProfile);
+    }
+
+    const styleHint = `${item && item.reason ? item.reason : ''} ${item && item.evidence_brief ? item.evidence_brief : ''}`;
+    if (styleHint.includes('视觉型')) styleKeys.push('visual');
+    if (styleHint.includes('听觉型')) styleKeys.push('auditory');
+    if (styleHint.includes('动觉型')) styleKeys.push('kinesthetic');
+
+    return Array.from(new Set(styleKeys));
+  }
+
+  function getMergedRecommendations(summary) {
+    const primary = Array.isArray(summary && summary.recommendations) ? summary.recommendations : [];
+    const queue = Array.isArray(summary && summary.intervention_summary && summary.intervention_summary.action_queue)
+      ? summary.intervention_summary.action_queue
+      : [];
+
+    const queueRecommendations = queue.filter(function (item) {
+      return item && (item.kind === 'recommendation' || item.kind === 'diagnosis_followup' || item.kind === 'review');
+    }).map(function (item) {
+      return {
+        title: item.title,
+        reason: item.reason,
+        recommend_time: item.time,
+        resource_type: item.resource,
+        evidence_brief: item.evidence,
+        strategy_tags: []
+      };
+    });
+
+    const merged = [];
+    const seen = new Set();
+    primary.concat(queueRecommendations).forEach(function (item) {
+      const key = `${item && item.title ? item.title : ''}::${item && item.reason ? item.reason : ''}`;
+      if (seen.has(key)) return;
+      seen.add(key);
+      merged.push(item);
+    });
+    return merged;
+  }
+
+  function getMasteryLevel(mastery) {
+    const score = Math.max(0, Math.min(100, toNumber(mastery, 0)));
+    if (score >= 85) return { level: 4, label: '精通' };
+    if (score >= 70) return { level: 3, label: '熟练' };
+    if (score >= 55) return { level: 2, label: '中等' };
+    if (score >= 35) return { level: 1, label: '初级' };
+    return { level: 0, label: '薄弱' };
+  }
+
+  function destroyCapabilityCharts() {
+    ['mastery', 'diagnosis'].forEach(function (key) {
+      const chart = dashboardState.capabilityCharts[key];
+      if (chart && typeof chart.destroy === 'function') {
+        chart.destroy();
+      }
+      dashboardState.capabilityCharts[key] = null;
+    });
+  }
+
+  function renderCapabilityAlignment(summary) {
+    const graphInsights = summary && summary.graph_insights ? summary.graph_insights : {};
+    const diagnosis = summary && summary.diagnosis ? summary.diagnosis : {};
+    const review = summary && summary.review ? summary.review : {};
+    const recommendations = Array.isArray(summary && summary.recommendations) ? summary.recommendations : [];
+    const dataPool = summary && summary.data_pool ? summary.data_pool : {};
+    const heatmap = Array.isArray(graphInsights.mastery_heatmap) ? graphInsights.mastery_heatmap : [];
+    const dependencyChain = Array.isArray(graphInsights.dependency_chain) ? graphInsights.dependency_chain : [];
+    const distribution = graphInsights.distribution || {};
+    const categoryCount = diagnosis.category_count || {};
+
+    const capabilityHeatmapEl = document.getElementById('dashboard-capability-heatmap');
+    if (capabilityHeatmapEl) {
+      if (!heatmap.length) {
+        capabilityHeatmapEl.innerHTML = '<div class="empty-state">暂无知识点样本，完成学习后会自动生成5级热力图。</div>';
+      } else {
+        capabilityHeatmapEl.innerHTML = heatmap.slice(0, 10).map(function (item) {
+          const mastery = toNumber(item.mastery, 0);
+          const lv = getMasteryLevel(mastery);
+          return `
+            <div class="capability-heatmap-tile level-${lv.level}">
+              <div class="capability-heatmap-tile-title">${escapeHtml(item.concept || '未命名知识点')}</div>
+              <div class="capability-heatmap-tile-score">${mastery}%</div>
+              <div class="capability-heatmap-tile-meta">${lv.label}</div>
+            </div>
+          `;
+        }).join('');
+      }
+    }
+
+    const learningProgressEl = document.getElementById('dashboard-learning-progress');
+    if (learningProgressEl) {
+      const overallMastery = Math.round(toNumber(summary && summary.overall_mastery, 0) * 100);
+      const graphNodeCount = toNumber((graphInsights.graph_size || {}).nodes, 0);
+      const diagnosisTotal = toNumber(diagnosis.total, 0);
+      const reviewDue = toNumber(review.due_count, 0);
+      const sourceTotal = toNumber(dataPool.total_records, 0) + toNumber(dataPool.space_content_count, 0);
+
+      const progressItems = [
+        { label: '知识掌握度', value: overallMastery },
+        { label: '知识图谱覆盖度', value: Math.max(0, Math.min(100, graphNodeCount * 4)) },
+        { label: '诊断样本完备度', value: Math.max(0, Math.min(100, diagnosisTotal * 12)) },
+        { label: '学习闭环准备度', value: Math.max(0, Math.min(100, recommendations.length * 15 + (reviewDue > 0 ? 25 : 40) + Math.min(20, sourceTotal))) }
+      ];
+
+      learningProgressEl.innerHTML = progressItems.map(function (item) {
+        const val = Math.max(0, Math.min(100, Math.round(toNumber(item.value, 0))));
+        return `
+          <div class="capability-progress-item">
+            <div class="capability-progress-head"><span>${escapeHtml(item.label)}</span><span>${val}%</span></div>
+            <div class="capability-progress-bar"><div class="capability-progress-fill" style="width:${val}%"></div></div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    const timelineEl = document.getElementById('dashboard-learning-path-timeline');
+    if (timelineEl) {
+      if (dependencyChain.length) {
+        timelineEl.innerHTML = dependencyChain.slice(0, 5).map(function (item) {
+          const path = Array.isArray(item.path) ? item.path : [];
+          return `
+            <div class="timeline-item">
+              <div class="timeline-route">${path.map(function (segment, index) {
+                return `${index > 0 ? '<span class="timeline-arrow">→</span>' : ''}${escapeHtml(segment)}`;
+              }).join('')}</div>
+              <div class="timeline-meta">${escapeHtml(item.reason || '建议先补前置知识，再推进后续内容')}</div>
+            </div>
+          `;
+        }).join('');
+      } else if (recommendations.length) {
+        timelineEl.innerHTML = recommendations.slice(0, 5).map(function (item, idx) {
+          return `
+            <div class="timeline-item">
+              <div class="timeline-route">步骤 ${idx + 1}：${escapeHtml(item.title || '个性化学习资源')}</div>
+              <div class="timeline-meta">${escapeHtml(item.reason || '根据当前学习状态生成')}</div>
+            </div>
+          `;
+        }).join('');
+      } else {
+        timelineEl.innerHTML = '<div class="empty-state">暂无路径推荐，补充学习数据后会自动生成时间线。</div>';
+      }
+    }
+
+    destroyCapabilityCharts();
+
+    const masteryCanvas = document.getElementById('dashboard-mastery-chart');
+    const diagnosisCanvas = document.getElementById('dashboard-diagnosis-chart');
+    if (!window.Chart || !masteryCanvas || !diagnosisCanvas) {
+      return;
+    }
+
+    const masteryData = [
+      toNumber(distribution.weak, 0),
+      toNumber(distribution.medium, 0),
+      toNumber(distribution.strong, 0)
+    ];
+
+    dashboardState.capabilityCharts.mastery = new window.Chart(masteryCanvas, {
+      type: 'doughnut',
+      data: {
+        labels: ['薄弱', '过渡', '稳定'],
+        datasets: [{
+          data: masteryData,
+          backgroundColor: ['#ef4444', '#f59e0b', '#10b981'],
+          borderColor: '#ffffff',
+          borderWidth: 2
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: { boxWidth: 12, color: '#4c647f', font: { size: 11 } }
+          }
+        }
+      }
+    });
+
+    const diagnosisData = [
+      toNumber(categoryCount.knowledge, 0),
+      toNumber(categoryCount.skill, 0),
+      toNumber(categoryCount.habit, 0)
+    ];
+
+    dashboardState.capabilityCharts.diagnosis = new window.Chart(diagnosisCanvas, {
+      type: 'bar',
+      data: {
+        labels: ['知识性', '技能性', '习惯性'],
+        datasets: [{
+          data: diagnosisData,
+          backgroundColor: ['#f87171', '#fbbf24', '#34d399'],
+          borderRadius: 6,
+          maxBarThickness: 34
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: false } },
+        scales: {
+          x: { grid: { display: false }, ticks: { color: '#4c647f', font: { size: 11 } } },
+          y: {
+            beginAtZero: true,
+            ticks: { color: '#4c647f', precision: 0, font: { size: 11 } },
+            grid: { color: '#eef3f8' }
+          }
+        }
+      }
+    });
   }
 
   function renderReviewReminders(summary) {
@@ -740,6 +987,7 @@
     renderDiagnosis(dashboardState.summary);
     renderRecommendations(dashboardState.summary);
     renderReviewReminders(dashboardState.summary);
+    renderCapabilityAlignment(dashboardState.summary);
   }
 
   function renderSummaryLoadError(message) {
@@ -766,6 +1014,10 @@
     setHtml('dashboard-resource-mix', pillMarkup);
     setHtml('dashboard-recommendations', emptyMarkup);
     setHtml('dashboard-review-reminders', emptyMarkup);
+    setHtml('dashboard-capability-heatmap', emptyMarkup);
+    setHtml('dashboard-learning-progress', emptyMarkup);
+    setHtml('dashboard-learning-path-timeline', emptyMarkup);
+    destroyCapabilityCharts();
     syncHeatmapEditMode();
   }
 
@@ -777,7 +1029,9 @@
     dashboardState.summaryLoading = true;
     dashboardState.summaryPromise = (async function () {
       try {
-        const response = await fetch(`${API_BASE}/api/dashboard/summary?user_id=${userId}`);
+        const response = await fetch(`${API_BASE}/api/dashboard/summary?user_id=${encodeURIComponent(userId)}&_t=${Date.now()}`, {
+          cache: 'no-store'
+        });
         const data = await parseApiResponse(response);
         renderSummary(data);
       } catch (error) {

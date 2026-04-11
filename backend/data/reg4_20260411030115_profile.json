@@ -1,0 +1,136 @@
+{
+  "user_id": "reg4_20260411030115",
+  "updated_at": "2026-04-11T03:01:55.730057",
+  "learning_style": "visual",
+  "style_scores": {
+    "visual": 0.35,
+    "auditory": 0.394,
+    "kinesthetic": 0.394
+  },
+  "style_method": "kmeans",
+  "style_features": {
+    "image_count": 0,
+    "link_count": 0,
+    "qa_content_count": 2,
+    "note_count": 1,
+    "other_count": 0,
+    "qa_log_count": 1,
+    "concept_count": 11
+  },
+  "interests": [
+    "导数",
+    "瞬时变化率",
+    "切线斜率",
+    "瞬时速度",
+    "边际成本"
+  ],
+  "best_time_range": "03:00-05:00",
+  "focus_minutes": 45,
+  "content_type_counter": {
+    "note": 1,
+    "link": 0,
+    "image": 0,
+    "qa": 2,
+    "other": 0
+  },
+  "dashboard_hidden": {
+    "updated_at": "2026-04-11T03:01:55.793019",
+    "topic_daily_table": [
+      {
+        "date": "2026-04-11",
+        "topics": [
+          {
+            "topic": "导数",
+            "count": 3
+          },
+          {
+            "topic": "瞬时变化率",
+            "count": 1
+          },
+          {
+            "topic": "切线斜率",
+            "count": 1
+          },
+          {
+            "topic": "瞬时速度",
+            "count": 1
+          },
+          {
+            "topic": "边际成本",
+            "count": 1
+          },
+          {
+            "topic": "极限",
+            "count": 1
+          },
+          {
+            "topic": "积分",
+            "count": 1
+          },
+          {
+            "topic": "f(x)=x^2",
+            "count": 1
+          }
+        ]
+      }
+    ],
+    "topic_total_table": [
+      {
+        "topic": "导数",
+        "count": 3
+      },
+      {
+        "topic": "瞬时变化率",
+        "count": 1
+      },
+      {
+        "topic": "切线斜率",
+        "count": 1
+      },
+      {
+        "topic": "瞬时速度",
+        "count": 1
+      },
+      {
+        "topic": "边际成本",
+        "count": 1
+      },
+      {
+        "topic": "极限",
+        "count": 1
+      },
+      {
+        "topic": "积分",
+        "count": 1
+      },
+      {
+        "topic": "f(x)=x^2",
+        "count": 1
+      }
+    ],
+    "study_window_daily_table": [
+      {
+        "date": "2026-04-11",
+        "label": "03:00-05:00",
+        "count": 5,
+        "duration_seconds": 0.0
+      }
+    ],
+    "study_window_total_table": [
+      {
+        "label": "03:00-05:00",
+        "count": 5,
+        "duration_seconds": 0.0
+      }
+    ],
+    "top_topic": {
+      "topic": "导数",
+      "count": 3
+    },
+    "top_study_window": {
+      "label": "03:00-05:00",
+      "count": 5,
+      "duration_seconds": 0.0
+    }
+  }
+}

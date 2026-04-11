@@ -1,0 +1,15 @@
+{
+  "timestamp": "2026-04-10T20:23:59.066670",
+  "testset": "scripts/education_testset_large.json",
+  "results": {
+    "sample_count": 59,
+    "avg_latency_ms": 377.2,
+    "median_latency_ms": 223.68097305297852,
+    "min_latency": 92.88215637207031,
+    "max_latency": 6939.190626144409,
+    "p95_latency_ms": 783.3387851715088,
+    "avg_precision": 0.4576,
+    "hit_at_k": 0.8983,
+    "error_count": 0
+  }
+}

@@ -120,6 +120,41 @@ class TestMasteryEngineContract(unittest.TestCase):
         self.assertEqual(result["category"], "habit")
         self.assertTrue(result["near_miss"])
 
+    def test_learning_advice_changes_with_attempt_context(self):
+        low_attempt = build_learning_advice(
+            error_type="知识性错误",
+            mastery_score=0.32,
+            concept="HTML",
+            attempt_count=1,
+        )
+        high_attempt = build_learning_advice(
+            error_type="知识性错误",
+            mastery_score=0.32,
+            concept="HTML",
+            attempt_count=7,
+        )
+
+        self.assertNotEqual(low_attempt.get("原因"), high_attempt.get("原因"))
+        self.assertIn("近期", high_attempt.get("原因", ""))
+
+    def test_learning_advice_changes_with_mastery_band(self):
+        weak = build_learning_advice(
+            error_type="技能性错误",
+            mastery_score=0.35,
+            concept="CSS布局",
+            attempt_count=2,
+        )
+        mid = build_learning_advice(
+            error_type="技能性错误",
+            mastery_score=0.62,
+            concept="CSS布局",
+            attempt_count=2,
+        )
+
+        self.assertNotEqual(weak.get("建议"), mid.get("建议"))
+        self.assertTrue(len(weak.get("推荐行动", [])) >= 3)
+        self.assertTrue(len(mid.get("推荐行动", [])) >= 3)
+
     def test_sync_user_mastery_to_graph_prefers_user_score(self):
         kg = backend_app.build_knowledge_graph()
 

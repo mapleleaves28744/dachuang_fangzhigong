@@ -38,6 +38,14 @@ DEFAULT_TOPIC_STOPWORDS = {
     "老师",
     "伙伴",
     "同学",
+    "自学",
+    "零基础",
+    "初学",
+    "初学者",
+    "新手",
+    "小白",
+    "入门",
+    "进阶",
 }
 
 NOISE_EXACT_TOPICS = {
@@ -47,6 +55,8 @@ NOISE_EXACT_TOPICS = {
     "你是谁",
     "我是你爹吗",
     "推荐今日穿搭",
+    "自学",
+    "零基础",
 }
 
 NOISE_PREFIXES = (

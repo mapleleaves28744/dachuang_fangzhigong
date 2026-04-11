@@ -1,0 +1,175 @@
+{
+  "concepts": [
+    {
+      "concept": "一元二次方程",
+      "first_seen": "2026-04-11T02:58:28.392010",
+      "last_seen": "2026-04-11T02:58:28.392010",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "文言文虚词",
+      "first_seen": "2026-04-11T02:58:28.392010",
+      "last_seen": "2026-04-11T02:58:28.392010",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "Python循环",
+      "first_seen": "2026-04-11T02:58:28.392010",
+      "last_seen": "2026-04-11T02:58:28.392010",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "学习小挑战",
+      "first_seen": "2026-04-11T02:58:28.392010",
+      "last_seen": "2026-04-11T02:58:28.392010",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "读后续写",
+      "first_seen": "2026-04-11T02:59:26.059935",
+      "last_seen": "2026-04-11T02:59:26.059935",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "虚拟语气",
+      "first_seen": "2026-04-11T02:59:26.059935",
+      "last_seen": "2026-04-11T02:59:26.059935",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "情节逻辑闭环",
+      "first_seen": "2026-04-11T02:59:26.059935",
+      "last_seen": "2026-04-11T02:59:26.059935",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "前提判定",
+      "first_seen": "2026-04-11T02:59:26.059935",
+      "last_seen": "2026-04-11T02:59:26.059935",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "语义匹配",
+      "first_seen": "2026-04-11T02:59:26.059935",
+      "last_seen": "2026-04-11T02:59:26.059935",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "时态一致性",
+      "first_seen": "2026-04-11T02:59:26.059935",
+      "last_seen": "2026-04-11T02:59:26.059935",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "情感适配",
+      "first_seen": "2026-04-11T02:59:26.059935",
+      "last_seen": "2026-04-11T02:59:26.059935",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    }
+  ],
+  "relations": [
+    {
+      "source": "一元二次方程",
+      "target": "函数",
+      "type": "相关",
+      "score": 0.9,
+      "evidence": "方程属于函数应用",
+      "source_text": "问题：?????,?????\n回答：你好呀！👋 看起来你的问题可能被输入为问号（?????,?????），暂时还没有显示具体内容呢～  \n是不是在输入时遇到了小卡顿？或者想探讨某个学科概念、解题思路、学习方法，但还没来得及写出来？\n\n别着急",
+      "created_at": "2026-04-11T02:58:28.392010",
+      "from": "qa_qwen"
+    },
+    {
+      "source": "Python循环",
+      "target": "函数",
+      "type": "相关",
+      "score": 0.85,
+      "evidence": "循环常用于函数实现",
+      "source_text": "问题：?????,?????\n回答：你好呀！👋 看起来你的问题可能被输入为问号（?????,?????），暂时还没有显示具体内容呢～  \n是不是在输入时遇到了小卡顿？或者想探讨某个学科概念、解题思路、学习方法，但还没来得及写出来？\n\n别着急",
+      "created_at": "2026-04-11T02:58:28.392010",
+      "from": "qa_qwen"
+    },
+    {
+      "source": "读后续写",
+      "target": "虚拟语气",
+      "type": "相关",
+      "score": 0.95,
+      "evidence": "核心语法支撑点",
+      "source_text": "问题：????????\n回答：# 分析  \n该学生在知识点「???????」上无掌握度数据（「未查到学生 sync_20260411025817 在知识点“???????”的数据」），但知识库检索高度聚焦于「读后续写-虚拟语气-K10」（t",
+      "created_at": "2026-04-11T02:59:26.059935",
+      "from": "agent_ocr_tutor"
+    },
+    {
+      "source": "虚拟语气",
+      "target": "前提判定",
+      "type": "前置",
+      "score": 0.92,
+      "evidence": "步骤链第一步",
+      "source_text": "问题：????????\n回答：# 分析  \n该学生在知识点「???????」上无掌握度数据（「未查到学生 sync_20260411025817 在知识点“???????”的数据」），但知识库检索高度聚焦于「读后续写-虚拟语气-K10」（t",
+      "created_at": "2026-04-11T02:59:26.059935",
+      "from": "agent_ocr_tutor"
+    },
+    {
+      "source": "虚拟语气",
+      "target": "语义匹配",
+      "type": "前置",
+      "score": 0.91,
+      "evidence": "步骤链第二步",
+      "source_text": "问题：????????\n回答：# 分析  \n该学生在知识点「???????」上无掌握度数据（「未查到学生 sync_20260411025817 在知识点“???????”的数据」），但知识库检索高度聚焦于「读后续写-虚拟语气-K10」（t",
+      "created_at": "2026-04-11T02:59:26.059935",
+      "from": "agent_ocr_tutor"
+    },
+    {
+      "source": "虚拟语气",
+      "target": "时态一致性",
+      "type": "前置",
+      "score": 0.9,
+      "evidence": "步骤链第三步",
+      "source_text": "问题：????????\n回答：# 分析  \n该学生在知识点「???????」上无掌握度数据（「未查到学生 sync_20260411025817 在知识点“???????”的数据」），但知识库检索高度聚焦于「读后续写-虚拟语气-K10」（t",
+      "created_at": "2026-04-11T02:59:26.059935",
+      "from": "agent_ocr_tutor"
+    },
+    {
+      "source": "虚拟语气",
+      "target": "情感适配",
+      "type": "前置",
+      "score": 0.89,
+      "evidence": "步骤链第四步",
+      "source_text": "问题：????????\n回答：# 分析  \n该学生在知识点「???????」上无掌握度数据（「未查到学生 sync_20260411025817 在知识点“???????”的数据」），但知识库检索高度聚焦于「读后续写-虚拟语气-K10」（t",
+      "created_at": "2026-04-11T02:59:26.059935",
+      "from": "agent_ocr_tutor"
+    },
+    {
+      "source": "虚拟语气",
+      "target": "情节逻辑闭环",
+      "type": "因果",
+      "score": 0.87,
+      "evidence": "驱动情节合理转折",
+      "source_text": "问题：????????\n回答：# 分析  \n该学生在知识点「???????」上无掌握度数据（「未查到学生 sync_20260411025817 在知识点“???????”的数据」），但知识库检索高度聚焦于「读后续写-虚拟语气-K10」（t",
+      "created_at": "2026-04-11T02:59:26.059935",
+      "from": "agent_ocr_tutor"
+    }
+  ],
+  "deleted_concepts": []
+}

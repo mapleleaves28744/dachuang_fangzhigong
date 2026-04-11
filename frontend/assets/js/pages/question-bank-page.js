@@ -3,6 +3,9 @@
     ? window.ApiUtils.getApiBase()
     : (window.location.origin || '');
   const MAX_CHAT_SESSIONS = 20;
+  const MAX_MESSAGES_PER_SESSION = 120;
+  const MAX_RENDER_MESSAGES = 80;
+  const MAX_MESSAGE_TEXT_LENGTH = 12000;
   const STORE_SCOPE_KEY = 'fangzhigong_question_bank_scope_v1';
   const STORE_CONCEPT_KEY = 'fangzhigong_question_bank_concept_v1';
   const WELCOME_MESSAGE = '这里是题库练习页。你可以直接自由提问，也可以先填写要考察的知识点，再点击“题库练习”进入练题模式。AI 题库只作为练习来源存在，不展示题库明细。';
@@ -135,6 +138,18 @@
     };
   }
 
+  function normalizeMessageText(text) {
+    const content = String(text || '');
+    if (content.length <= MAX_MESSAGE_TEXT_LENGTH) return content;
+    return `${content.slice(0, MAX_MESSAGE_TEXT_LENGTH)}\n\n[内容过长，已为提升性能自动截断]`;
+  }
+
+  function shouldRenderMathText(text) {
+    const content = String(text || '');
+    if (!content) return false;
+    return /(\$\$|\$[^\n$]+\$|\\\(|\\\[)/.test(content);
+  }
+
   function getQuestionBankStoreKey() {
     if (window.ProjectLocalData && typeof window.ProjectLocalData.getQuestionBankChatStoreKey === 'function') {
       return window.ProjectLocalData.getQuestionBankChatStoreKey(getUserId());
@@ -144,9 +159,32 @@
 
   function saveSessionsToLocal() {
     try {
+      const compactSessions = chatSessions
+        .slice(0, MAX_CHAT_SESSIONS)
+        .map(function (session) {
+          const messages = Array.isArray(session.messages)
+            ? session.messages.slice(-MAX_MESSAGES_PER_SESSION).map(function (message) {
+                return {
+                  text: normalizeMessageText(message && message.text),
+                  sender: String((message && message.sender) || 'ai'),
+                  options: message && typeof message.options === 'object' ? message.options : {},
+                  time: Number((message && message.time) || Date.now())
+                };
+              })
+            : [];
+
+          return {
+            id: String(session.id || '').trim(),
+            title: String(session.title || '新练习').trim() || '新练习',
+            updatedAt: Number(session.updatedAt || Date.now()),
+            messages: messages,
+            pendingQuestion: normalizePendingQuestion(session.pendingQuestion)
+          };
+        });
+
       localStorage.setItem(getQuestionBankStoreKey(), JSON.stringify({
         activeSessionId: activeSessionId,
-        sessions: chatSessions.slice(0, MAX_CHAT_SESSIONS)
+        sessions: compactSessions
       }));
     } catch (error) {
       console.warn('保存题库问答会话失败:', error);
@@ -173,9 +211,9 @@
               id: String(session.id || '').trim(),
               title: String(session.title || '新练习').trim() || '新练习',
               updatedAt: Number(session.updatedAt || Date.now()),
-              messages: Array.isArray(session.messages) ? session.messages.map(function (message) {
+              messages: Array.isArray(session.messages) ? session.messages.slice(-MAX_MESSAGES_PER_SESSION).map(function (message) {
                 return {
-                  text: String((message && message.text) || ''),
+                  text: normalizeMessageText((message && message.text) || ''),
                   sender: String((message && message.sender) || 'ai'),
                   options: message && typeof message.options === 'object' ? message.options : {},
                   time: Number((message && message.time) || Date.now())
@@ -334,13 +372,73 @@
       .replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
   }
 
+  function isTableSeparatorLine(line) {
+    return /^\s*\|?(?:\s*:?-{3,}:?\s*\|)+\s*:?-{3,}:?\s*\|?\s*$/.test(line);
+  }
+
+  function renderTableSegment(lines) {
+    if (lines.length < 2) return '';
+
+    const headerCells = lines[0].replace(/^\||\|$/g, '').split('|').map(function (cell) {
+      return formatInline(escapeHtml(cell.trim()));
+    });
+    const bodyRows = lines.slice(2).map(function (line) {
+      return line.replace(/^\||\|$/g, '').split('|').map(function (cell) {
+        return formatInline(escapeHtml(cell.trim()));
+      });
+    }).filter(function (cells) {
+      return cells.length && cells.some(function (cell) { return String(cell).trim() !== ''; });
+    });
+
+    return `
+      <table class="markdown-table">
+        <thead><tr>${headerCells.map(function (cell) { return `<th>${cell}</th>`; }).join('')}</tr></thead>
+        <tbody>${bodyRows.map(function (cells) {
+          return `<tr>${cells.map(function (cell) { return `<td>${cell}</td>`; }).join('')}</tr>`;
+        }).join('')}</tbody>
+      </table>
+    `;
+  }
+
+  function renderHeadingSegment(text) {
+    const match = text.match(/^(#{1,6})\s+(.+)$/);
+    if (!match) return '';
+    const level = Math.min(6, Math.max(1, match[1].length));
+    return `<h${level}>${formatInline(match[2].trim())}</h${level}>`;
+  }
+
+  function renderHeadingAndBodySegment(lines) {
+    if (!lines.length) return '';
+    const headingHtml = renderHeadingSegment(lines[0]);
+    if (!headingHtml || lines.length < 2) return '';
+
+    const bodyHtml = formatSegment(lines.slice(1).join('\n'));
+    return `${headingHtml}${bodyHtml}`;
+  }
+
   function formatSegment(segment) {
     const trimmed = segment.trim();
     if (!trimmed) return '';
 
-    const lines = trimmed.split('\n').filter(Boolean);
+    const normalized = trimmed.replace(/<br\s*\/??\s*>/gi, '\n');
+
+    const headingHtml = renderHeadingSegment(normalized);
+    if (headingHtml) {
+      return headingHtml;
+    }
+
+    const lines = normalized.split('\n').filter(Boolean);
+    const headingAndBodyHtml = renderHeadingAndBodySegment(lines);
+    if (headingAndBodyHtml) {
+      return headingAndBodyHtml;
+    }
+
     const unordered = lines.every(function (line) { return /^[-*•]\s+/.test(line); });
     const ordered = lines.every(function (line) { return /^\d+\.\s+/.test(line); });
+
+    if (lines.length >= 2 && isTableSeparatorLine(lines[1]) && lines[0].includes('|')) {
+      return renderTableSegment(lines);
+    }
 
     if (unordered) {
       return `<ul>${lines.map(function (line) {
@@ -354,11 +452,13 @@
       }).join('')}</ol>`;
     }
 
-    return `<p>${formatInline(trimmed.replace(/\n/g, '<br>'))}</p>`;
+    return `<p>${formatInline(normalized.replace(/\n/g, '<br>'))}</p>`;
   }
 
   function renderRichText(text) {
-    const safe = escapeHtml(text).replace(/\r\n/g, '\n');
+    const safe = escapeHtml(text)
+      .replace(/\r\n/g, '\n')
+      .replace(/&lt;br\s*\/?\s*&gt;/gi, '\n');
     const chunks = safe.split(/```/);
     const html = chunks.map(function (chunk, idx) {
       if (idx % 2 === 1) {
@@ -494,7 +594,7 @@
   function appendMessageToSession(text, sender, options) {
     const session = ensureActiveSession();
     const message = {
-      text: String(text || ''),
+      text: normalizeMessageText(text),
       sender: sender,
       options: options || {},
       time: Date.now()
@@ -502,6 +602,9 @@
 
     session.messages = Array.isArray(session.messages) ? session.messages : [];
     session.messages.push(message);
+    if (session.messages.length > MAX_MESSAGES_PER_SESSION) {
+      session.messages = session.messages.slice(-MAX_MESSAGES_PER_SESSION);
+    }
     session.updatedAt = message.time;
     updateSessionTitle(session, text, sender);
     reorderSession(session);
@@ -514,7 +617,7 @@
 
     const row = createMessageRow(text, sender, options || {});
     chatMessages.appendChild(row);
-    if (sender === 'ai') {
+    if (sender === 'ai' && shouldRenderMathText(text)) {
       renderMathInContainer(row);
     }
     chatMessages.scrollTop = chatMessages.scrollHeight;
@@ -534,6 +637,35 @@
     }
   }
 
+  function scrollChatToLatest() {
+    const chatMessages = document.getElementById('chatMessages');
+    if (!chatMessages) return;
+
+    let attempts = 0;
+    const doScroll = () => {
+      // 1. 如果是容器内局部滚动
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+      
+      // 2. 如果因为 css 布局问题变成了全局 / window 级别的滚动，则兜底强制底部元素进入视野
+      if (chatMessages.lastElementChild && typeof chatMessages.lastElementChild.scrollIntoView === 'function') {
+        chatMessages.lastElementChild.scrollIntoView({ behavior: 'auto', block: 'end' });
+      } else {
+        window.scrollTo(0, document.body.scrollHeight);
+      }
+    };
+    
+    doScroll();
+    
+    // 持续 1.5 秒尝试滚动到底部，保证包含任何图片、公式等异步撑开高度后的节点都能被定位
+    const interval = setInterval(() => {
+      doScroll();
+      attempts++;
+      if (attempts >= 30) {
+        clearInterval(interval);
+      }
+    }, 50);
+  }
+
   function ensureWelcomeMessage() {
     const session = ensureActiveSession();
     if (Array.isArray(session.messages) && session.messages.length > 0) return;
@@ -543,16 +675,30 @@
     activeSessionId = session.id;
     saveSessionsToLocal();
     addMessage(WELCOME_MESSAGE, 'ai', { badge: '系统引导', aiUsed: true, source: 'system' });
+    scrollChatToLatest();
   }
 
   function renderActiveSessionMessages() {
     const session = ensureActiveSession();
     clearChatDom();
-    (session.messages || []).forEach(function (message) {
+    const messages = Array.isArray(session.messages) ? session.messages : [];
+    const startIndex = Math.max(0, messages.length - MAX_RENDER_MESSAGES);
+
+    if (startIndex > 0) {
+      addMessage(`历史消息较多，已为流畅度仅展示最近 ${MAX_RENDER_MESSAGES} 条。`, 'ai', {
+        badge: '性能优化',
+        source: 'system',
+        aiUsed: false,
+        error: ''
+      }, false);
+    }
+
+    messages.slice(startIndex).forEach(function (message) {
       addMessage(message.text, message.sender, message.options || {}, false);
     });
     renderSessionList();
     updateQuestionModeUI();
+    scrollChatToLatest();
   }
 
   function renderSessionList() {

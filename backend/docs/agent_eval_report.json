@@ -1,0 +1,81 @@
+{
+  "results": [
+    {
+      "has_tool_trace": true,
+      "id": "case-01",
+      "keyword_score": 0.0,
+      "score": 0.4,
+      "trace_count": 1
+    },
+    {
+      "has_tool_trace": true,
+      "id": "case-02",
+      "keyword_score": 0.0,
+      "score": 0.4,
+      "trace_count": 1
+    },
+    {
+      "has_tool_trace": true,
+      "id": "case-03",
+      "keyword_score": 0.0,
+      "score": 0.4,
+      "trace_count": 1
+    },
+    {
+      "has_tool_trace": true,
+      "id": "case-04",
+      "keyword_score": 0.0,
+      "score": 0.4,
+      "trace_count": 1
+    },
+    {
+      "has_tool_trace": true,
+      "id": "case-05",
+      "keyword_score": 0.0,
+      "score": 0.4,
+      "trace_count": 1
+    },
+    {
+      "has_tool_trace": true,
+      "id": "case-06",
+      "keyword_score": 0.0,
+      "score": 0.4,
+      "trace_count": 1
+    },
+    {
+      "has_tool_trace": true,
+      "id": "case-07",
+      "keyword_score": 0.0,
+      "score": 0.4,
+      "trace_count": 1
+    },
+    {
+      "has_tool_trace": true,
+      "id": "case-08",
+      "keyword_score": 0.0,
+      "score": 0.4,
+      "trace_count": 1
+    },
+    {
+      "has_tool_trace": true,
+      "id": "case-09",
+      "keyword_score": 0.0,
+      "score": 0.4,
+      "trace_count": 1
+    },
+    {
+      "has_tool_trace": true,
+      "id": "case-10",
+      "keyword_score": 0.0,
+      "score": 0.4,
+      "trace_count": 1
+    }
+  ],
+  "success": true,
+  "summary": {
+    "avg_score": 0.4,
+    "cases": 10
+  },
+  "generated_at": "2026-04-10T09:10:25.537519",
+  "endpoint": "http://127.0.0.1:5000/api/agent/eval"
+}

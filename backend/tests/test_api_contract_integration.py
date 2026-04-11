@@ -45,6 +45,69 @@ class TestApiContractIntegration(unittest.TestCase):
         }
         self.assertTrue(required.issubset(set(profile.keys())))
 
+    def test_ask_contract_includes_post_process_fields(self):
+        fake_post = {
+            "knowledge_extract": {
+                "detected_concepts": ["导数"],
+                "graph_sync": {"enabled": True, "mode": "sync", "synced": True},
+            },
+            "diagnosis": {
+                "error_type": "知识性错误",
+                "recommendation": "先复习导数定义",
+            },
+            "learning_advice": {
+                "建议": "先看定义视频，再做2道基础题",
+            },
+        }
+
+        with patch.object(backend_app, "USE_REAL_AI", True), \
+             patch.object(backend_app, "ask_ai_question", return_value={
+                 "success": True,
+                 "answer": "导数是变化率。",
+                 "provider": "mock",
+                 "ai_used": True,
+             }), \
+             patch.object(backend_app, "post_process_qa_interaction", return_value=fake_post):
+            resp = self.client.post("/api/ask", json={
+                "user_id": "u_api",
+                "question": "我不会导数",
+            })
+
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertTrue(data.get("success"))
+        self.assertIn("knowledge_extract", data)
+        self.assertIn("diagnosis", data)
+        self.assertIn("learning_advice", data)
+        self.assertEqual(data.get("knowledge_extract", {}).get("detected_concepts"), ["导数"])
+        self.assertEqual(data.get("diagnosis", {}).get("error_type"), "知识性错误")
+
+    def test_extract_learning_advice_from_answer(self):
+        text = """分析\n先判断概念。\n建议：先复习电流定义，再做2道基础题。\n练习\n完成课后题。"""
+        advice = backend_app.extract_learning_advice_from_answer(text)
+        self.assertIn("电流定义", advice)
+
+    def test_post_process_syncs_answer_advice_without_confusion(self):
+        with patch.object(backend_app, "record_qa_behavior", return_value={"topics": ["电流"]}), \
+             patch.object(backend_app, "extract_knowledge_from_text_api_inner", return_value={"detected_concepts": ["电流"]}), \
+             patch.object(backend_app, "contains_confusion_signal", return_value=False), \
+             patch.object(backend_app, "append_user_event") as mock_append, \
+             patch.object(backend_app, "build_learning_profile", return_value={"user_id": "u_api"}), \
+             patch.object(backend_app, "get_concept_mastery_from_knowledge", return_value=0.32):
+            post = backend_app.post_process_qa_interaction(
+                user_id="u_api",
+                question="什么是电流",
+                answer="建议：先复习电流定义",
+                source="qa_mock",
+                include_wrong_question=True,
+                suggested_advice_text="先复习电流定义",
+            )
+
+        self.assertEqual(post.get("learning_advice", {}).get("建议"), "先复习电流定义")
+        self.assertEqual(post.get("diagnosis", {}).get("recommendation"), "先复习电流定义")
+        diagnosis_calls = [call for call in mock_append.call_args_list if call.args[1] == "diagnosis"]
+        self.assertTrue(diagnosis_calls)
+
     def test_recommendations_contract(self):
         def fake_load_events(_, suffix):
             if suffix == "content":

@@ -1,0 +1,346 @@
+{
+  "metadata": {
+    "version": "1.0",
+    "created_date": "2026-04-10",
+    "description": "中学数学与英语知识库评测集，用于基准测试",
+    "data_source": "公开教育数据 + 竞赛自建",
+    "total_cases": 40,
+    "subjects": ["数学", "英语", "物理"],
+    "coverage": ["基础概念", "解题步骤", "错题诊断"]
+  },
+  "cases": [
+    {
+      "id": "math_001",
+      "subject": "数学",
+      "grade": "初中三年级",
+      "query": "求一次函数 y=2x+3 的图像与y轴的交点坐标",
+      "expected_tags": ["一次函数", "y轴交点", "坐标", "代数"],
+      "expected_concept": "一次函数性质",
+      "expected_answer_hint": "点(0,3)"
+    },
+    {
+      "id": "math_002",
+      "subject": "数学",
+      "grade": "初中二年级",
+      "query": "勾股定理的内容是什么？如何证明？",
+      "expected_tags": ["勾股定理", "直角三角形", "边长关系", "证明"],
+      "expected_concept": "勾股定理",
+      "expected_answer_hint": "a²+b²=c²"
+    },
+    {
+      "id": "math_003",
+      "subject": "数学",
+      "grade": "高中一年级",
+      "query": "二次函数的配方法具体步骤",
+      "expected_tags": ["二次函数", "配方法", "完全平方式", "标准形式"],
+      "expected_concept": "二次函数变形",
+      "expected_answer_hint": "配方、展开验证"
+    },
+    {
+      "id": "math_004",
+      "subject": "数学",
+      "grade": "初中一年级",
+      "query": "如何求解一元一次方程 3x+5=14？",
+      "expected_tags": ["一元一次方程", "移项", "化简", "求解"],
+      "expected_concept": "一元一次方程解法",
+      "expected_answer_hint": "x=3"
+    },
+    {
+      "id": "math_005",
+      "subject": "数学",
+      "grade": "高中二年级",
+      "query": "什么是圆的标准方程？如何由圆心和半径写出",
+      "expected_tags": ["圆的方程", "圆心", "半径", "标准形式"],
+      "expected_concept": "圆的解析几何表示",
+      "expected_answer_hint": "(x-a)²+(y-b)²=r²"
+    },
+    {
+      "id": "english_001",
+      "subject": "英语",
+      "grade": "初中三年级",
+      "query": "现在完成时态的用法和构成方式",
+      "expected_tags": ["现在完成时", "have/has+过去分词", "时态", "语法"],
+      "expected_concept": "英文时态系统",
+      "expected_answer_hint": "已完成的动作"
+    },
+    {
+      "id": "english_002",
+      "subject": "英语",
+      "grade": "高中一年级",
+      "query": "虚拟语气在英文中如何使用？给出例句",
+      "expected_tags": ["虚拟语气", "条件句", "情态", "假设"],
+      "expected_concept": "虚拟语气",
+      "expected_answer_hint": "If I were..."
+    },
+    {
+      "id": "english_003",
+      "subject": "英语",
+      "grade": "初中二年级",
+      "query": "英文介词 in/on/at 的使用区别",
+      "expected_tags": ["介词", "in", "on", "at", "空间关系"],
+      "expected_concept": "介词用法",
+      "expected_answer_hint": "时间与空间"
+    },
+    {
+      "id": "english_004",
+      "subject": "英语",
+      "grade": "高中二年级",
+      "query": "同位语从句的定义、用法和与定语从句的区别",
+      "expected_tags": ["同位语从句", "定语从句", "从句类型", "语法"],
+      "expected_concept": "从句分类",
+      "expected_answer_hint": "解释名词"
+    },
+    {
+      "id": "english_005",
+      "subject": "英语",
+      "grade": "初中一年级",
+      "query": "如何正确使用 have 和 has？",
+      "expected_tags": ["have", "has", "所有格", "人称", "动词"],
+      "expected_concept": "动词用法",
+      "expected_answer_hint": "主语决定"
+    },
+    {
+      "id": "physics_001",
+      "subject": "物理",
+      "grade": "高中一年级",
+      "query": "匀加速直线运动的公式有哪些？如何推导？",
+      "expected_tags": ["匀加速", "直线运动", "运动学", "公式", "推导"],
+      "expected_concept": "运动学基础",
+      "expected_answer_hint": "v=v0+at, s=v0t+½at²"
+    },
+    {
+      "id": "physics_002",
+      "subject": "物理",
+      "grade": "高中一年级",
+      "query": "力的合成与分解的平行四边形法则",
+      "expected_tags": ["力的合成", "平行四边形法则", "矢量", "静力学"],
+      "expected_concept": "力的合成",
+      "expected_answer_hint": "对角线"
+    },
+    {
+      "id": "physics_003",
+      "subject": "物理",
+      "grade": "高中二年级",
+      "query": "什么是万有引力？万有引力公式是什么？",
+      "expected_tags": ["万有引力", "引力公式", "天体运动", "常数"],
+      "expected_concept": "万有引力",
+      "expected_answer_hint": "F=GMm/r²"
+    },
+    {
+      "id": "physics_004",
+      "subject": "物理",
+      "grade": "高中一年级",
+      "query": "牛顿第二定律的表达式及其物理意义",
+      "expected_tags": ["牛顿第二定律", "F=ma", "加速度", "力学基础"],
+      "expected_concept": "牛顿三定律",
+      "expected_answer_hint": "力=质量×加速度"
+    },
+    {
+      "id": "physics_005",
+      "subject": "物理",
+      "grade": "高中二年级",
+      "query": "电磁感应中的楞次定律是什么？",
+      "expected_tags": ["电磁感应", "楞次定律", "感应电流", "磁场"],
+      "expected_concept": "电磁感应",
+      "expected_answer_hint": "阻碍变化"
+    },
+    {
+      "id": "math_006",
+      "subject": "数学",
+      "grade": "初中三年级",
+      "query": "通过例题：已知△ABC的三边分别为3,4,5，判断是否为直角三角形",
+      "expected_tags": ["勾股定理", "直角三角形", "边长", "判定"],
+      "expected_concept": "直角三角形",
+      "expected_answer_hint": "3²+4²=5²"
+    },
+    {
+      "id": "math_007",
+      "subject": "数学",
+      "grade": "高中一年级",
+      "query": "求二次函数 f(x)=x²-2x+3 的最小值",
+      "expected_tags": ["二次函数", "最小值", "配方法", "顶点"],
+      "expected_concept": "二次函数性质",
+      "expected_answer_hint": "f(1)=2"
+    },
+    {
+      "id": "english_006",
+      "subject": "英语",
+      "grade": "高中一年级",
+      "query": "定语从句的关系词 which/that/who 如何选择？",
+      "expected_tags": ["定语从句", "关系词", "which", "that", "who"],
+      "expected_concept": "定语从句",
+      "expected_answer_hint": "先行词决定"
+    },
+    {
+      "id": "english_007",
+      "subject": "英语",
+      "grade": "高中二年级",
+      "query": "英文短语 phrasal verbs 的定义和常见例子",
+      "expected_tags": ["短语动词", "phrasal verbs", "动词搭配", "语义"],
+      "expected_concept": "词汇学",
+      "expected_answer_hint": "动词+介词"
+    },
+    {
+      "id": "math_008",
+      "subject": "数学",
+      "grade": "初中二年级",
+      "query": "三角形内角和定理的证明方法有几种？",
+      "expected_tags": ["三角形", "内角和", "定理", "平行线", "证明"],
+      "expected_concept": "平面几何",
+      "expected_answer_hint": "180°"
+    },
+    {
+      "id": "math_009",
+      "subject": "数学",
+      "grade": "高中二年级",
+      "query": "什么是向量？向量的模如何计算？",
+      "expected_tags": ["向量", "模", "长度", "数学"],
+      "expected_concept": "向量基础",
+      "expected_answer_hint": "|a|"
+    },
+    {
+      "id": "math_010",
+      "subject": "数学",
+      "grade": "初中三年级",
+      "query": "如何用尺规作图作一个角的平分线？",
+      "expected_tags": ["尺规作图", "角平分线", "几何", "作图"],
+      "expected_concept": "尺规作图基本操作",
+      "expected_answer_hint": "弧线交点"
+    },
+    {
+      "id": "english_008",
+      "subject": "英语",
+      "grade": "初中三年级",
+      "query": "英文名词可数与不可数的判断规则",
+      "expected_tags": ["名词", "可数", "不可数", "语法", "用法"],
+      "expected_concept": "词法",
+      "expected_answer_hint": "a/an与复数"
+    },
+    {
+      "id": "physics_006",
+      "subject": "物理",
+      "grade": "高中二年级",
+      "query": "什么是简谐振动？简谐振动的周期与频率关系",
+      "expected_tags": ["简谐振动", "周期", "频率", "波动"],
+      "expected_concept": "波动学",
+      "expected_answer_hint": "T=1/f"
+    },
+    {
+      "id": "physics_007",
+      "subject": "物理",
+      "grade": "高中一年级",
+      "query": "动能定理的内容是什么？如何应用？",
+      "expected_tags": ["动能定理", "功", "动能", "能量", "应用"],
+      "expected_concept": "能量守恒",
+      "expected_answer_hint": "W=ΔEk"
+    },
+    {
+      "id": "math_011",
+      "subject": "数学",
+      "grade": "高中一年级",
+      "query": "对数函数 y=log₂(x) 的图像特点及性质",
+      "expected_tags": ["对数函数", "图像", "性质", "底数", "定义域"],
+      "expected_concept": "对数函数",
+      "expected_answer_hint": "x>0"
+    },
+    {
+      "id": "math_012",
+      "subject": "数学",
+      "grade": "初中一年级",
+      "query": "如何判断两条直线的位置关系（平行、垂直、相交）？",
+      "expected_tags": ["直线", "位置关系", "平行", "垂直", "相交"],
+      "expected_concept": "几何基础",
+      "expected_answer_hint": "斜率关系"
+    },
+    {
+      "id": "english_009",
+      "subject": "英语",
+      "grade": "高中一年级",
+      "query": "英文被动语态的构成及使用场景",
+      "expected_tags": ["被动语态", "be+过去分词", "时态", "语义"],
+      "expected_concept": "英文语态",
+      "expected_answer_hint": "be done"
+    },
+    {
+      "id": "english_010",
+      "subject": "英语",
+      "grade": "初中二年级",
+      "query": "英文代词 it/this/that 的区别与用法",
+      "expected_tags": ["代词", "it", "this", "that", "指代"],
+      "expected_concept": "语法结构",
+      "expected_answer_hint": "距离差异"
+    },
+    {
+      "id": "physics_008",
+      "subject": "物理",
+      "grade": "高中二年级",
+      "query": "静电场中电势与电势能的定义",
+      "expected_tags": ["电势", "电势能", "电场", "电荷", "功"],
+      "expected_concept": "静电学",
+      "expected_answer_hint": "W=qU"
+    },
+    {
+      "id": "physics_009",
+      "subject": "物理",
+      "grade": "高中一年级",
+      "query": "圆周运动的向心加速度公式推导过程",
+      "expected_tags": ["圆周运动", "向心加速度", "速度", "半径", "推导"],
+      "expected_concept": "圆周运动",
+      "expected_answer_hint": "a=v²/r"
+    },
+    {
+      "id": "math_013",
+      "subject": "数学",
+      "grade": "高中二年级",
+      "query": "复数的模与辐角的定义及计算",
+      "expected_tags": ["复数", "模", "辐角", "极坐标", "计算"],
+      "expected_concept": "复数理论",
+      "expected_answer_hint": "|z|"
+    },
+    {
+      "id": "math_014",
+      "subject": "数学",
+      "grade": "初中三年级",
+      "query": "二次方程判别式Δ如何判断根的情况？",
+      "expected_tags": ["二次方程", "判别式", "根", "情况分析"],
+      "expected_concept": "二次方程",
+      "expected_answer_hint": "Δ=b²-4ac"
+    },
+    {
+      "id": "english_011",
+      "subject": "英语",
+      "grade": "高中二年级",
+      "query": "英文复合句的分类：并列句与主从复合句区别",
+      "expected_tags": ["复合句", "并列句", "主从句", "连词", "句式"],
+      "expected_concept": "句子结构",
+      "expected_answer_hint": "等位连词vs从属连词"
+    },
+    {
+      "id": "english_012",
+      "subject": "英语",
+      "grade": "初中一年级",
+      "query": "一般过去时与现在完成时的区别",
+      "expected_tags": ["一般过去时", "现在完成时", "时态", "联系"],
+      "expected_concept": "英文时态",
+      "expected_answer_hint": "过去vs联系"
+    },
+    {
+      "id": "physics_010",
+      "subject": "物理",
+      "grade": "高中一年级",
+      "query": "重力与重量的区别与联系",
+      "expected_tags": ["重力", "重量", "万有引力", "支持力", "定义"],
+      "expected_concept": "力学基础",
+      "expected_answer_hint": "g变化影响"
+    },
+    {
+      "id": "math_015",
+      "subject": "数学",
+      "grade": "高中一年级",
+      "query": "幂函数 y=x^(1/2) 的定义域与值域",
+      "expected_tags": ["幂函数", "定义域", "值域", "根号", "约束"],
+      "expected_concept": "函数论",
+      "expected_answer_hint": "x≥0"
+    }
+  ]
+}

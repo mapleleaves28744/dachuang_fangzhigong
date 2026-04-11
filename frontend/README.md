@@ -1,17 +1,54 @@
-# Frontend Structure
+﻿# Frontend 文档
 
-前端目前按“共享能力”和“页面逻辑”分层，入口页面仍保留在 `frontend/` 根目录，方便继续直接用静态服务器或后端托管访问。
+前端采用多页面 + 模块化脚本结构，页面入口在 `frontend/` 根目录，页面逻辑在 `frontend/assets/js/pages/`，共享能力在 `frontend/assets/js/shared/`。
 
-目录约定：
+## 页面索引
 
-- `frontend/*.html`：页面入口，只放页面结构和少量页面级内联代码
-- `frontend/assets/css/shared/`：跨页面复用的样式
-- `frontend/assets/css/pages/`：页面私有样式
-- `frontend/assets/js/shared/`：用户上下文、API 工具、登录 UI、页面外壳等共享脚本
-- `frontend/assets/js/pages/`：具体页面逻辑
+- `index.html`：主页入口。
+- `chat.html`：智能体聊天页（支持普通问答与智能体模式）。
+- `dashboard.html`：学习与系统指标看板。
+- `knowledge-map.html`：知识图谱可视化。
+- `question-bank.html`：题库相关页面。
+- `spaces.html`：学习空间资料管理。
+- `test-report-dashboard.html`：测试/回归结果展示。
 
-维护建议：
+## 目录约定
 
-- 新增页面时，优先新增 `frontend/<page>.html`，并把脚本放到 `assets/js/pages/`
-- 只要是多个页面都会用到的能力，都优先收进 `assets/js/shared/`
-- 避免继续新增 `style.css`、`main.js` 这类泛名文件，尽量按页面或能力命名
+- `assets/css/shared/`：跨页面复用样式。
+- `assets/css/pages/`：页面私有样式。
+- `assets/js/shared/`：用户上下文、API 工具、壳层逻辑。
+- `assets/js/pages/`：页面业务逻辑。
+
+## 与后端通信约定
+
+- 普通接口：`fetch + JSON`。
+- 多模态上传：`FormData`（图片文件 + 文本字段）。
+- 智能体流式：SSE（`text/event-stream`），用于展示中间步骤与工具调用反馈。
+
+## 智能体页面行为（chat）
+
+- 当启用智能体模式后，问题会发送到 `/api/agent/ocr-tutor`。
+- 图片优先走 OCR；OCR 失败但有文本时，后端会自动降级到文本路径。
+- 支持展示 `steps_log` 工作流时间线与证据信息。
+
+## 前端版本时间线（倒序）
+
+### 2026-04-10（当前）
+
+- 对齐智能体流式路径与后端契约。
+- 强化智能体工作流展示与错误降级体验。
+
+### 2026-04（上旬）
+
+- 聊天页加入智能体模式开关与工具轨迹展示。
+- 新增测试报告看板、知识图谱页和学习空间页增强。
+
+### 2026-03（历史）
+
+- 多页面布局与基础共享模块建立。
+
+## 开发建议
+
+- 新增页面时，HTML 放 `frontend/` 根目录，逻辑放 `assets/js/pages/`。
+- 跨页面复用能力统一收敛到 `assets/js/shared/`。
+- 避免新增泛名文件（如 `main.js`、`style.css`），优先按页面命名。

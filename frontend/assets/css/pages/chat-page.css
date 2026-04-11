@@ -319,6 +319,26 @@ body.sidebar-open .global-sidebar-toggle {
   color: #1451b7;
 }
 
+.chat-toggle-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid #d8e5f5;
+  border-radius: 12px;
+  padding: 8px 12px;
+  background: rgba(255, 255, 255, 0.94);
+  color: #203044;
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.chat-toggle-pill input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--chat-brand);
+}
+
 .chat-action-btn.danger {
   border-color: #f4c8c2;
   color: #9b2c20;
@@ -676,6 +696,64 @@ body.sidebar-open .global-sidebar-toggle {
   gap: 8px;
 }
 
+.message-workflow {
+  margin-top: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 14px;
+  background: rgba(248, 250, 252, 0.95);
+  padding: 10px 12px;
+}
+
+.message-workflow-title {
+  font-size: 12px;
+  font-weight: 800;
+  color: #1e3a8a;
+  margin-bottom: 8px;
+}
+
+.message-workflow-list {
+  display: grid;
+  gap: 8px;
+}
+
+.message-workflow-item {
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr);
+  align-items: start;
+  gap: 8px;
+}
+
+.message-workflow-index {
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  font-weight: 800;
+  background: #dbeafe;
+  color: #1d4ed8;
+}
+
+.message-workflow-item.failed .message-workflow-index {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+.message-workflow-step {
+  font-size: 12px;
+  font-weight: 700;
+  color: #0f172a;
+}
+
+.message-workflow-detail {
+  margin-top: 2px;
+  font-size: 12px;
+  color: #334155;
+  line-height: 1.45;
+}
+
 .message-attachment-card {
   border-radius: 16px;
   border: 1px solid rgba(148, 163, 184, 0.28);
@@ -835,6 +913,34 @@ body.sidebar-open .global-sidebar-toggle {
 .composer-toolbar .chat-action-btn,
 .composer-toolbar .chat-status {
   box-shadow: none;
+}
+
+.kb-mode-select-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 10px;
+  border: 1px solid #d6e4f0;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #214162;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.kb-mode-select {
+  border: 1px solid #c8dbef;
+  border-radius: 8px;
+  background: #f8fbff;
+  color: #163659;
+  font-size: 12px;
+  font-weight: 700;
+  padding: 4px 8px;
+  outline: none;
+}
+
+.kb-mode-select:focus {
+  border-color: #7fb0e6;
 }
 
 .composer-meta {
@@ -1127,7 +1233,9 @@ body.sidebar-open .global-sidebar-toggle {
   }
 
   .composer-toolbar .chat-action-btn,
-  .composer-toolbar .chat-status {
+  .composer-toolbar .chat-status,
+  .kb-mode-select-wrap,
+  .chat-toggle-pill {
     width: 100%;
     justify-content: center;
   }

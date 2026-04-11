@@ -1,0 +1,41 @@
+[
+  {
+    "id": "e04d96c3-851f-43ca-bd96-fa2194836e31",
+    "timestamp": "2026-04-11T02:54:34.508270",
+    "content_type": "qa",
+    "title": "智能体问答记录",
+    "content": "OCR文本",
+    "source": "agent_ocr_tutor",
+    "topics": [
+      "文本",
+      "回答",
+      "图像题已解答"
+    ]
+  },
+  {
+    "id": "2e646ff5-05a4-4c87-9915-9a66cf852b15",
+    "timestamp": "2026-04-11T02:55:21.022233",
+    "content_type": "qa",
+    "title": "智能体问答记录",
+    "content": "OCR文本",
+    "source": "agent_ocr_tutor",
+    "topics": [
+      "文本",
+      "OCR文本",
+      "图像题"
+    ]
+  },
+  {
+    "id": "5664c3ab-1e93-48e0-b16f-84dd931eff0b",
+    "timestamp": "2026-04-11T03:20:43.770693",
+    "content_type": "qa",
+    "title": "智能体问答记录",
+    "content": "OCR文本",
+    "source": "agent_ocr_tutor",
+    "topics": [
+      "文本",
+      "OCR文本",
+      "图像题"
+    ]
+  }
+]
