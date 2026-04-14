@@ -485,13 +485,14 @@ def tool_search_learning_kb(student_id: str, query: str, top_k: int = 3) -> str:
         hits = result.get("hits", []) if isinstance(result, dict) else []
         retrieval_mode = (result.get("retrieval_mode") if isinstance(result, dict) else "") or "lexical"
         public_docs = int(result.get("public_docs", 0) or 0) if isinstance(result, dict) else 0
+        graph_rate = float(result.get("graph_contribution_rate", 0.0) or 0.0) if isinstance(result, dict) else 0.0
         if not hits:
             return _cache_set(cache_key, f"【知识库检索】未命中。当前知识库文档数={result.get('total_docs', 0)}。")
 
         lines = [
             (
                 f"【知识库检索】命中 {len(hits)} 条（私有文档={result.get('total_docs', 0)}，"
-                f"公共向量文档={public_docs}，模式={retrieval_mode}）："
+                f"公共向量文档={public_docs}，模式={retrieval_mode}，图增强贡献={graph_rate:.3f}）："
             )
         ]
         for idx, row in enumerate(hits, start=1):
@@ -516,8 +517,6 @@ def tool_search_learning_kb(student_id: str, query: str, top_k: int = 3) -> str:
 @tool
 def tool_graph_rag_search(student_id: str, query: str, top_k: int = 3) -> str:
     """综合了文本检索和知识图谱节点的增强版检索。返回知识点内容及相关的图谱关联路径。"""
-    from .knowledge_base import search_kb
-
     sid = str(student_id or "").strip() or "default_user"
     q = str(query or "").strip()
     if not q:
@@ -528,39 +527,47 @@ def tool_graph_rag_search(student_id: str, query: str, top_k: int = 3) -> str:
     graph_ctx = list(kb_result.get("graph_context", [])) if isinstance(kb_result, dict) else []
     retrieval_mode = (kb_result.get("retrieval_mode") if isinstance(kb_result, dict) else "") or "lexical"
     public_docs = int(kb_result.get("public_docs", 0) or 0) if isinstance(kb_result, dict) else 0
-    try:
-        store = _get_neo4j_store()
-        # 提取简单概念用于查询
-        words = q.replace('？', ' ').replace('是什么', ' ').split()
-        for w in words:
-            if w.strip():
-                rels = store.query_related_concepts(w.strip(), limit=2)
-                if rels:
-                    graph_ctx.extend(rels)
-    except Exception:
-        graph_ctx = []
+    graph_rate = float(kb_result.get("graph_contribution_rate", 0.0) or 0.0) if isinstance(kb_result, dict) else 0.0
+    graph_concepts = kb_result.get("graph_query_concepts", []) if isinstance(kb_result, dict) else []
 
     res = []
     res.append(
         (
             f"【文档检索结果】命中 {len(text_hits)} 条（私有文档={kb_result.get('total_docs', 0) if isinstance(kb_result, dict) else 0}，"
-            f"公共向量文档={public_docs}，模式={retrieval_mode}）"
+            f"公共向量文档={public_docs}，模式={retrieval_mode}，图增强贡献={graph_rate:.3f}）"
         )
     )
+    if graph_concepts:
+        res.append(f"【图谱概念路由】{', '.join(graph_concepts[:6])}")
     for h in text_hits:
         chapter = str(h.get("chapter", "") or "").strip()
         channel = str(h.get("channel", "") or "unknown").strip()
         chapter_part = f" | chapter={chapter}" if chapter else ""
+        concept_part = ""
+        matched_concepts = h.get("matched_concepts", []) if isinstance(h.get("matched_concepts", []), list) else []
+        if matched_concepts:
+            concept_part = f" | concepts={','.join(matched_concepts[:4])}"
         res.append(
             f"- 标题: {h.get('title', '未知')} | score={h.get('hybrid_score', h.get('score', 0)):.3f} | "
-            f"channel={channel} | source={h.get('source', 'unknown')}{chapter_part}"
+            f"channel={channel} | source={h.get('source', 'unknown')}{chapter_part}{concept_part}"
             f"\n  摘要: {h.get('snippet', '')}"
         )
     
     if graph_ctx:
         res.append("【相关图谱知识路径】")
-        for r in list({json.dumps(x, ensure_ascii=False) for x in graph_ctx}):
-            res.append(r)
+        for idx, item in enumerate(graph_ctx[: max(3, int(top_k or 3) * 2)], start=1):
+            concept = str(item.get("concept") or "未知概念").strip()
+            title = str(item.get("doc_title") or "未关联文档").strip()
+            similarity = float(item.get("similarity_to_query", 0.0) or 0.0)
+            relations = item.get("relations", []) if isinstance(item.get("relations", []), list) else []
+            relation_summary = "；".join(
+                f"{rel.get('relation', '相关')}->{rel.get('neighbor', '')}"
+                for rel in relations[:4]
+                if isinstance(rel, dict) and str(rel.get("neighbor") or "").strip()
+            ) or "暂无概念关系"
+            res.append(
+                f"{idx}. 概念={concept} | 文档={title} | graph_score={similarity:.3f} | 关系={relation_summary}"
+            )
     else:
         res.append("【相关图谱知识路径】暂无可用图谱关系，已回退为文本检索结果。")
 

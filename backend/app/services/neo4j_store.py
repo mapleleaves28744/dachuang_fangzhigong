@@ -469,7 +469,9 @@ class Neo4jGraphStore:
                     """
                     MERGE (u:User {id:$user_id})
                     MERGE (d:Document {id:$doc_id})
-                    SET d.title=$title,
+                    ON CREATE SET d.created_at=$now
+                    SET d.user_id=$user_id,
+                        d.title=$title,
                         d.content=$content,
                         d.source=$source,
                         d.tags=$tags,
@@ -484,6 +486,14 @@ class Neo4jGraphStore:
                     source=source,
                     tags=tags,
                     now=now,
+                )
+
+                session.run(
+                    """
+                    MATCH (d:Document {id:$doc_id})-[r:MENTIONS]->(:Concept)
+                    DELETE r
+                    """,
+                    doc_id=nid,
                 )
 
                 for concept in concepts:
@@ -504,7 +514,7 @@ class Neo4jGraphStore:
             return False
 
     def query_graph_rag_context(self, user_id, concepts, limit=8):
-        """按概念返回文档-概念-概念关系，供 RAG-Graph 组合检索。P0 改造：增加对齐字段。"""
+        """按概念返回文档-概念-关系上下文，供 GraphRAG 检索链路直接复用。"""
         if not self.ensure_connected():
             return []
 
@@ -521,19 +531,34 @@ class Neo4jGraphStore:
                     UNWIND $concepts AS c_name
                     MATCH (c:Concept)
                     WHERE toLower(c.name) = toLower(c_name)
-                    OPTIONAL MATCH (d:Document)<-[:OWNS_DOC]-(:User {id:$user_id})
-                                   WHERE (d)-[:MENTIONS]->(c)
+                       OR toLower(c.name) CONTAINS toLower(c_name)
+                       OR toLower(c_name) CONTAINS toLower(c.name)
+                    WITH DISTINCT c, c_name
+                    OPTIONAL MATCH (:User {id:$user_id})-[:OWNS_DOC]->(d:Document)-[:MENTIONS]->(c)
                     OPTIONAL MATCH (c)-[r_out:RELATED]->(n_out:Concept)
+                    WITH c, c_name, d,
+                         collect(
+                             DISTINCT CASE
+                                 WHEN n_out IS NULL THEN NULL
+                                 ELSE {neighbor: n_out.name, relation: coalesce(r_out.type, '相关')}
+                             END
+                         ) AS rels_out
                     OPTIONAL MATCH (n_in:Concept)-[r_in:RELATED]->(c)
-                    WITH c, d,
-                         collect({neighbor: n_out.name, relation: coalesce(r_out.type, '相关')}) +
-                         collect({neighbor: n_in.name, relation: coalesce(r_in.type, '相关')}) AS rels
-                    UNWIND rels AS rel
+                    WITH c, c_name, d, rels_out,
+                         collect(
+                             DISTINCT CASE
+                                 WHEN n_in IS NULL THEN NULL
+                                 ELSE {neighbor: n_in.name, relation: coalesce(r_in.type, '相关')}
+                             END
+                         ) AS rels_in
                     RETURN c.name AS concept,
+                           c_name AS query_concept,
                            d.id AS doc_id,
                            d.title AS doc_title,
-                           rel.neighbor AS neighbor,
-                           coalesce(rel.relation, '相关') AS relation
+                           d.content AS doc_content,
+                           d.source AS doc_source,
+                           d.tags AS doc_tags,
+                           [rel IN (rels_out + rels_in) WHERE rel IS NOT NULL] AS relations
                     LIMIT $limit
                     """,
                     concepts=concepts,
@@ -542,25 +567,56 @@ class Neo4jGraphStore:
                 )
 
                 out = []
-                for idx, row in enumerate(rows):
-                    if not any([row.get("doc_id"), row.get("neighbor")]):
+                for row in rows:
+                    relations = row.get("relations", []) if isinstance(row.get("relations", []), list) else []
+                    deduped_relations = []
+                    seen_rel = set()
+                    for rel in relations:
+                        if not isinstance(rel, dict):
+                            continue
+                        neighbor = str(rel.get("neighbor") or "").strip()
+                        relation = str(rel.get("relation") or "相关").strip() or "相关"
+                        if not neighbor:
+                            continue
+                        rel_key = f"{neighbor.lower()}::{relation.lower()}"
+                        if rel_key in seen_rel:
+                            continue
+                        deduped_relations.append(
+                            {
+                                "neighbor": neighbor,
+                                "relation": relation,
+                            }
+                        )
+                        seen_rel.add(rel_key)
+
+                    doc_id = str(row.get("doc_id") or "").strip()
+                    if not doc_id and not deduped_relations:
                         continue
-                    
-                    # P0 改造：添加对齐字段（similarity_to_query 和 source_doc_id）
-                    # 相似度基于概念匹配度（[0, 1]，单个匹配算 0.7，多匹配补分）
-                    concept = row.get("concept", "")
-                    similarity_base = 0.7 if concept in concepts else 0.4
-                    similarity_score = round(min(1.0, similarity_base + 0.1 * (1 / max(1, idx + 1))), 3)
-                    
+
+                    concept = str(row.get("concept") or "").strip()
+                    query_concept = str(row.get("query_concept") or "").strip()
+                    concept_l = concept.lower()
+                    query_l = query_concept.lower()
+                    exact_match = concept_l == query_l
+                    partial_match = bool(query_l and (query_l in concept_l or concept_l in query_l))
+                    similarity_base = 0.82 if exact_match else (0.7 if partial_match else 0.58)
+                    relation_bonus = min(0.12, 0.04 * len(deduped_relations))
+                    doc_bonus = 0.06 if doc_id else 0.0
+                    similarity_score = round(min(1.0, similarity_base + relation_bonus + doc_bonus), 3)
+
                     out.append(
                         {
                             "concept": concept,
-                            "doc_id": row.get("doc_id"),
+                            "query_concept": query_concept,
+                            "doc_id": doc_id,
+                            "source_doc_id": doc_id or f"graph::{concept}",
                             "doc_title": row.get("doc_title"),
-                            "neighbor": row.get("neighbor"),
-                            "relation": row.get("relation") or "相关",
-                            "similarity_to_query": similarity_score,  # P0 新增：与查询的相似度
-                            "source_doc_id": "neo4j_" + str(row.get("doc_id") or idx),  # P0 新增：来源标识
+                            "doc_content": row.get("doc_content"),
+                            "doc_source": row.get("doc_source") or "neo4j_graph",
+                            "doc_tags": row.get("doc_tags", []) if isinstance(row.get("doc_tags", []), list) else [],
+                            "relations": deduped_relations,
+                            "relation_count": len(deduped_relations),
+                            "similarity_to_query": similarity_score,
                         }
                     )
                 return out

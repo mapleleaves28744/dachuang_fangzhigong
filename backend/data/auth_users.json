@@ -6,8 +6,8 @@
       "password_hash": "scrypt:32768:8:1$MkSyQCuytOFWrtr8$0d230dc52c15d68eca2706b2b8a59ecdf295cb2148257b062fc85ae61f5ceba08686044cfb23a628f1ae602d359fd1d69cf2642baaed3879f3d964689013e9a8",
       "locale": "CN",
       "created_at": "2026-03-30T15:20:10.208895",
-      "updated_at": "2026-03-30T15:29:48.807175",
-      "last_login_at": "2026-03-30T15:29:48.807160"
+      "updated_at": "2026-04-14T07:53:19.651376",
+      "last_login_at": "2026-04-14T07:53:19.651376"
     },
     {
       "username": "2874463136@qq.com",
@@ -17,6 +17,24 @@
       "created_at": "2026-04-10T01:16:02.549534",
       "updated_at": "2026-04-11T05:03:15.934166",
       "last_login_at": "2026-04-11T05:03:15.934166"
+    },
+    {
+      "username": "stu_001",
+      "display_name": "d",
+      "password_hash": "scrypt:32768:8:1$H4JnEy60xP0KQJLi$eb52aae8dba6d957ee38a1e1705f1320356219049ebbce0755808d19fcc3b1a09c38198658337eb25cdea35fb83a62a60396f5a4dbd36c8a5da57718d997ac75",
+      "locale": "CN",
+      "created_at": "2026-04-14T07:57:25.212201",
+      "updated_at": "2026-04-14T07:57:25.212201",
+      "last_login_at": "2026-04-14T07:57:25.212201"
+    },
+    {
+      "username": "probe_1776153767",
+      "display_name": "probe",
+      "password_hash": "scrypt:32768:8:1$30BafKftuYosVdpH$92eb718a8a743bd8925f912d9ddf530bfd72a899f273fd86ca2aad04d418e31c3111b86f55e8c03a2735849abd090686c93b0ff6c2854b352e53ae9221be07c3",
+      "locale": "CN",
+      "created_at": "2026-04-14T08:02:49.235041",
+      "updated_at": "2026-04-14T08:03:19.519547",
+      "last_login_at": "2026-04-14T08:03:19.519547"
     }
   ]
 }

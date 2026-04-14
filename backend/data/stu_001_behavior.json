@@ -1,0 +1,16 @@
+[
+  {
+    "id": "fd01580e-c9e6-4b5c-bb33-5d5ba44e7a5f",
+    "user_id": "stu_001",
+    "timestamp": "2026-04-14T15:57:25.693288",
+    "type": "auth_login",
+    "behavior_type": "auth_login",
+    "page": "auth",
+    "target": "",
+    "label": "账号登录",
+    "title": "auth_login",
+    "source": "auth_register",
+    "duration_seconds": 0.0,
+    "meta": {}
+  }
+]

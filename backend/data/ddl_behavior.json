@@ -1,0 +1,76 @@
+[
+  {
+    "id": "2f21ed2b-bbb2-4b3e-87ac-642ee3c9c0b2",
+    "user_id": "ddl",
+    "timestamp": "2026-04-14T15:53:19.655220",
+    "type": "auth_login",
+    "behavior_type": "auth_login",
+    "page": "auth",
+    "target": "",
+    "label": "账号登录",
+    "title": "auth_login",
+    "source": "auth_login",
+    "duration_seconds": 0.0,
+    "meta": {}
+  },
+  {
+    "id": "0c5a5d1d-5272-45a0-a379-6b1a44686f5b",
+    "user_id": "ddl",
+    "timestamp": "2026-04-14T15:53:27.937309",
+    "type": "navigation_click",
+    "behavior_type": "navigation_click",
+    "page": "index",
+    "target": "dashboard",
+    "label": "◧ 学习仪表盘",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {}
+  },
+  {
+    "id": "79048d20-e125-4064-9fbf-282221bca312",
+    "user_id": "ddl",
+    "timestamp": "2026-04-14T15:53:28.191067",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "dashboard",
+    "target": "",
+    "label": "page_view",
+    "title": "学习仪表盘 - 智能学习伴侣",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": "http://127.0.0.1:5501/index.html"
+    }
+  },
+  {
+    "id": "0d800b7e-d97e-471f-a5d9-e5fcd8fc246f",
+    "user_id": "ddl",
+    "timestamp": "2026-04-14T15:56:29.891221",
+    "type": "navigation_click",
+    "behavior_type": "navigation_click",
+    "page": "dashboard",
+    "target": "index",
+    "label": "返回主界面",
+    "title": "学习仪表盘 - 智能学习伴侣",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {}
+  },
+  {
+    "id": "e7a4dd9f-e505-4cd7-bc1c-c0f8bb18e2c0",
+    "user_id": "ddl",
+    "timestamp": "2026-04-14T15:56:30.252958",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "index",
+    "target": "",
+    "label": "page_view",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": "http://127.0.0.1:5501/dashboard.html"
+    }
+  }
+]

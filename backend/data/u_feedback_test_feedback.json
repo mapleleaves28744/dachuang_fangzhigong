@@ -98,5 +98,15 @@
     "total_count": 10,
     "duration_seconds": 300,
     "timestamp": "2026-04-11T13:33:39.252953"
+  },
+  {
+    "task_id": "task_001",
+    "task_type": "quiz",
+    "concept": "导数基础",
+    "accuracy": 0.8,
+    "correct_count": 8,
+    "total_count": 10,
+    "duration_seconds": 300,
+    "timestamp": "2026-04-14T15:51:25.627211"
   }
 ]

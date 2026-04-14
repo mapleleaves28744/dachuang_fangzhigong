@@ -1,0 +1,48 @@
+[
+  {
+    "id": "41d96276-9cc2-4344-9f74-66f36b932771",
+    "user_id": "guest_28893f19743fb367",
+    "timestamp": "2026-04-14T15:53:06.916685",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "dashboard",
+    "target": "",
+    "label": "page_view",
+    "title": "学习仪表盘 - 智能学习伴侣",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": "http://127.0.0.1:5501/question-bank.html"
+    }
+  },
+  {
+    "id": "4f29d9ed-85cc-472d-9a43-92c43d78377e",
+    "user_id": "guest_28893f19743fb367",
+    "timestamp": "2026-04-14T15:53:12.908817",
+    "type": "navigation_click",
+    "behavior_type": "navigation_click",
+    "page": "dashboard",
+    "target": "index",
+    "label": "+ 添加内容",
+    "title": "学习仪表盘 - 智能学习伴侣",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {}
+  },
+  {
+    "id": "b3c9816f-51ea-4713-83ac-5ddb75e43010",
+    "user_id": "guest_28893f19743fb367",
+    "timestamp": "2026-04-14T15:53:13.399455",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "index",
+    "target": "",
+    "label": "page_view",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": "http://127.0.0.1:5501/dashboard.html"
+    }
+  }
+]

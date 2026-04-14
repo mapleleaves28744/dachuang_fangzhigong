@@ -170,6 +170,42 @@
       "created_at": "2026-04-11T05:03:15.934166",
       "last_seen_at": "2026-04-11T05:46:22.141841",
       "revoked_at": null
+    },
+    {
+      "session_id": "498f85a4a0454ab68ddec1787b1f56ff",
+      "username": "ddl",
+      "token_hash": "eb11a5a19d22f939724a49bd898aa84a77fa2e55b5bb25cfb0e9f25adc3e84a1",
+      "expires_at": "2026-04-28T07:53:19.655220",
+      "created_at": "2026-04-14T07:53:19.655220",
+      "last_seen_at": "2026-04-14T07:53:19.655220",
+      "revoked_at": "2026-04-14T07:56:32.028461"
+    },
+    {
+      "session_id": "3f4d020b72594264aaf82614ae5d1029",
+      "username": "stu_001",
+      "token_hash": "6f011291426c5762c224dd61901cf2d221f46d3efb84670235ce6afbfa5e9681",
+      "expires_at": "2026-04-28T07:57:25.672290",
+      "created_at": "2026-04-14T07:57:25.672290",
+      "last_seen_at": "2026-04-14T07:57:25.672290",
+      "revoked_at": "2026-04-14T08:00:57.150379"
+    },
+    {
+      "session_id": "9d68bfce27784cc38a50a400b343d010",
+      "username": "probe_1776153767",
+      "token_hash": "89fd07972315cad45c629d85d2414e79d6cbdff05bd86ed71dfe5fcd599ae87e",
+      "expires_at": "2026-04-28T08:02:49.702708",
+      "created_at": "2026-04-14T08:02:49.702708",
+      "last_seen_at": "2026-04-14T08:02:49.702708",
+      "revoked_at": null
+    },
+    {
+      "session_id": "ddda527a652a4c1ea365963f7bc0f851",
+      "username": "probe_1776153767",
+      "token_hash": "b509ed1047ad9a3597e154c37f6f1d2dc45e1ab6666b21cd6f17e6543a9c4809",
+      "expires_at": "2026-04-28T08:03:19.519547",
+      "created_at": "2026-04-14T08:03:19.519547",
+      "last_seen_at": "2026-04-14T08:03:19.519547",
+      "revoked_at": null
     }
   ]
 }
