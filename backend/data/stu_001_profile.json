@@ -1,0 +1,1027 @@
+{
+  "user_id": "stu_001",
+  "updated_at": "2026-06-10T13:02:49.902558",
+  "learning_style": "visual",
+  "style_scores": {
+    "visual": 0.316,
+    "auditory": 0.405,
+    "kinesthetic": 0.405
+  },
+  "style_method": "kmeans",
+  "style_features": {
+    "image_count": 0,
+    "link_count": 0,
+    "qa_content_count": 6,
+    "note_count": 0,
+    "other_count": 0,
+    "qa_log_count": 6,
+    "concept_count": 26
+  },
+  "interests": [
+    "导数",
+    "函数",
+    "智能体构建",
+    "知识库搭建",
+    "认知架构"
+  ],
+  "best_time_range": "00:00-02:00",
+  "focus_minutes": 45,
+  "content_type_counter": {
+    "note": 0,
+    "link": 0,
+    "image": 0,
+    "qa": 6,
+    "other": 0
+  },
+  "dashboard_hidden": {
+    "updated_at": "2026-06-10T13:02:49.943461",
+    "topic_daily_table": [
+      {
+        "date": "2026-03-31",
+        "topics": [
+          {
+            "topic": "基于轻量级教育大",
+            "count": 1
+          },
+          {
+            "topic": "翟洁",
+            "count": 1
+          },
+          {
+            "topic": "的类教师思维认知",
+            "count": 1
+          },
+          {
+            "topic": "诊断框架",
+            "count": 1
+          },
+          {
+            "topic": "孙新杰",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "date": "2026-04-02",
+        "topics": [
+          {
+            "topic": "积分",
+            "count": 2
+          },
+          {
+            "topic": "截屏",
+            "count": 1
+          },
+          {
+            "topic": "题目要求",
+            "count": 1
+          },
+          {
+            "topic": "一个线性表采用顺",
+            "count": 1
+          },
+          {
+            "topic": "序表",
+            "count": 1
+          },
+          {
+            "topic": "数组",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "date": "2026-04-03",
+        "topics": [
+          {
+            "topic": "屏幕截图",
+            "count": 4
+          },
+          {
+            "topic": "分钟",
+            "count": 2
+          },
+          {
+            "topic": "气搞懂人工智能和",
+            "count": 2
+          },
+          {
+            "topic": "神经网络",
+            "count": 2
+          },
+          {
+            "topic": "神经网络学习",
+            "count": 1
+          },
+          {
+            "topic": "在状态机设计方面",
+            "count": 1
+          },
+          {
+            "topic": "数字识别的有限自",
+            "count": 1
+          },
+          {
+            "topic": "到状态机在编译器",
+            "count": 1
+          },
+          {
+            "topic": "前端的重要性",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "date": "2026-04-14",
+        "topics": [
+          {
+            "topic": "智能体的步骤",
+            "count": 2
+          },
+          {
+            "topic": "智能体构建",
+            "count": 1
+          },
+          {
+            "topic": "知识库搭建",
+            "count": 1
+          },
+          {
+            "topic": "目标与边界",
+            "count": 1
+          },
+          {
+            "topic": "认知架构",
+            "count": 1
+          },
+          {
+            "topic": "知识注入",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "date": "2026-04-28",
+        "topics": [
+          {
+            "topic": "导数",
+            "count": 3
+          },
+          {
+            "topic": "极限",
+            "count": 1
+          },
+          {
+            "topic": "函数",
+            "count": 1
+          },
+          {
+            "topic": "瞬时变化率",
+            "count": 1
+          },
+          {
+            "topic": "切线斜率",
+            "count": 1
+          },
+          {
+            "topic": "平均变化率",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "date": "2026-05-19",
+        "topics": [
+          {
+            "topic": "函数",
+            "count": 3
+          },
+          {
+            "topic": "导数",
+            "count": 3
+          },
+          {
+            "topic": "导数定义",
+            "count": 1
+          },
+          {
+            "topic": "幂函数法则",
+            "count": 1
+          },
+          {
+            "topic": "系数法则",
+            "count": 1
+          },
+          {
+            "topic": "加法法则",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "date": "2026-05-20",
+        "topics": [
+          {
+            "topic": "智能体的步骤",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "date": "2026-05-21",
+        "topics": [
+          {
+            "topic": "导数",
+            "count": 2
+          }
+        ]
+      },
+      {
+        "date": "2026-05-23",
+        "topics": [
+          {
+            "topic": "傅里叶变换",
+            "count": 1
+          },
+          {
+            "topic": "信号处理",
+            "count": 1
+          },
+          {
+            "topic": "函数",
+            "count": 1
+          },
+          {
+            "topic": "时域",
+            "count": 1
+          },
+          {
+            "topic": "频域",
+            "count": 1
+          },
+          {
+            "topic": "正弦波",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "date": "2026-06-10",
+        "topics": [
+          {
+            "topic": "智能体的步骤",
+            "count": 2
+          },
+          {
+            "topic": "智能体构建",
+            "count": 1
+          },
+          {
+            "topic": "知识库搭建",
+            "count": 1
+          },
+          {
+            "topic": "认知架构",
+            "count": 1
+          },
+          {
+            "topic": "知识注入",
+            "count": 1
+          },
+          {
+            "topic": "上下文记忆",
+            "count": 1
+          }
+        ]
+      }
+    ],
+    "topic_total_table": [
+      {
+        "topic": "导数",
+        "count": 8
+      },
+      {
+        "topic": "智能体的步骤",
+        "count": 6
+      },
+      {
+        "topic": "函数",
+        "count": 5
+      },
+      {
+        "topic": "屏幕截图",
+        "count": 4
+      },
+      {
+        "topic": "积分",
+        "count": 2
+      },
+      {
+        "topic": "分钟",
+        "count": 2
+      },
+      {
+        "topic": "气搞懂人工智能和",
+        "count": 2
+      },
+      {
+        "topic": "神经网络",
+        "count": 2
+      },
+      {
+        "topic": "智能体构建",
+        "count": 2
+      },
+      {
+        "topic": "知识库搭建",
+        "count": 2
+      },
+      {
+        "topic": "认知架构",
+        "count": 2
+      },
+      {
+        "topic": "知识注入",
+        "count": 2
+      },
+      {
+        "topic": "基于轻量级教育大",
+        "count": 1
+      },
+      {
+        "topic": "翟洁",
+        "count": 1
+      },
+      {
+        "topic": "的类教师思维认知",
+        "count": 1
+      },
+      {
+        "topic": "诊断框架",
+        "count": 1
+      },
+      {
+        "topic": "孙新杰",
+        "count": 1
+      },
+      {
+        "topic": "截屏",
+        "count": 1
+      },
+      {
+        "topic": "题目要求",
+        "count": 1
+      },
+      {
+        "topic": "一个线性表采用顺",
+        "count": 1
+      },
+      {
+        "topic": "序表",
+        "count": 1
+      },
+      {
+        "topic": "数组",
+        "count": 1
+      },
+      {
+        "topic": "神经网络学习",
+        "count": 1
+      },
+      {
+        "topic": "在状态机设计方面",
+        "count": 1
+      },
+      {
+        "topic": "数字识别的有限自",
+        "count": 1
+      },
+      {
+        "topic": "到状态机在编译器",
+        "count": 1
+      },
+      {
+        "topic": "前端的重要性",
+        "count": 1
+      },
+      {
+        "topic": "目标与边界",
+        "count": 1
+      },
+      {
+        "topic": "极限",
+        "count": 1
+      },
+      {
+        "topic": "瞬时变化率",
+        "count": 1
+      },
+      {
+        "topic": "切线斜率",
+        "count": 1
+      },
+      {
+        "topic": "平均变化率",
+        "count": 1
+      },
+      {
+        "topic": "导数定义",
+        "count": 1
+      },
+      {
+        "topic": "幂函数法则",
+        "count": 1
+      },
+      {
+        "topic": "系数法则",
+        "count": 1
+      },
+      {
+        "topic": "加法法则",
+        "count": 1
+      },
+      {
+        "topic": "傅里叶变换",
+        "count": 1
+      },
+      {
+        "topic": "信号处理",
+        "count": 1
+      },
+      {
+        "topic": "时域",
+        "count": 1
+      },
+      {
+        "topic": "频域",
+        "count": 1
+      },
+      {
+        "topic": "正弦波",
+        "count": 1
+      },
+      {
+        "topic": "上下文记忆",
+        "count": 1
+      }
+    ],
+    "study_window_daily_table": [
+      {
+        "date": "2026-03-31",
+        "label": "12:00-14:00",
+        "count": 3,
+        "duration_seconds": 0.0
+      },
+      {
+        "date": "2026-04-02",
+        "label": "12:00-14:00",
+        "count": 2,
+        "duration_seconds": 0.0
+      },
+      {
+        "date": "2026-04-03",
+        "label": "05:00-07:00",
+        "count": 6,
+        "duration_seconds": 0.0
+      },
+      {
+        "date": "2026-04-14",
+        "label": "23:00-01:00",
+        "count": 30,
+        "duration_seconds": 721.965
+      },
+      {
+        "date": "2026-04-15",
+        "label": "11:00-13:00",
+        "count": 13,
+        "duration_seconds": 45.091
+      },
+      {
+        "date": "2026-04-17",
+        "label": "17:00-19:00",
+        "count": 15,
+        "duration_seconds": 0.0
+      },
+      {
+        "date": "2026-04-20",
+        "label": "15:00-17:00",
+        "count": 5,
+        "duration_seconds": 0.0
+      },
+      {
+        "date": "2026-04-28",
+        "label": "22:00-00:00",
+        "count": 8,
+        "duration_seconds": 0.0
+      },
+      {
+        "date": "2026-05-13",
+        "label": "13:00-15:00",
+        "count": 21,
+        "duration_seconds": 0.0
+      },
+      {
+        "date": "2026-05-16",
+        "label": "22:00-00:00",
+        "count": 7,
+        "duration_seconds": 0.0
+      },
+      {
+        "date": "2026-05-19",
+        "label": "00:00-02:00",
+        "count": 58,
+        "duration_seconds": 0.0
+      },
+      {
+        "date": "2026-05-20",
+        "label": "11:00-13:00",
+        "count": 19,
+        "duration_seconds": 0.0
+      },
+      {
+        "date": "2026-05-21",
+        "label": "23:00-01:00",
+        "count": 7,
+        "duration_seconds": 0.0
+      },
+      {
+        "date": "2026-05-22",
+        "label": "00:00-02:00",
+        "count": 12,
+        "duration_seconds": 0.0
+      },
+      {
+        "date": "2026-05-23",
+        "label": "21:00-23:00",
+        "count": 29,
+        "duration_seconds": 0.0
+      },
+      {
+        "date": "2026-05-25",
+        "label": "11:00-13:00",
+        "count": 3,
+        "duration_seconds": 0.0
+      },
+      {
+        "date": "2026-05-28",
+        "label": "11:00-13:00",
+        "count": 20,
+        "duration_seconds": 0.0
+      },
+      {
+        "date": "2026-05-30",
+        "label": "12:00-14:00",
+        "count": 2,
+        "duration_seconds": 0.0
+      },
+      {
+        "date": "2026-06-04",
+        "label": "17:00-19:00",
+        "count": 1,
+        "duration_seconds": 0.0
+      },
+      {
+        "date": "2026-06-05",
+        "label": "22:00-00:00",
+        "count": 5,
+        "duration_seconds": 0.0
+      },
+      {
+        "date": "2026-06-09",
+        "label": "12:00-14:00",
+        "count": 13,
+        "duration_seconds": 0.0
+      },
+      {
+        "date": "2026-06-10",
+        "label": "13:00-15:00",
+        "count": 10,
+        "duration_seconds": 0.0
+      }
+    ],
+    "study_window_total_table": [
+      {
+        "label": "00:00-02:00",
+        "count": 70,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "11:00-13:00",
+        "count": 57,
+        "duration_seconds": 45.091
+      },
+      {
+        "label": "22:00-00:00",
+        "count": 37,
+        "duration_seconds": 21508.716
+      },
+      {
+        "label": "23:00-01:00",
+        "count": 37,
+        "duration_seconds": 721.965
+      },
+      {
+        "label": "13:00-15:00",
+        "count": 31,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "12:00-14:00",
+        "count": 30,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "21:00-23:00",
+        "count": 29,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "17:00-19:00",
+        "count": 20,
+        "duration_seconds": 7.81
+      },
+      {
+        "label": "16:00-18:00",
+        "count": 13,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "19:00-21:00",
+        "count": 7,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "15:00-17:00",
+        "count": 6,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "05:00-07:00",
+        "count": 6,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "20:00-22:00",
+        "count": 2,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "01:00-03:00",
+        "count": 2,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "14:00-16:00",
+        "count": 1,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "03:00-05:00",
+        "count": 1,
+        "duration_seconds": 0.0
+      }
+    ],
+    "top_topic": {
+      "topic": "导数",
+      "count": 8
+    },
+    "top_study_window": {
+      "label": "00:00-02:00",
+      "count": 70,
+      "duration_seconds": 0.0
+    }
+  },
+  "recommendation_cache": {
+    "updated_at": "2026-05-21T23:47:57.206165",
+    "reason": "question_answer",
+    "focus_concept": "导数",
+    "items": [
+      {
+        "concept": "知识库搭建",
+        "mastery": 0.35,
+        "resource_type": "图解示例+互动练习",
+        "title": "知识库搭建 - 结构修复(图解示例+互动练习)",
+        "reason": "基于视觉型偏好与最近诊断信号，建议把 知识库搭建 放到今日高效时段做结构修复，目标是分层练习+错因复盘。",
+        "priority": 62.51,
+        "recommend_time": "23:00-01:00",
+        "strategy_tags": [
+          "style:visual",
+          "channel:kinesthetic",
+          "method:kmeans",
+          "focus:knowledge",
+          "mode:结构修复"
+        ],
+        "evidence_brief": "画像:视觉型(kmeans) | 图谱:掌握度35% | 诊断:命中2条",
+        "source_evidence": {
+          "profile": {
+            "learning_style": "visual",
+            "style_method": "kmeans",
+            "style_confidence": 0.336,
+            "behavior_channel": "kinesthetic"
+          },
+          "knowledge_graph": {
+            "concept": "知识库搭建",
+            "mastery": 0.35,
+            "weak_threshold": 0.6
+          },
+          "diagnosis": {
+            "matched_count": 2,
+            "recent_category_count": {
+              "knowledge": 4,
+              "skill": 0,
+              "habit": 0,
+              "unknown": 0
+            },
+            "dominant_category": "knowledge",
+            "dominant_count": 4,
+            "examples": [
+              {
+                "timestamp": "2026-05-20T11:50:50.639645",
+                "category": "knowledge",
+                "error_type": "知识性错误",
+                "confidence": 0.92,
+                "signals": [
+                  "答案为空，说明当前缺少稳定思路",
+                  "出现不会/不懂类表达",
+                  "该知识点首次接触即答错"
+                ]
+              },
+              {
+                "timestamp": "2026-05-20T11:50:00.939078",
+                "category": "knowledge",
+                "error_type": "知识性错误",
+                "confidence": 0.92,
+                "signals": [
+                  "答案为空，说明当前缺少稳定思路",
+                  "出现不会/不懂类表达",
+                  "该知识点首次接触即答错"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        "concept": "认知架构",
+        "mastery": 0.35,
+        "resource_type": "图解示例+互动练习",
+        "title": "认知架构 - 结构修复(图解示例+互动练习)",
+        "reason": "结合你在知识建模维度的近期表现，认知架构 需要优先安排一轮结构修复，先做小步快跑练习再回看概念。",
+        "priority": 62.51,
+        "recommend_time": "23:00-01:00",
+        "strategy_tags": [
+          "style:visual",
+          "channel:kinesthetic",
+          "method:kmeans",
+          "focus:knowledge",
+          "mode:结构修复"
+        ],
+        "evidence_brief": "画像:视觉型(kmeans) | 图谱:掌握度35% | 诊断:命中2条",
+        "source_evidence": {
+          "profile": {
+            "learning_style": "visual",
+            "style_method": "kmeans",
+            "style_confidence": 0.336,
+            "behavior_channel": "kinesthetic"
+          },
+          "knowledge_graph": {
+            "concept": "认知架构",
+            "mastery": 0.35,
+            "weak_threshold": 0.6
+          },
+          "diagnosis": {
+            "matched_count": 2,
+            "recent_category_count": {
+              "knowledge": 4,
+              "skill": 0,
+              "habit": 0,
+              "unknown": 0
+            },
+            "dominant_category": "knowledge",
+            "dominant_count": 4,
+            "examples": [
+              {
+                "timestamp": "2026-05-20T11:50:50.639645",
+                "category": "knowledge",
+                "error_type": "知识性错误",
+                "confidence": 0.92,
+                "signals": [
+                  "答案为空，说明当前缺少稳定思路",
+                  "出现不会/不懂类表达",
+                  "该知识点首次接触即答错"
+                ]
+              },
+              {
+                "timestamp": "2026-05-20T11:50:00.939078",
+                "category": "knowledge",
+                "error_type": "知识性错误",
+                "confidence": 0.92,
+                "signals": [
+                  "答案为空，说明当前缺少稳定思路",
+                  "出现不会/不懂类表达",
+                  "该知识点首次接触即答错"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        "concept": "智能体构建",
+        "mastery": 0.35,
+        "resource_type": "图解示例+互动练习",
+        "title": "智能体构建 - 结构修复(图解示例+互动练习)",
+        "reason": "结合你在知识建模维度的近期表现，智能体构建 需要优先安排一轮结构修复，先做小步快跑练习再回看概念。",
+        "priority": 58.2,
+        "recommend_time": "23:00-01:00",
+        "strategy_tags": [
+          "style:visual",
+          "channel:kinesthetic",
+          "method:kmeans",
+          "focus:knowledge",
+          "mode:结构修复"
+        ],
+        "evidence_brief": "画像:视觉型(kmeans) | 图谱:掌握度35% | 诊断:命中1条",
+        "source_evidence": {
+          "profile": {
+            "learning_style": "visual",
+            "style_method": "kmeans",
+            "style_confidence": 0.336,
+            "behavior_channel": "kinesthetic"
+          },
+          "knowledge_graph": {
+            "concept": "智能体构建",
+            "mastery": 0.35,
+            "weak_threshold": 0.6
+          },
+          "diagnosis": {
+            "matched_count": 1,
+            "recent_category_count": {
+              "knowledge": 4,
+              "skill": 0,
+              "habit": 0,
+              "unknown": 0
+            },
+            "dominant_category": "knowledge",
+            "dominant_count": 4,
+            "examples": [
+              {
+                "timestamp": "2026-05-20T11:50:00.939078",
+                "category": "knowledge",
+                "error_type": "知识性错误",
+                "confidence": 0.92,
+                "signals": [
+                  "答案为空，说明当前缺少稳定思路",
+                  "出现不会/不懂类表达",
+                  "该知识点首次接触即答错"
+                ]
+              }
+            ]
+          }
+        }
+      },
+      {
+        "concept": "目标与边界",
+        "mastery": 0.35,
+        "resource_type": "图解示例+互动练习",
+        "title": "目标与边界 - 结构修复(图解示例+互动练习)",
+        "reason": "基于视觉型偏好与最近诊断信号，建议把 目标与边界 放到今日高效时段做结构修复，目标是分层练习+错因复盘。",
+        "priority": 58.2,
+        "recommend_time": "23:00-01:00",
+        "strategy_tags": [
+          "style:visual",
+          "channel:kinesthetic",
+          "method:kmeans",
+          "focus:knowledge",
+          "mode:结构修复"
+        ],
+        "evidence_brief": "画像:视觉型(kmeans) | 图谱:掌握度35% | 诊断:命中1条",
+        "source_evidence": {
+          "profile": {
+            "learning_style": "visual",
+            "style_method": "kmeans",
+            "style_confidence": 0.336,
+            "behavior_channel": "kinesthetic"
+          },
+          "knowledge_graph": {
+            "concept": "目标与边界",
+            "mastery": 0.35,
+            "weak_threshold": 0.6
+          },
+          "diagnosis": {
+            "matched_count": 1,
+            "recent_category_count": {
+              "knowledge": 4,
+              "skill": 0,
+              "habit": 0,
+              "unknown": 0
+            },
+            "dominant_category": "knowledge",
+            "dominant_count": 4,
+            "examples": [
+              {
+                "timestamp": "2026-05-20T11:50:50.639645",
+                "category": "knowledge",
+                "error_type": "知识性错误",
+                "confidence": 0.92,
+                "signals": [
+                  "答案为空，说明当前缺少稳定思路",
+                  "出现不会/不懂类表达",
+                  "该知识点首次接触即答错"
+                ]
+              }
+            ]
+          }
+        }
+      }
+    ]
+  },
+  "review_reminder_cache": {
+    "updated_at": "2026-05-21T23:47:57.206165",
+    "due_count": 15,
+    "upcoming_count": 1,
+    "due_items": [
+      {
+        "concept": "智能体构建",
+        "mastery": 0.35,
+        "review_count": 0,
+        "interval_days": 1,
+        "next_review": "2026-04-15T23:05:39.644347",
+        "due": true,
+        "overdue_days": 36,
+        "priority": 245.0
+      },
+      {
+        "concept": "知识库搭建",
+        "mastery": 0.35,
+        "review_count": 0,
+        "interval_days": 1,
+        "next_review": "2026-04-15T23:05:39.644362",
+        "due": true,
+        "overdue_days": 36,
+        "priority": 245.0
+      },
+      {
+        "concept": "目标与边界",
+        "mastery": 0.35,
+        "review_count": 0,
+        "interval_days": 1,
+        "next_review": "2026-04-15T23:05:39.644365",
+        "due": true,
+        "overdue_days": 36,
+        "priority": 245.0
+      },
+      {
+        "concept": "认知架构",
+        "mastery": 0.35,
+        "review_count": 0,
+        "interval_days": 1,
+        "next_review": "2026-04-15T23:05:39.644368",
+        "due": true,
+        "overdue_days": 36,
+        "priority": 245.0
+      },
+      {
+        "concept": "知识注入",
+        "mastery": 0.35,
+        "review_count": 0,
+        "interval_days": 1,
+        "next_review": "2026-04-15T23:05:39.644371",
+        "due": true,
+        "overdue_days": 36,
+        "priority": 245.0
+      },
+      {
+        "concept": "能力注入",
+        "mastery": 0.35,
+        "review_count": 0,
+        "interval_days": 1,
+        "next_review": "2026-04-15T23:05:39.644373",
+        "due": true,
+        "overdue_days": 36,
+        "priority": 245.0
+      }
+    ],
+    "upcoming_items": [
+      {
+        "concept": "导数",
+        "mastery": 0.932,
+        "review_count": 1,
+        "interval_days": 5,
+        "next_review": "2026-05-26T23:47:56.583912",
+        "due": false,
+        "overdue_days": 0,
+        "priority": 6.8
+      }
+    ]
+  },
+  "last_learning_feedback": {
+    "source": "question_answer",
+    "question_id": "qb-ai-6d87bbfbbd7a",
+    "concept": "导数",
+    "score": 1.0,
+    "is_correct": true,
+    "task_timestamp": "2026-05-21T23:47:56.583912",
+    "refreshed_at": "2026-05-21T23:47:57.206165"
+  }
+}

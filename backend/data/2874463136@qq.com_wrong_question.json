@@ -1,0 +1,97 @@
+[
+  {
+    "id": "354bc49d-737d-418a-9f1b-525bb2255362",
+    "timestamp": "2026-04-10T22:31:14.856177",
+    "source": "question_answer",
+    "question": "在真空中，两个点电荷 +Q 和 -Q 分别固定在 x 轴上的 x = -a 和 x = +a 处。在原点 O 处的电场强度方向为：",
+    "user_answer": "A",
+    "concept": "电场",
+    "topics": [
+      "电场"
+    ],
+    "source_key": "question_answer::2026-04-10T22:31:14.037801::qb-ai-fd0b426907f6",
+    "question_id": "qb-ai-fd0b426907f6",
+    "difficulty": "medium",
+    "question_type": "single_choice",
+    "expected_answer": "B",
+    "score": 0.0,
+    "is_correct": false,
+    "error_type": "知识性错误"
+  },
+  {
+    "id": "9fe71faa-fed2-477e-b7e2-9b678531daac",
+    "timestamp": "2026-04-10T22:31:27.876223",
+    "source": "question_answer",
+    "question": "请用自己的话解释“电场”的核心定义，并给出 1 个应用场景。",
+    "user_answer": "不会",
+    "concept": "电场",
+    "topics": [
+      "电场"
+    ],
+    "source_key": "question_answer::2026-04-10T22:31:26.426728::dyn-2874463136@qq.com-电场-sa",
+    "question_id": "dyn-2874463136@qq.com-电场-sa",
+    "difficulty": "easy",
+    "question_type": "short_answer",
+    "expected_answer": "应包含定义关键词，并给出可落地的例子。",
+    "score": 0.0,
+    "is_correct": false,
+    "error_type": "知识性错误"
+  },
+  {
+    "id": "a27918a5-40e4-4d5e-8483-ed0de4773263",
+    "timestamp": "2026-04-10T22:32:45.111251",
+    "source": "question_answer",
+    "question": "若函数 $ h(x) = \\frac{e^x}{x} $（$ x \\neq 0 $），则其导数 $ h'(x) $ 等于：",
+    "user_answer": "B",
+    "concept": "导数",
+    "topics": [
+      "导数"
+    ],
+    "source_key": "question_answer::2026-04-10T22:32:44.301643::qb-ai-64e2ffb2f48a",
+    "question_id": "qb-ai-64e2ffb2f48a",
+    "difficulty": "medium",
+    "question_type": "single_choice",
+    "expected_answer": "A",
+    "score": 0.0,
+    "is_correct": false,
+    "error_type": "技能性错误"
+  },
+  {
+    "id": "8418e744-16fc-4b02-865c-33292ddf8ef3",
+    "timestamp": "2026-04-10T22:42:37.977565",
+    "source": "question_answer",
+    "question": "已知函数 $ g(x) = \\sin(3x + 1) $，求其在 $ x = 0 $ 处的导数值。",
+    "user_answer": "B",
+    "concept": "导数",
+    "topics": [
+      "导数"
+    ],
+    "source_key": "question_answer::2026-04-10T22:42:36.602872::qb-ai-a96ab9cd2e2d",
+    "question_id": "qb-ai-a96ab9cd2e2d",
+    "difficulty": "medium",
+    "question_type": "short_answer",
+    "expected_answer": "3\\cos(1)",
+    "score": 0.0,
+    "is_correct": false,
+    "error_type": "技能性错误"
+  },
+  {
+    "id": "444e9051-134b-445a-b951-aa824a706db6",
+    "timestamp": "2026-04-10T22:51:46.688157",
+    "source": "question_answer",
+    "question": "设函数 $ f(x) = x^2 e^x $，则 $ f'(1) $ 的值为？",
+    "user_answer": "[object PointerEvent]",
+    "concept": "导数",
+    "topics": [
+      "导数"
+    ],
+    "source_key": "question_answer::2026-04-10T22:51:45.920061::qb-ai-5092c515343a",
+    "question_id": "qb-ai-5092c515343a",
+    "difficulty": "medium",
+    "question_type": "single_choice",
+    "expected_answer": "A",
+    "score": 0.0,
+    "is_correct": false,
+    "error_type": "技能性错误"
+  }
+]

@@ -1,0 +1,36 @@
+{
+  "user_id": "guest_b86986d6b43f7417dd537f75",
+  "updated_at": "2026-04-15T17:49:33.160625",
+  "learning_style": "visual",
+  "style_scores": {
+    "visual": 0.36,
+    "auditory": 0.389,
+    "kinesthetic": 0.389
+  },
+  "style_method": "kmeans",
+  "style_features": {
+    "image_count": 0,
+    "link_count": 0,
+    "qa_content_count": 1,
+    "note_count": 0,
+    "other_count": 0,
+    "qa_log_count": 1,
+    "concept_count": 6
+  },
+  "interests": [
+    "导数",
+    "极限",
+    "瞬时变化率",
+    "切线斜率",
+    "平均变化率"
+  ],
+  "best_time_range": "17:00-19:00",
+  "focus_minutes": 45,
+  "content_type_counter": {
+    "note": 0,
+    "link": 0,
+    "image": 0,
+    "qa": 1,
+    "other": 0
+  }
+}

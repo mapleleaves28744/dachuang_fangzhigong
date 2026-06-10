@@ -1,0 +1,22 @@
+[
+  {
+    "id": "4ed90079-8551-4865-8ae3-869b3d2fa195",
+    "task_id": "task_002",
+    "task_type": "practice",
+    "concept": "链式法则",
+    "accuracy": 0.2,
+    "correct_count": 2,
+    "total_count": 10,
+    "duration_seconds": 180,
+    "timestamp": "2026-05-11T21:41:06.562646",
+    "fact_source": {
+      "primary_source": "learning_feedback",
+      "fact_id": "4ed90079-8551-4865-8ae3-869b3d2fa195",
+      "source_key": "",
+      "question_id": "",
+      "task_id": "task_002",
+      "concept": "链式法则",
+      "timestamp": "2026-05-11T21:41:06.562646"
+    }
+  }
+]

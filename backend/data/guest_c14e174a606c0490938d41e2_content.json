@@ -1,0 +1,17 @@
+[
+  {
+    "id": "febfdb0a-8254-4c34-8adb-a75e60b91ffe",
+    "timestamp": "2026-05-11T22:04:54.077696",
+    "content_type": "qa",
+    "title": "智能体问答记录",
+    "content": "问题：请解释链式法则\n回答：已按文本降级回答",
+    "content_preview": "问题：请解释链式法则 回答：已按文本降级回答",
+    "content_length": 22,
+    "source": "agent_ocr_tutor",
+    "topics": [
+      "链式法则"
+    ],
+    "question_text": "请解释链式法则",
+    "answer_text": "已按文本降级回答"
+  }
+]

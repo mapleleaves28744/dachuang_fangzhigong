@@ -1,0 +1,121 @@
+{
+  "concepts": [
+    {
+      "concept": "导数",
+      "first_seen": "2026-04-16T20:39:56.732410",
+      "last_seen": "2026-04-16T20:39:56.732410",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "矩阵运算",
+      "first_seen": "2026-04-16T20:39:56.732422",
+      "last_seen": "2026-04-16T20:39:56.732422",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "英语语法",
+      "first_seen": "2026-04-16T20:39:56.732426",
+      "last_seen": "2026-04-16T20:39:56.732426",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "英语写作",
+      "first_seen": "2026-04-16T20:39:56.732428",
+      "last_seen": "2026-04-16T20:39:56.732428",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "Python",
+      "first_seen": "2026-04-16T20:39:56.732431",
+      "last_seen": "2026-04-16T20:39:56.732431",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "Java",
+      "first_seen": "2026-04-16T20:39:56.732433",
+      "last_seen": "2026-04-16T20:39:56.732433",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "C++",
+      "first_seen": "2026-04-16T20:39:56.732436",
+      "last_seen": "2026-04-16T20:39:56.732436",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "物理原理",
+      "first_seen": "2026-04-16T20:39:56.732438",
+      "last_seen": "2026-04-16T20:39:56.732438",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    }
+  ],
+  "relations": [
+    {
+      "source": "导数",
+      "target": "函数",
+      "type": "前置",
+      "score": 0.95,
+      "evidence": "导数定义依赖函数",
+      "source_text": "问题：测试\n回答：你好呀！👋 很高兴见到你～  \n看起来你发了一个“测试”，可能是想试试我们的互动，或者还没想好具体要问什么？😊\n\n如果你有任何学习上的疑问——比如：\n🔹 某个数学概念（如导数、矩阵运算）不太理解？  \n🔹 英语语法/写作遇",
+      "created_at": "2026-04-16T20:39:56.732446",
+      "from": "qa_qwen"
+    },
+    {
+      "source": "矩阵运算",
+      "target": "函数",
+      "type": "相关",
+      "score": 0.75,
+      "evidence": "线性变换关联",
+      "source_text": "问题：测试\n回答：你好呀！👋 很高兴见到你～  \n看起来你发了一个“测试”，可能是想试试我们的互动，或者还没想好具体要问什么？😊\n\n如果你有任何学习上的疑问——比如：\n🔹 某个数学概念（如导数、矩阵运算）不太理解？  \n🔹 英语语法/写作遇",
+      "created_at": "2026-04-16T20:39:56.732451",
+      "from": "qa_qwen"
+    },
+    {
+      "source": "Python",
+      "target": "Java",
+      "type": "并列",
+      "score": 0.88,
+      "evidence": "同为编程语言",
+      "source_text": "问题：测试\n回答：你好呀！👋 很高兴见到你～  \n看起来你发了一个“测试”，可能是想试试我们的互动，或者还没想好具体要问什么？😊\n\n如果你有任何学习上的疑问——比如：\n🔹 某个数学概念（如导数、矩阵运算）不太理解？  \n🔹 英语语法/写作遇",
+      "created_at": "2026-04-16T20:39:56.732454",
+      "from": "qa_qwen"
+    },
+    {
+      "source": "Python",
+      "target": "C++",
+      "type": "并列",
+      "score": 0.88,
+      "evidence": "同为编程语言",
+      "source_text": "问题：测试\n回答：你好呀！👋 很高兴见到你～  \n看起来你发了一个“测试”，可能是想试试我们的互动，或者还没想好具体要问什么？😊\n\n如果你有任何学习上的疑问——比如：\n🔹 某个数学概念（如导数、矩阵运算）不太理解？  \n🔹 英语语法/写作遇",
+      "created_at": "2026-04-16T20:39:56.732457",
+      "from": "qa_qwen"
+    },
+    {
+      "source": "Java",
+      "target": "C++",
+      "type": "并列",
+      "score": 0.88,
+      "evidence": "同为编程语言",
+      "source_text": "问题：测试\n回答：你好呀！👋 很高兴见到你～  \n看起来你发了一个“测试”，可能是想试试我们的互动，或者还没想好具体要问什么？😊\n\n如果你有任何学习上的疑问——比如：\n🔹 某个数学概念（如导数、矩阵运算）不太理解？  \n🔹 英语语法/写作遇",
+      "created_at": "2026-04-16T20:39:56.732460",
+      "from": "qa_qwen"
+    }
+  ],
+  "deleted_concepts": []
+}

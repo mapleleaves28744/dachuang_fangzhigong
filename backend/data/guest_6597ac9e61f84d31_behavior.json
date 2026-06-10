@@ -1,0 +1,124 @@
+[
+  {
+    "id": "bb664cb0-f950-40bd-af37-c5066c5f27d6",
+    "user_id": "guest_6597ac9e61f84d31",
+    "timestamp": "2026-04-10T09:06:42.692272",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "index",
+    "target": "",
+    "label": "page_view",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "28f6a325-129c-4764-b2bf-29ea1439513f",
+    "user_id": "guest_6597ac9e61f84d31",
+    "timestamp": "2026-04-10T09:06:55.413352",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "chat",
+    "target": "",
+    "label": "page_view",
+    "title": "智能问答 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": "http://127.0.0.1:5501/index.html"
+    }
+  },
+  {
+    "id": "f150652e-4de4-407a-8f58-54c10ad1c3fe",
+    "user_id": "guest_6597ac9e61f84d31",
+    "timestamp": "2026-04-10T09:07:24.334330",
+    "type": "navigation_click",
+    "behavior_type": "navigation_click",
+    "page": "chat",
+    "target": "question-bank",
+    "label": "◎ 题库练习",
+    "title": "智能问答 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {}
+  },
+  {
+    "id": "41c264a7-d6aa-411c-99c6-7848ea2d9c55",
+    "user_id": "guest_6597ac9e61f84d31",
+    "timestamp": "2026-04-10T09:07:24.409199",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "question-bank",
+    "target": "",
+    "label": "page_view",
+    "title": "题库练习 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": "http://127.0.0.1:5501/chat.html"
+    }
+  },
+  {
+    "id": "beccc4f8-25cd-4288-912f-6f91916a5da6",
+    "user_id": "guest_6597ac9e61f84d31",
+    "timestamp": "2026-04-10T09:07:28.124198",
+    "type": "navigation_click",
+    "behavior_type": "navigation_click",
+    "page": "question-bank",
+    "target": "dashboard",
+    "label": "◧ 学习仪表盘",
+    "title": "题库练习 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {}
+  },
+  {
+    "id": "29fdee3c-5e1b-45e5-b651-8614f3e55c5d",
+    "user_id": "guest_6597ac9e61f84d31",
+    "timestamp": "2026-04-10T09:07:28.382335",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "dashboard",
+    "target": "",
+    "label": "page_view",
+    "title": "学习仪表盘 - 智能学习伴侣",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": "http://127.0.0.1:5501/question-bank.html"
+    }
+  },
+  {
+    "id": "91014005-4f3d-4680-a6dc-82a02292123d",
+    "user_id": "guest_6597ac9e61f84d31",
+    "timestamp": "2026-04-10T09:14:08.967251",
+    "type": "navigation_click",
+    "behavior_type": "navigation_click",
+    "page": "dashboard",
+    "target": "index",
+    "label": "返回主界面",
+    "title": "学习仪表盘 - 智能学习伴侣",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {}
+  },
+  {
+    "id": "36670c52-2eb4-4e68-a8d6-a17cc3b7d77c",
+    "user_id": "guest_6597ac9e61f84d31",
+    "timestamp": "2026-04-10T09:14:09.306334",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "index",
+    "target": "",
+    "label": "page_view",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": "http://127.0.0.1:5501/dashboard.html"
+    }
+  }
+]

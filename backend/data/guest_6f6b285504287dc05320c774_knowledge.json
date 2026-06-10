@@ -1,0 +1,27 @@
+{
+  "concepts": [
+    {
+      "concept": "导数基础",
+      "first_seen": "2026-05-11T22:04:54.037145",
+      "mastery": 0.414,
+      "mastery_status": "薄弱",
+      "accuracy": 0.8,
+      "raw_accuracy": 0.8,
+      "recent_accuracy": 0.8,
+      "practice_count": 10,
+      "time_score": 0.8,
+      "practice_score": 0.877,
+      "forgetting_factor": 0.9,
+      "base_mastery": 0.789,
+      "median_answer_seconds": 30.0,
+      "standard_answer_seconds": 45.0,
+      "time_ratio": 0.667,
+      "last_seen": "2026-05-11T22:04:54.037145",
+      "last_practiced": "2026-05-11T22:04:54.037145",
+      "last_reviewed": "2026-05-11T22:04:54.037145",
+      "review_count": 10
+    }
+  ],
+  "relations": [],
+  "deleted_concepts": []
+}

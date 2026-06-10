@@ -1,0 +1,50 @@
+[
+  {
+    "id": "e28ee0b9-63f3-44c0-a0ee-025a43632ee4",
+    "user_id": "guest_35c54bf5dab1079418230497",
+    "timestamp": "2026-05-19T19:58:11.734449",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 1448.102,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "bf5a9c5f-1432-4475-a1aa-c66c34d2778d",
+    "user_id": "guest_35c54bf5dab1079418230497",
+    "timestamp": "2026-05-19T20:13:37.923542",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "chat",
+    "target": "",
+    "label": "pagehide",
+    "title": "智能问答 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 925.903,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/index.html"
+    }
+  },
+  {
+    "id": "6355f68a-3581-41df-bc23-302ac96ca788",
+    "user_id": "guest_35c54bf5dab1079418230497",
+    "timestamp": "2026-05-19T20:29:16.567715",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "dashboard",
+    "target": "",
+    "label": "pagehide",
+    "title": "学习仪表盘 - 智能学习伴侣",
+    "source": "page_shell",
+    "duration_seconds": 931.04,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/chat.html"
+    }
+  }
+]

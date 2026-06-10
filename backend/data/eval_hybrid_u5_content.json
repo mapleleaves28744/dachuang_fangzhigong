@@ -1,0 +1,14 @@
+[
+  {
+    "id": "aa931e3d-33af-44e3-a209-d97a3948f31d",
+    "timestamp": "2026-04-10T17:08:23",
+    "content_type": "kb_note",
+    "title": "链式法则私有笔记",
+    "content": "复合函数求导优先考虑链式法则，先识别外层函数再识别内层函数。",
+    "source": "eval_hybrid",
+    "tags": [
+      "导数",
+      "链式法则"
+    ]
+  }
+]

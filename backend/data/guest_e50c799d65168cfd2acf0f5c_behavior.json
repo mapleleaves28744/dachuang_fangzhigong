@@ -1,0 +1,18 @@
+[
+  {
+    "id": "dacf6743-4338-4230-a6d6-db75dca23872",
+    "user_id": "guest_e50c799d65168cfd2acf0f5c",
+    "timestamp": "2026-05-30T11:59:55.110785",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "index",
+    "target": "",
+    "label": "page_view",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": ""
+    }
+  }
+]

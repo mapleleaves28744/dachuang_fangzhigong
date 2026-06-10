@@ -1,0 +1,73 @@
+{
+  "concepts": [
+    {
+      "concept": "函数",
+      "first_seen": "2026-04-11T02:59:19.531426",
+      "last_seen": "2026-04-11T02:59:19.531426",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "导数",
+      "first_seen": "2026-04-11T02:59:19.531426",
+      "last_seen": "2026-04-11T02:59:19.531426",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "力学",
+      "first_seen": "2026-04-11T02:59:19.531426",
+      "last_seen": "2026-04-11T02:59:19.531426",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "英语语法",
+      "first_seen": "2026-04-11T02:59:19.531426",
+      "last_seen": "2026-04-11T02:59:19.531426",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "循环结构",
+      "first_seen": "2026-04-11T02:59:19.531426",
+      "last_seen": "2026-04-11T02:59:19.531426",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "时间管理",
+      "first_seen": "2026-04-11T02:59:19.531426",
+      "last_seen": "2026-04-11T02:59:19.531426",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "备考规划",
+      "first_seen": "2026-04-11T02:59:19.531426",
+      "last_seen": "2026-04-11T02:59:19.531426",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    }
+  ],
+  "relations": [
+    {
+      "source": "函数",
+      "target": "导数",
+      "type": "前置",
+      "score": 0.95,
+      "evidence": "导数以函数为基础",
+      "source_text": "问题：??????\n回答：你好呀！👋 看起来你的问题可能还没输入完整，或者被系统显示为问号（??????）了～  \n别担心，这很常见！😊  \n\n你是想了解某个学科的知识点（比如数学中的函数、物理中的力学、英语语法、编程中的循环结构等）？  ",
+      "created_at": "2026-04-11T02:59:19.531426",
+      "from": "qa_qwen"
+    }
+  ],
+  "deleted_concepts": []
+}

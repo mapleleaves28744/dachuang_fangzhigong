@@ -1,0 +1,18 @@
+[
+  {
+    "id": "17a7db41-b15a-4024-9013-8b6202e4de90",
+    "user_id": "guest_2e7c159f8d8b8eebb9aaecea",
+    "timestamp": "2026-05-23T01:17:41.712395",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "spaces",
+    "target": "",
+    "label": "pagehide",
+    "title": "我的空间",
+    "source": "page_shell",
+    "duration_seconds": 14.177,
+    "meta": {
+      "referrer": ""
+    }
+  }
+]

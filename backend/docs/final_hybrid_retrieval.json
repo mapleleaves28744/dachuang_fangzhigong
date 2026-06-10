@@ -1,0 +1,109 @@
+{
+  "generated_at": "2026-04-10T18:27:44.385440",
+  "retrieval_mode": "hybrid",
+  "top_k": 5,
+  "cases_file": "C:\\Users\\28744\\Desktop\\fangwen\\fzg\\backend\\tests\\hybrid_retrieval_eval_cases.json",
+  "summary": {
+    "cases": 6,
+    "hit_at_k": 1.0,
+    "public_hit_rate": 0.8333,
+    "private_hit_rate": 0.1667,
+    "graph_context_rate": 0.0,
+    "avg_keyword_coverage": 0.8333,
+    "avg_top_hybrid_score": 0.1142,
+    "avg_score": 0.7167,
+    "avg_latency_ms": 16.2467
+  },
+  "results": [
+    {
+      "id": "retrieval-01",
+      "query": "高等数学 导数 与 微分 核心定义",
+      "user_id": "eval_hybrid_u1",
+      "latency_ms": 67.05,
+      "hit_count": 5,
+      "graph_context_count": 0,
+      "channels": [
+        "public_vector"
+      ],
+      "keyword_coverage": 0.3333,
+      "channel_match": 1.0,
+      "top_hybrid_score": 0.0529,
+      "score": 0.4667
+    },
+    {
+      "id": "retrieval-02",
+      "query": "线性代数 矩阵 可逆 条件",
+      "user_id": "eval_hybrid_u2",
+      "latency_ms": 5.14,
+      "hit_count": 5,
+      "graph_context_count": 0,
+      "channels": [
+        "public_vector"
+      ],
+      "keyword_coverage": 0.6667,
+      "channel_match": 1.0,
+      "top_hybrid_score": 0.1525,
+      "score": 0.6333
+    },
+    {
+      "id": "retrieval-03",
+      "query": "概率论 分布 与 期望 题型",
+      "user_id": "eval_hybrid_u3",
+      "latency_ms": 5.83,
+      "hit_count": 5,
+      "graph_context_count": 0,
+      "channels": [
+        "public_vector"
+      ],
+      "keyword_coverage": 1.0,
+      "channel_match": 1.0,
+      "top_hybrid_score": 0.1118,
+      "score": 0.8
+    },
+    {
+      "id": "retrieval-04",
+      "query": "计算机网络 拥塞控制 与 滑动窗口",
+      "user_id": "eval_hybrid_u4",
+      "latency_ms": 6.73,
+      "hit_count": 5,
+      "graph_context_count": 0,
+      "channels": [
+        "public_vector"
+      ],
+      "keyword_coverage": 1.0,
+      "channel_match": 1.0,
+      "top_hybrid_score": 0.1178,
+      "score": 0.8
+    },
+    {
+      "id": "retrieval-05",
+      "query": "我记录的链式法则私有笔记",
+      "user_id": "eval_hybrid_u5",
+      "latency_ms": 6.1,
+      "hit_count": 3,
+      "graph_context_count": 0,
+      "channels": [
+        "private_lexical"
+      ],
+      "keyword_coverage": 1.0,
+      "channel_match": 1.0,
+      "top_hybrid_score": 0.1335,
+      "score": 0.8
+    },
+    {
+      "id": "retrieval-06",
+      "query": "操作系统 死锁 与 互斥 条件",
+      "user_id": "eval_hybrid_u6",
+      "latency_ms": 6.63,
+      "hit_count": 5,
+      "graph_context_count": 0,
+      "channels": [
+        "public_vector"
+      ],
+      "keyword_coverage": 1.0,
+      "channel_match": 1.0,
+      "top_hybrid_score": 0.1169,
+      "score": 0.8
+    }
+  ]
+}

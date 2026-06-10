@@ -1,0 +1,103 @@
+{
+  "user_id": "reg4_20260411021304",
+  "updated_at": "2026-04-11T02:13:31.421784",
+  "learning_style": "visual",
+  "style_scores": {
+    "visual": 0.365,
+    "auditory": 0.397,
+    "kinesthetic": 0.397
+  },
+  "style_method": "kmeans",
+  "style_features": {
+    "image_count": 0,
+    "link_count": 0,
+    "qa_content_count": 1,
+    "note_count": 1,
+    "other_count": 0,
+    "qa_log_count": 1,
+    "concept_count": 4
+  },
+  "interests": [
+    "derivative",
+    "limit",
+    "integral",
+    "f(x)=x^2"
+  ],
+  "best_time_range": "02:00-04:00",
+  "focus_minutes": 45,
+  "content_type_counter": {
+    "note": 1,
+    "link": 0,
+    "image": 0,
+    "qa": 1,
+    "other": 0
+  },
+  "dashboard_hidden": {
+    "updated_at": "2026-04-11T02:13:31.471818",
+    "topic_daily_table": [
+      {
+        "date": "2026-04-11",
+        "topics": [
+          {
+            "topic": "derivative",
+            "count": 2
+          },
+          {
+            "topic": "limit",
+            "count": 1
+          },
+          {
+            "topic": "integral",
+            "count": 1
+          },
+          {
+            "topic": "f(x)=x^2",
+            "count": 1
+          }
+        ]
+      }
+    ],
+    "topic_total_table": [
+      {
+        "topic": "derivative",
+        "count": 2
+      },
+      {
+        "topic": "limit",
+        "count": 1
+      },
+      {
+        "topic": "integral",
+        "count": 1
+      },
+      {
+        "topic": "f(x)=x^2",
+        "count": 1
+      }
+    ],
+    "study_window_daily_table": [
+      {
+        "date": "2026-04-11",
+        "label": "02:00-04:00",
+        "count": 4,
+        "duration_seconds": 0.0
+      }
+    ],
+    "study_window_total_table": [
+      {
+        "label": "02:00-04:00",
+        "count": 4,
+        "duration_seconds": 0.0
+      }
+    ],
+    "top_topic": {
+      "topic": "derivative",
+      "count": 2
+    },
+    "top_study_window": {
+      "label": "02:00-04:00",
+      "count": 4,
+      "duration_seconds": 0.0
+    }
+  }
+}

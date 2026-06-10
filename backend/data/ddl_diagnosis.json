@@ -1,0 +1,942 @@
+[
+  {
+    "id": "3681ced1-efbe-4274-9a00-aaf145f72edf",
+    "timestamp": "2026-04-15T17:34:49.079443",
+    "question": "导数是什么意思",
+    "correct_answer": "导数是函数在某一点处的瞬时变化率，几何上表示该点处切线的斜率。",
+    "user_answer": "",
+    "concept": "导数",
+    "diagnosis": {
+      "error_type": "知识性错误",
+      "category": "knowledge",
+      "severity": "high",
+      "recommendation": "先不要追求做多题，先把“导数”的关键概念讲给自己听，再做 2 道同类型入门题确认是否真正理解。",
+      "confidence": 0.92,
+      "signals": [
+        "答案为空，说明当前缺少稳定思路",
+        "出现不会/不懂类表达",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低",
+        "答案为空，说明当前缺少稳定思路",
+        "出现不会/不懂类表达",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低"
+      ],
+      "score_detail": {
+        "knowledge_rule_hits": 4,
+        "skill_rule_hits": 0,
+        "habit_rule_hits": 0,
+        "recent_accuracy": 0.0,
+        "time_ratio": null,
+        "standard_time_seconds": 60.0,
+        "response_time_seconds": null,
+        "near_miss": false,
+        "mastery_reference": null
+      },
+      "reason": "导数的定义、公式或判断条件还没有真正建立，看到题目时不知道该从哪里开始。",
+      "recommended_actions": [
+        "看该知识点5-8分钟讲解视频",
+        "整理1张公式/概念卡片",
+        "做2道基础例题并对照答案",
+        "当天再复做原题1次"
+      ],
+      "recent_accuracy": 0.0,
+      "time_ratio": null,
+      "near_miss": false
+    },
+    "learning_advice": {
+      "建议": "先不要追求做多题，先把“导数”的关键概念讲给自己听，再做 2 道同类型入门题确认是否真正理解。"
+    },
+    "mastery_assessment": {
+      "知识点": "导数",
+      "掌握度": 0.0
+    },
+    "source": "agent_tool"
+  },
+  {
+    "id": "b0efba41-8b59-46aa-877d-fa24e8ecf3eb",
+    "timestamp": "2026-04-15T17:39:02.262640",
+    "question": "什么是导数",
+    "correct_answer": "你好呀！很高兴你问到“导数”这个超级重要的数学概念～👏 它是微积分的起点，也是理解变化规律的一把金钥匙✨\n\n简单来说：  \n**导数描述的是函数在某一点处的瞬时变化率**——也就是“当自变量（比如时间、位置）发生极其微小的变化时，函数值变化得有多快”。\n\n🔹 举个生活中的例子：  \n假设你开车，路程 s（单位：千米）是时间 t（单位：小时）的函数，即 s = f(t)。  \n那么，f 在某时刻 t",
+    "user_answer": "",
+    "concept": "导数",
+    "diagnosis": {
+      "category": "knowledge",
+      "error_type": "学习建议",
+      "confidence": 0.55,
+      "signals": [
+        "answer_recommendation"
+      ],
+      "recommendation": "- 先从熟悉函数入手（如 f(x) = x², f(x) = sin x），动手算几个导数，感受“极限过程”；",
+      "reason": "从问答回复中提取到建议并同步到诊断看板。",
+      "recommended_actions": [
+        "- 先从熟悉函数入手（如 f(x) = x², f(x) = sin x），动手算几个导数，感受“极限过程”；"
+      ]
+    },
+    "learning_advice": {
+      "建议": "- 先从熟悉函数入手（如 f(x) = x², f(x) = sin x），动手算几个导数，感受“极限过程”；"
+    },
+    "mastery_assessment": {
+      "知识点": "导数",
+      "掌握度": 0.35,
+      "状态": "待跟进"
+    },
+    "source": "qa_qwen"
+  },
+  {
+    "id": "7062357b-4009-44fc-b6fb-e2551fd165e1",
+    "timestamp": "2026-04-15T21:02:28.356260",
+    "question": "导数是函数的斜率",
+    "correct_answer": "你好呀！很高兴看到你开始思考导数这个非常核心又美妙的概念 🌟\n\n你说“导数是函数的斜率”，这个理解**方向完全正确，而且抓住了导数最直观的几何本质**！不过为了更精准、更深入地掌握它，我们来一起轻轻拓展一下这句话背后的含义：\n\n✅ **对的！**  \n在某一点 \\(x = a\\) 处，如果函数 \\(f(x)\\) 可导，那么它的导数 \\(f'(a)\\) 就**等于函数图像在点 \\((a, f(a))",
+    "user_answer": "",
+    "concept": "函数",
+    "diagnosis": {
+      "category": "knowledge",
+      "error_type": "学习建议",
+      "confidence": 0.55,
+      "signals": [
+        "answer_recommendation"
+      ],
+      "recommendation": "你可以试着画几个简单函数（如 \\(f(x)=x^2\\)、\\(f(x)=\\sin x\\)），用几何画板或Desmos动态观察：当两点越来越近时，割线如何“旋转”成切线——这种直观体验会让导数从公式真正走进你的直觉里！",
+      "reason": "从问答回复中提取到建议并同步到诊断看板。",
+      "recommended_actions": [
+        "你可以试着画几个简单函数（如 \\(f(x)=x^2\\)、\\(f(x)=\\sin x\\)），用几何画板或Desmos动态观察：当两点越来越近时，割线如何“旋转”成切线——这种直观体验会让导数从公式真正走进你的直觉里！"
+      ]
+    },
+    "learning_advice": {
+      "建议": "你可以试着画几个简单函数（如 \\(f(x)=x^2\\)、\\(f(x)=\\sin x\\)），用几何画板或Desmos动态观察：当两点越来越近时，割线如何“旋转”成切线——这种直观体验会让导数从公式真正走进你的直觉里！"
+    },
+    "mastery_assessment": {
+      "知识点": "函数",
+      "掌握度": 0.35,
+      "状态": "待跟进"
+    },
+    "source": "qa_qwen"
+  },
+  {
+    "id": "1892bd07-69f4-4eaf-8b7b-97951b7229e4",
+    "timestamp": "2026-04-16T10:27:24.048373",
+    "question": "布尔类型，存储 true 或 false，占用 1 个字节。 字符类型，用于存储 ASCII 字符，通常占用 1 个字节。 整数类型，通常用于存储普通整数，通常占用 4 个字节。 单精度浮点值，用于存储单精度浮点数。单精度是这样的格式，1 位符号，8 位指数，23 位小数，通常占用4个字节。 双精度浮点值，用于存储双精度浮点数。双精度是 1 位符号，11 位指数，52 位小数，通常占用 8 个字节。 表示类型的缺失。 宽字符类型，用于存储更大范围的字符，通常占用 2 个或 4 个字节。",
+    "correct_answer": "该OCR文本本身不是一道有标准答案的题目，而是学习资料摘要；但其中存在多处不严谨表述，需修正：\n1. '布尔类型...占用1个字节' → C++标准未规定大小，常见实现为1B，但本质是逻辑值，非内存定义；\n2. '字符类型...存储ASCII字符' → char可存任意8位值，ASCII仅是子集；\n3. '整数类型...通常占用4个字节' → int大小由平台决定，C标准仅要求≥short且≤lo",
+    "user_answer": "",
+    "concept": "基本数据类型与内存占用",
+    "diagnosis": {
+      "error_type": "知识性错误",
+      "category": "knowledge",
+      "severity": "high",
+      "recommendation": "先不要追求做多题，先把“基本数据类型与内存占用”的关键概念讲给自己听，再做 2 道同类型入门题确认是否真正理解。",
+      "confidence": 0.92,
+      "signals": [
+        "答案为空，说明当前缺少稳定思路",
+        "出现不会/不懂类表达",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低",
+        "答案为空，说明当前缺少稳定思路",
+        "出现不会/不懂类表达",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低"
+      ],
+      "score_detail": {
+        "knowledge_rule_hits": 4,
+        "skill_rule_hits": 0,
+        "habit_rule_hits": 0,
+        "recent_accuracy": 0.0,
+        "time_ratio": null,
+        "standard_time_seconds": 60.0,
+        "response_time_seconds": null,
+        "near_miss": false,
+        "mastery_reference": null
+      },
+      "reason": "基本数据类型与内存占用的定义、公式或判断条件还没有真正建立，看到题目时不知道该从哪里开始。",
+      "recommended_actions": [
+        "看该知识点5-8分钟讲解视频",
+        "整理1张公式/概念卡片",
+        "做2道基础例题并对照答案",
+        "当天再复做原题1次"
+      ],
+      "recent_accuracy": 0.0,
+      "time_ratio": null,
+      "near_miss": false
+    },
+    "learning_advice": {
+      "建议": "先不要追求做多题，先把“基本数据类型与内存占用”的关键概念讲给自己听，再做 2 道同类型入门题确认是否真正理解。"
+    },
+    "mastery_assessment": {
+      "知识点": "基本数据类型与内存占用",
+      "掌握度": 0.0
+    },
+    "source": "agent_tool"
+  },
+  {
+    "id": "0c2f28e3-f1a6-49eb-8664-6696d2df8383",
+    "timestamp": "2026-04-16T10:28:11.522576",
+    "question": "请先总结我上传的资料，提炼关键知识点，并给出下一步学习建议。",
+    "correct_answer": "分析\n当前问题聚焦于“提炼关键知识点”。\n检索结果显示：命中 3 条资料，图谱增强贡献 1.000。\n优先证据来自《导数是函数的变化率》，来源通道为 graph_rag。\n\n讲解\n1. 根据资料《导数是函数的变化率》：导数是函数的变化率\n2. 根据资料《导数是函数的斜率》：导数是函数的斜率\n图谱提示：提炼关键知识点 相关路径包括 相关->上下文记忆。\n\n建议\n暂无画像数据。\n先看定义和公式来源，再",
+    "user_answer": "",
+    "concept": "提炼关键知识点",
+    "diagnosis": {
+      "category": "knowledge",
+      "error_type": "学习建议",
+      "confidence": 0.55,
+      "signals": [
+        "answer_recommendation"
+      ],
+      "recommendation": "暂无画像数据。 先看定义和公式来源，再做同题型练习，最后复盘口头表达是否清楚。",
+      "reason": "从问答回复中提取到建议并同步到诊断看板。",
+      "recommended_actions": [
+        "暂无画像数据。 先看定义和公式来源，再做同题型练习，最后复盘口头表达是否清楚。"
+      ]
+    },
+    "learning_advice": {
+      "建议": "暂无画像数据。 先看定义和公式来源，再做同题型练习，最后复盘口头表达是否清楚。"
+    },
+    "mastery_assessment": {
+      "知识点": "提炼关键知识点",
+      "掌握度": 0.35,
+      "状态": "待跟进"
+    },
+    "source": "agent_ocr_tutor_stream"
+  },
+  {
+    "id": "437a3ce1-ead4-41eb-9d48-994542b7b7ac",
+    "timestamp": "2026-04-16T11:27:14.247527",
+    "question": "函数是什么意思",
+    "correct_answer": "函数是封装了特定功能的一段可重复调用的代码块，具有输入（参数）、处理逻辑和输出（返回值）三个核心要素。",
+    "user_answer": "",
+    "concept": "函数",
+    "diagnosis": {
+      "error_type": "知识性错误",
+      "category": "knowledge",
+      "severity": "high",
+      "recommendation": "先不要追求做多题，先把“函数”的关键概念讲给自己听，再做 2 道同类型入门题确认是否真正理解。",
+      "confidence": 0.92,
+      "signals": [
+        "答案为空，说明当前缺少稳定思路",
+        "出现不会/不懂类表达",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低",
+        "答案为空，说明当前缺少稳定思路",
+        "出现不会/不懂类表达",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低"
+      ],
+      "score_detail": {
+        "knowledge_rule_hits": 4,
+        "skill_rule_hits": 0,
+        "habit_rule_hits": 0,
+        "recent_accuracy": 0.0,
+        "time_ratio": null,
+        "standard_time_seconds": 60.0,
+        "response_time_seconds": null,
+        "near_miss": false,
+        "mastery_reference": null
+      },
+      "reason": "函数的定义、公式或判断条件还没有真正建立，看到题目时不知道该从哪里开始。",
+      "recommended_actions": [
+        "看该知识点5-8分钟讲解视频",
+        "整理1张公式/概念卡片",
+        "做2道基础例题并对照答案",
+        "当天再复做原题1次"
+      ],
+      "recent_accuracy": 0.0,
+      "time_ratio": null,
+      "near_miss": false
+    },
+    "learning_advice": {
+      "建议": "先不要追求做多题，先把“函数”的关键概念讲给自己听，再做 2 道同类型入门题确认是否真正理解。"
+    },
+    "mastery_assessment": {
+      "知识点": "函数",
+      "掌握度": 0.0
+    },
+    "source": "agent_tool"
+  },
+  {
+    "id": "915426f9-98b2-4cfb-985c-126437344e64",
+    "timestamp": "2026-04-16T11:42:50.769712",
+    "question": "什么是函数",
+    "correct_answer": "函数是两个非空数集之间的一种对应关系，使得对于定义域中的每一个元素x，在值域中都有唯一确定的元素y与之对应，记作 y = f(x)。",
+    "user_answer": "",
+    "concept": "函数",
+    "diagnosis": {
+      "error_type": "知识性错误",
+      "category": "knowledge",
+      "severity": "high",
+      "recommendation": "先不要追求做多题，先把“函数”的关键概念讲给自己听，再做 2 道同类型入门题确认是否真正理解。",
+      "confidence": 0.92,
+      "signals": [
+        "答案为空，说明当前缺少稳定思路",
+        "出现不会/不懂类表达",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低",
+        "答案为空，说明当前缺少稳定思路",
+        "出现不会/不懂类表达",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低"
+      ],
+      "score_detail": {
+        "knowledge_rule_hits": 4,
+        "skill_rule_hits": 0,
+        "habit_rule_hits": 0,
+        "recent_accuracy": 0.0,
+        "time_ratio": null,
+        "standard_time_seconds": 60.0,
+        "response_time_seconds": null,
+        "near_miss": false,
+        "mastery_reference": null
+      },
+      "reason": "函数的定义、公式或判断条件还没有真正建立，看到题目时不知道该从哪里开始。",
+      "recommended_actions": [
+        "看该知识点5-8分钟讲解视频",
+        "整理1张公式/概念卡片",
+        "做2道基础例题并对照答案",
+        "当天再复做原题1次"
+      ],
+      "recent_accuracy": 0.0,
+      "time_ratio": null,
+      "near_miss": false
+    },
+    "learning_advice": {
+      "建议": "先不要追求做多题，先把“函数”的关键概念讲给自己听，再做 2 道同类型入门题确认是否真正理解。"
+    },
+    "mastery_assessment": {
+      "知识点": "函数",
+      "掌握度": 0.0
+    },
+    "source": "agent_tool"
+  },
+  {
+    "id": "0bfe41c2-409c-4e43-a7c2-61d863834503",
+    "timestamp": "2026-04-16T12:30:25.055095",
+    "question": "函数是啥",
+    "correct_answer": "函数是一种特殊的对应关系：对定义域中每一个输入值x，都有唯一确定的输出值y与之对应，记作 y = f(x)。",
+    "user_answer": "",
+    "concept": "函数",
+    "diagnosis": {
+      "error_type": "知识性错误",
+      "category": "knowledge",
+      "severity": "high",
+      "recommendation": "先不要追求做多题，先把“函数”的关键概念讲给自己听，再做 2 道同类型入门题确认是否真正理解。",
+      "confidence": 0.92,
+      "signals": [
+        "答案为空，说明当前缺少稳定思路",
+        "出现不会/不懂类表达",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低",
+        "答案为空，说明当前缺少稳定思路",
+        "出现不会/不懂类表达",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低"
+      ],
+      "score_detail": {
+        "knowledge_rule_hits": 4,
+        "skill_rule_hits": 0,
+        "habit_rule_hits": 0,
+        "recent_accuracy": 0.0,
+        "time_ratio": null,
+        "standard_time_seconds": 60.0,
+        "response_time_seconds": null,
+        "near_miss": false,
+        "mastery_reference": null
+      },
+      "reason": "函数的定义、公式或判断条件还没有真正建立，看到题目时不知道该从哪里开始。",
+      "recommended_actions": [
+        "看该知识点5-8分钟讲解视频",
+        "整理1张公式/概念卡片",
+        "做2道基础例题并对照答案",
+        "当天再复做原题1次"
+      ],
+      "recent_accuracy": 0.0,
+      "time_ratio": null,
+      "near_miss": false
+    },
+    "learning_advice": {
+      "建议": "先不要追求做多题，先把“函数”的关键概念讲给自己听，再做 2 道同类型入门题确认是否真正理解。"
+    },
+    "mastery_assessment": {
+      "知识点": "函数",
+      "掌握度": 0.0
+    },
+    "source": "agent_tool"
+  },
+  {
+    "id": "444a4725-da7b-4893-bc03-132f66d774aa",
+    "timestamp": "2026-04-16T12:31:23.226562",
+    "question": "导数",
+    "correct_answer": "导数是函数在某一点处的瞬时变化率，几何意义是该点切线的斜率。",
+    "user_answer": "",
+    "concept": "导数",
+    "diagnosis": {
+      "error_type": "知识性错误",
+      "category": "knowledge",
+      "severity": "high",
+      "recommendation": "先不要追求做多题，先把“导数”的关键概念讲给自己听，再做 2 道同类型入门题确认是否真正理解。",
+      "confidence": 0.92,
+      "signals": [
+        "答案为空，说明当前缺少稳定思路",
+        "出现不会/不懂类表达",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低",
+        "答案为空，说明当前缺少稳定思路",
+        "出现不会/不懂类表达",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低"
+      ],
+      "score_detail": {
+        "knowledge_rule_hits": 4,
+        "skill_rule_hits": 0,
+        "habit_rule_hits": 0,
+        "recent_accuracy": 0.0,
+        "time_ratio": null,
+        "standard_time_seconds": 60.0,
+        "response_time_seconds": null,
+        "near_miss": false,
+        "mastery_reference": null
+      },
+      "reason": "导数的定义、公式或判断条件还没有真正建立，看到题目时不知道该从哪里开始。",
+      "recommended_actions": [
+        "看该知识点5-8分钟讲解视频",
+        "整理1张公式/概念卡片",
+        "做2道基础例题并对照答案",
+        "当天再复做原题1次"
+      ],
+      "recent_accuracy": 0.0,
+      "time_ratio": null,
+      "near_miss": false
+    },
+    "learning_advice": {
+      "建议": "先不要追求做多题，先把“导数”的关键概念讲给自己听，再做 2 道同类型入门题确认是否真正理解。"
+    },
+    "mastery_assessment": {
+      "知识点": "导数",
+      "掌握度": 0.0
+    },
+    "source": "agent_tool"
+  },
+  {
+    "id": "5cf60fbf-6478-48b1-92e5-b65b70bc02a2",
+    "timestamp": "2026-04-16T12:33:55.267433",
+    "question": "主电路设计_李泽伟 IM李泽伟 ID1_李泽伟 ... 时钟(Clock) 朝向: 右(东) 高电平时长: 1 滴答 低电平时长: 1 滴答 标签位置: 左(西) 标签字体: Dialog 标准 12 标签颜色: #000000",
+    "correct_answer": "该文本为Logisim电路工程的元器件命名规范与组件参数配置清单，非题目或答案，需结合电路图理解其功能映射关系",
+    "user_answer": "",
+    "concept": "Logisim 数字电路仿真",
+    "diagnosis": {
+      "error_type": "知识性错误",
+      "category": "knowledge",
+      "severity": "high",
+      "recommendation": "先暂停刷题，先把“Logisim 数字电路仿真”补清楚。先看 1 个 5-8 分钟讲解视频，再整理 1 张概念/公式卡片，然后做 2 道基础例题，最后当天重做这道题。",
+      "confidence": 0.92,
+      "signals": [
+        "答案为空，说明当前缺少稳定思路",
+        "出现不会/不懂类表达",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低",
+        "答案为空，说明当前缺少稳定思路",
+        "出现不会/不懂类表达",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低"
+      ],
+      "score_detail": {
+        "knowledge_rule_hits": 4,
+        "skill_rule_hits": 0,
+        "habit_rule_hits": 0,
+        "recent_accuracy": 0.0,
+        "time_ratio": null,
+        "standard_time_seconds": 60.0,
+        "response_time_seconds": null,
+        "near_miss": false,
+        "mastery_reference": null
+      },
+      "reason": "Logisim 数字电路仿真的定义、公式或判断条件还没有真正建立，看到题目时不知道该从哪里开始。",
+      "recommended_actions": [
+        "看该知识点5-8分钟讲解视频",
+        "整理1张公式/概念卡片",
+        "做2道基础例题并对照答案",
+        "当天再复做原题1次"
+      ],
+      "recent_accuracy": 0.0,
+      "time_ratio": null,
+      "near_miss": false
+    },
+    "learning_advice": {
+      "建议": "先暂停刷题，先把“Logisim 数字电路仿真”补清楚。先看 1 个 5-8 分钟讲解视频，再整理 1 张概念/公式卡片，然后做 2 道基础例题，最后当天重做这道题。"
+    },
+    "mastery_assessment": {
+      "知识点": "Logisim 数字电路仿真",
+      "掌握度": 0.0
+    },
+    "source": "agent_tool"
+  },
+  {
+    "id": "db21cb48-0b7a-4707-a0c0-7bd51bc0b47b",
+    "timestamp": "2026-04-16T12:35:47.058761",
+    "question": "请先总结我上传的资料，提炼关键知识点，并给出下一步学习建议。",
+    "correct_answer": "分析\n当前问题聚焦于“提炼关键知识点”。\n检索结果显示：命中 3 条资料，图谱增强贡献 1.000。\n优先证据来自《提炼关键知识点》，来源通道为 graph_rag。\n\n讲解\n1. 根据资料《提炼关键知识点》：\n2. 根据资料《导数是函数的变化率》：导数是函数的变化率\n图谱提示：提炼关键知识点 相关路径包括 前置->导数。\n\n建议\n当前掌握偏弱，适合先补概念和步骤。\n先看定义和公式来源，再做同题型",
+    "user_answer": "",
+    "concept": "提炼关键知识点",
+    "diagnosis": {
+      "category": "knowledge",
+      "error_type": "学习建议",
+      "confidence": 0.55,
+      "signals": [
+        "answer_recommendation"
+      ],
+      "recommendation": "当前掌握偏弱，适合先补概念和步骤。 先看定义和公式来源，再做同题型练习，最后复盘口头表达是否清楚。",
+      "reason": "从问答回复中提取到建议并同步到诊断看板。",
+      "recommended_actions": [
+        "当前掌握偏弱，适合先补概念和步骤。 先看定义和公式来源，再做同题型练习，最后复盘口头表达是否清楚。"
+      ]
+    },
+    "learning_advice": {
+      "建议": "当前掌握偏弱，适合先补概念和步骤。 先看定义和公式来源，再做同题型练习，最后复盘口头表达是否清楚。"
+    },
+    "mastery_assessment": {
+      "知识点": "提炼关键知识点",
+      "掌握度": 0.35,
+      "状态": "待跟进"
+    },
+    "source": "agent_ocr_tutor_stream"
+  },
+  {
+    "id": "e184b15f-fdc1-401a-8139-89208a2292e0",
+    "timestamp": "2026-04-16T12:37:06.137661",
+    "question": "根据电路图识别 PC_W、IR_W、Mem_Read、Mem_Write、Reg_W 等控制信号的功能与触发条件",
+    "correct_answer": "PC_W 控制程序计数器写入；IR_W 控制指令寄存器写入；Mem_Read 使能内存读取；Mem_Write 使能内存写入；Reg_W 控制寄存器文件写入；各信号由指令类型（如 lw/sw/R-type/LUI）经译码器生成，依赖 IS_lw/IS_sw/IS_R/IS_IMM/IS_LUI 等微操作标志",
+    "user_answer": "",
+    "concept": "",
+    "diagnosis": {
+      "error_type": "知识性错误",
+      "category": "knowledge",
+      "severity": "high",
+      "recommendation": "建议先用 10 分钟补“该知识点”核心定义，再做 2 道最基础题校准，再回到原题复盘错因。",
+      "confidence": 0.92,
+      "signals": [
+        "答案为空，说明当前缺少稳定思路",
+        "出现不会/不懂类表达",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低",
+        "答案为空，说明当前缺少稳定思路",
+        "出现不会/不懂类表达",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低"
+      ],
+      "score_detail": {
+        "knowledge_rule_hits": 4,
+        "skill_rule_hits": 0,
+        "habit_rule_hits": 0,
+        "recent_accuracy": 0.0,
+        "time_ratio": null,
+        "standard_time_seconds": 60.0,
+        "response_time_seconds": null,
+        "near_miss": false,
+        "mastery_reference": null
+      },
+      "reason": "该知识点的定义、公式或判断条件还没有真正建立，看到题目时不知道该从哪里开始。",
+      "recommended_actions": [
+        "看该知识点5-8分钟讲解视频",
+        "整理1张公式/概念卡片",
+        "做2道基础例题并对照答案",
+        "当天再复做原题1次"
+      ],
+      "recent_accuracy": 0.0,
+      "time_ratio": null,
+      "near_miss": false
+    },
+    "learning_advice": {
+      "建议": "建议先用 10 分钟补“该知识点”核心定义，再做 2 道最基础题校准，再回到原题复盘错因。"
+    },
+    "mastery_assessment": {
+      "知识点": "",
+      "掌握度": 0.0
+    },
+    "source": "agent_tool"
+  },
+  {
+    "id": "8edc41b1-7837-49da-bf90-4c06170b1080",
+    "timestamp": "2026-04-16T12:37:55.453733",
+    "question": "根据电路图，当执行 lw 指令时，哪些控制信号必须为高电平？",
+    "correct_answer": "IS_lw, Mem_Read, IR_W, Reg_W, PC_W",
+    "user_answer": "只有 IS_lw 和 Mem_Read",
+    "concept": "CPU数据通路与控制信号",
+    "diagnosis": {
+      "error_type": "知识性错误",
+      "category": "knowledge",
+      "severity": "high",
+      "recommendation": "先不要追求做多题，先把“CPU数据通路与控制信号”的关键概念讲给自己听，再做 2 道同类型入门题确认是否真正理解。",
+      "confidence": 0.74,
+      "signals": [
+        "该知识点首次接触即答错",
+        "该知识点首次接触即答错",
+        "知道部分关键点，但答案不够完整"
+      ],
+      "score_detail": {
+        "knowledge_rule_hits": 1,
+        "skill_rule_hits": 1,
+        "habit_rule_hits": 0,
+        "recent_accuracy": 0.0,
+        "time_ratio": null,
+        "standard_time_seconds": 60.0,
+        "response_time_seconds": null,
+        "near_miss": false,
+        "mastery_reference": null
+      },
+      "reason": "CPU数据通路与控制信号的定义、公式或判断条件还没有真正建立，看到题目时不知道该从哪里开始。",
+      "recommended_actions": [
+        "看该知识点5-8分钟讲解视频",
+        "整理1张公式/概念卡片",
+        "做2道基础例题并对照答案",
+        "当天再复做原题1次"
+      ],
+      "recent_accuracy": 0.0,
+      "time_ratio": null,
+      "near_miss": false
+    },
+    "learning_advice": {
+      "建议": "先不要追求做多题，先把“CPU数据通路与控制信号”的关键概念讲给自己听，再做 2 道同类型入门题确认是否真正理解。"
+    },
+    "mastery_assessment": {
+      "知识点": "CPU数据通路与控制信号",
+      "掌握度": 0.0
+    },
+    "source": "agent_tool"
+  },
+  {
+    "id": "b5d6a71c-a364-4532-baf4-94e03585ba32",
+    "timestamp": "2026-04-16T12:38:54.500003",
+    "question": "请先总结我上传的资料，提炼关键知识点，并给出下一步学习建议。",
+    "correct_answer": "分析\n当前问题聚焦于“提炼关键知识点”。\n检索结果显示：命中 3 条资料，图谱增强贡献 1.000。\n优先证据来自《提炼关键知识点》，来源通道为 graph_rag。\n\n讲解\n1. 根据资料《提炼关键知识点》：\n2. 根据资料《导数是函数的变化率》：导数是函数的变化率\n图谱提示：提炼关键知识点 相关路径包括 前置->导数；相关->思维导图；相关->口头复述；相关->错因复盘。\n\n建议\n当前掌握偏弱",
+    "user_answer": "",
+    "concept": "提炼关键知识点",
+    "diagnosis": {
+      "category": "knowledge",
+      "error_type": "学习建议",
+      "confidence": 0.55,
+      "signals": [
+        "answer_recommendation"
+      ],
+      "recommendation": "当前掌握偏弱，适合先补概念和步骤。 先看定义和公式来源，再做同题型练习，最后复盘口头表达是否清楚。",
+      "reason": "从问答回复中提取到建议并同步到诊断看板。",
+      "recommended_actions": [
+        "当前掌握偏弱，适合先补概念和步骤。 先看定义和公式来源，再做同题型练习，最后复盘口头表达是否清楚。"
+      ]
+    },
+    "learning_advice": {
+      "建议": "当前掌握偏弱，适合先补概念和步骤。 先看定义和公式来源，再做同题型练习，最后复盘口头表达是否清楚。"
+    },
+    "mastery_assessment": {
+      "知识点": "提炼关键知识点",
+      "掌握度": 0.35,
+      "状态": "待跟进"
+    },
+    "source": "agent_ocr_tutor_stream"
+  },
+  {
+    "id": "9b603849-8e1a-41e9-b223-819a7d06b775",
+    "timestamp": "2026-04-19T17:35:37.956025",
+    "question": "导数定义",
+    "correct_answer": "设函数 y = f(x) 在点 x₀ 的某个邻域内有定义，若极限 lim_{Δx→0} [f(x₀+Δx)−f(x₀)]/Δx 存在，则称该极限为函数 f(x) 在点 x₀ 处的导数，记作 f′(x₀) 或 dy/dx|_{x=x₀}。",
+    "user_answer": "",
+    "concept": "导数定义",
+    "diagnosis": {
+      "error_type": "知识性错误",
+      "category": "knowledge",
+      "severity": "high",
+      "recommendation": "先不要追求做多题，先把“导数定义”的关键概念讲给自己听，再做 2 道同类型入门题确认是否真正理解。",
+      "confidence": 0.92,
+      "signals": [
+        "答案为空，说明当前缺少稳定思路",
+        "出现不会/不懂类表达",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低",
+        "答案为空，说明当前缺少稳定思路",
+        "出现不会/不懂类表达",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低"
+      ],
+      "score_detail": {
+        "knowledge_rule_hits": 4,
+        "skill_rule_hits": 0,
+        "habit_rule_hits": 0,
+        "recent_accuracy": 0.0,
+        "time_ratio": null,
+        "standard_time_seconds": 60.0,
+        "response_time_seconds": null,
+        "near_miss": false,
+        "mastery_reference": null
+      },
+      "reason": "导数定义的定义、公式或判断条件还没有真正建立，看到题目时不知道该从哪里开始。",
+      "recommended_actions": [
+        "看该知识点5-8分钟讲解视频",
+        "整理1张公式/概念卡片",
+        "做2道基础例题并对照答案",
+        "当天再复做原题1次"
+      ],
+      "recent_accuracy": 0.0,
+      "time_ratio": null,
+      "near_miss": false
+    },
+    "learning_advice": {
+      "建议": "先不要追求做多题，先把“导数定义”的关键概念讲给自己听，再做 2 道同类型入门题确认是否真正理解。"
+    },
+    "mastery_assessment": {
+      "知识点": "导数定义",
+      "掌握度": 0.0
+    },
+    "source": "agent_tool"
+  },
+  {
+    "id": "24801ff1-0dc0-45ff-bb1c-41b9a1ca260f",
+    "timestamp": "2026-04-19T17:41:44.719660",
+    "question": "已知函数 f(x) = x³ − 3x² + 2，求其在 x = 1 处的导数值。",
+    "correct_answer": "f'(1) = −3",
+    "user_answer": "f'(1) = 0",
+    "concept": "导数",
+    "diagnosis": {
+      "error_type": "知识性错误",
+      "category": "knowledge",
+      "severity": "high",
+      "recommendation": "先不要追求做多题，先把“导数”的关键概念讲给自己听，再做 2 道同类型入门题确认是否真正理解。",
+      "confidence": 0.74,
+      "signals": [
+        "该知识点首次接触即答错",
+        "该知识点首次接触即答错",
+        "答案中有步骤痕迹，说明尝试过方法应用",
+        "知道部分关键点，但答案不够完整",
+        "数值结果接近正确答案"
+      ],
+      "score_detail": {
+        "knowledge_rule_hits": 1,
+        "skill_rule_hits": 2,
+        "habit_rule_hits": 1,
+        "recent_accuracy": 0.0,
+        "time_ratio": null,
+        "standard_time_seconds": 60.0,
+        "response_time_seconds": null,
+        "near_miss": true,
+        "mastery_reference": null
+      },
+      "reason": "导数的定义、公式或判断条件还没有真正建立，看到题目时不知道该从哪里开始。",
+      "recommended_actions": [
+        "看该知识点5-8分钟讲解视频",
+        "整理1张公式/概念卡片",
+        "做2道基础例题并对照答案",
+        "当天再复做原题1次"
+      ],
+      "recent_accuracy": 0.0,
+      "time_ratio": null,
+      "near_miss": true
+    },
+    "learning_advice": {
+      "建议": "先不要追求做多题，先把“导数”的关键概念讲给自己听，再做 2 道同类型入门题确认是否真正理解。"
+    },
+    "mastery_assessment": {
+      "知识点": "导数",
+      "掌握度": 0.0
+    },
+    "source": "agent_tool"
+  },
+  {
+    "id": "31e0b2d3-aa28-42d0-9890-c5517d209209",
+    "timestamp": "2026-04-19T17:43:14.050787",
+    "question": "导数是什么",
+    "correct_answer": "导数是函数在某一点处的瞬时变化率，其严格定义为极限：f'(x₀) = lim_(Δx→0) [f(x₀+Δx)−f(x₀)]/Δx；几何上表现为该点切线的斜率，物理上表现为瞬时变化率。",
+    "user_answer": "导数是函数的斜率",
+    "concept": "导数",
+    "diagnosis": {
+      "error_type": "知识性错误",
+      "category": "knowledge",
+      "severity": "high",
+      "recommendation": "先不要追求做多题，先把“导数”的关键概念讲给自己听，再做 2 道同类型入门题确认是否真正理解。",
+      "confidence": 0.8,
+      "signals": [
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低"
+      ],
+      "score_detail": {
+        "knowledge_rule_hits": 2,
+        "skill_rule_hits": 0,
+        "habit_rule_hits": 0,
+        "recent_accuracy": 0.0,
+        "time_ratio": null,
+        "standard_time_seconds": 60.0,
+        "response_time_seconds": null,
+        "near_miss": false,
+        "mastery_reference": null
+      },
+      "reason": "导数的定义、公式或判断条件还没有真正建立，看到题目时不知道该从哪里开始。",
+      "recommended_actions": [
+        "看该知识点5-8分钟讲解视频",
+        "整理1张公式/概念卡片",
+        "做2道基础例题并对照答案",
+        "当天再复做原题1次"
+      ],
+      "recent_accuracy": 0.0,
+      "time_ratio": null,
+      "near_miss": false
+    },
+    "learning_advice": {
+      "建议": "先不要追求做多题，先把“导数”的关键概念讲给自己听，再做 2 道同类型入门题确认是否真正理解。"
+    },
+    "mastery_assessment": {
+      "知识点": "导数",
+      "掌握度": 0.0
+    },
+    "source": "agent_tool"
+  },
+  {
+    "id": "cce5e734-7e73-4681-b466-818dc5dc4b81",
+    "timestamp": "2026-04-19T17:50:26.905014",
+    "question": "f(x) = x^3 - 3x^2 + 2，求 f'(1)",
+    "correct_answer": "-3",
+    "user_answer": "0",
+    "concept": "导数",
+    "diagnosis": {
+      "error_type": "知识性错误",
+      "category": "knowledge",
+      "severity": "high",
+      "recommendation": "先不要追求做多题，先把“导数”的关键概念讲给自己听，再做 2 道同类型入门题确认是否真正理解。",
+      "confidence": 0.8,
+      "signals": [
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低"
+      ],
+      "score_detail": {
+        "knowledge_rule_hits": 2,
+        "skill_rule_hits": 0,
+        "habit_rule_hits": 0,
+        "recent_accuracy": 0.0,
+        "time_ratio": null,
+        "standard_time_seconds": 60.0,
+        "response_time_seconds": null,
+        "near_miss": false,
+        "mastery_reference": null
+      },
+      "reason": "导数的定义、公式或判断条件还没有真正建立，看到题目时不知道该从哪里开始。",
+      "recommended_actions": [
+        "看该知识点5-8分钟讲解视频",
+        "整理1张公式/概念卡片",
+        "做2道基础例题并对照答案",
+        "当天再复做原题1次"
+      ],
+      "recent_accuracy": 0.0,
+      "time_ratio": null,
+      "near_miss": false
+    },
+    "learning_advice": {
+      "建议": "先不要追求做多题，先把“导数”的关键概念讲给自己听，再做 2 道同类型入门题确认是否真正理解。"
+    },
+    "mastery_assessment": {
+      "知识点": "导数",
+      "掌握度": 0.0
+    },
+    "source": "agent_tool"
+  },
+  {
+    "id": "a38582a9-7be8-4d73-9ea4-c1e73ed3d019",
+    "timestamp": "2026-04-19T17:51:13.014289",
+    "question": "f(x) = x^3 - 3x^2 + 2，求 f'(1)",
+    "correct_answer": "-3",
+    "user_answer": "0",
+    "concept": "导数",
+    "diagnosis": {
+      "error_type": "知识性错误",
+      "category": "knowledge",
+      "severity": "high",
+      "recommendation": "先不要追求做多题，先把“导数”的关键概念讲给自己听，再做 2 道同类型入门题确认是否真正理解。",
+      "confidence": 0.8,
+      "signals": [
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低"
+      ],
+      "score_detail": {
+        "knowledge_rule_hits": 2,
+        "skill_rule_hits": 0,
+        "habit_rule_hits": 0,
+        "recent_accuracy": 0.0,
+        "time_ratio": null,
+        "standard_time_seconds": 60.0,
+        "response_time_seconds": null,
+        "near_miss": false,
+        "mastery_reference": null
+      },
+      "reason": "导数的定义、公式或判断条件还没有真正建立，看到题目时不知道该从哪里开始。",
+      "recommended_actions": [
+        "看该知识点5-8分钟讲解视频",
+        "整理1张公式/概念卡片",
+        "做2道基础例题并对照答案",
+        "当天再复做原题1次"
+      ],
+      "recent_accuracy": 0.0,
+      "time_ratio": null,
+      "near_miss": false
+    },
+    "learning_advice": {
+      "建议": "先不要追求做多题，先把“导数”的关键概念讲给自己听，再做 2 道同类型入门题确认是否真正理解。"
+    },
+    "mastery_assessment": {
+      "知识点": "导数",
+      "掌握度": 0.0
+    },
+    "source": "agent_tool"
+  },
+  {
+    "id": "b9b939eb-5577-453a-8911-e1cb74e78de2",
+    "timestamp": "2026-05-16T21:35:11.400173",
+    "question": "为什么连续不一定可导呢",
+    "correct_answer": "因为可导要求函数在某点不仅连续，还必须存在‘光滑’的切线——即左右导数存在且相等；而连续仅要求函数值趋近于该点函数值，不涉及变化率。典型反例：f(x)=|x| 在 x=0 处连续但不可导（左导数=-1，右导数=+1，不相等）。",
+    "user_answer": "",
+    "concept": "连续与可导的关系",
+    "diagnosis": {
+      "error_type": "知识性错误",
+      "category": "knowledge",
+      "severity": "high",
+      "recommendation": "先暂停刷题，先把“连续与可导的关系”补清楚。先看 1 个 5-8 分钟讲解视频，再整理 1 张概念/公式卡片，然后做 2 道基础例题，最后当天重做这道题。",
+      "confidence": 0.92,
+      "signals": [
+        "答案为空，说明当前缺少稳定思路",
+        "出现不会/不懂类表达",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低",
+        "答案为空，说明当前缺少稳定思路",
+        "出现不会/不懂类表达",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低"
+      ],
+      "score_detail": {
+        "knowledge_rule_hits": 4,
+        "skill_rule_hits": 0,
+        "habit_rule_hits": 0,
+        "recent_accuracy": 0.0,
+        "time_ratio": null,
+        "standard_time_seconds": 60.0,
+        "response_time_seconds": null,
+        "near_miss": false,
+        "mastery_reference": null
+      },
+      "reason": "连续与可导的关系的定义、公式或判断条件还没有真正建立，看到题目时不知道该从哪里开始。",
+      "recommended_actions": [
+        "看该知识点5-8分钟讲解视频",
+        "整理1张公式/概念卡片",
+        "做2道基础例题并对照答案",
+        "当天再复做原题1次"
+      ],
+      "recent_accuracy": 0.0,
+      "time_ratio": null,
+      "near_miss": false
+    },
+    "learning_advice": {
+      "建议": "先暂停刷题，先把“连续与可导的关系”补清楚。先看 1 个 5-8 分钟讲解视频，再整理 1 张概念/公式卡片，然后做 2 道基础例题，最后当天重做这道题。"
+    },
+    "mastery_assessment": {
+      "知识点": "连续与可导的关系",
+      "掌握度": 0.0
+    },
+    "source": "agent_tool"
+  }
+]

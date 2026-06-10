@@ -1,0 +1,82 @@
+[
+  {
+    "id": "7068a3bb-a185-459b-8720-f9e4b7ce4a51",
+    "user_id": "guest_732701daa20b0de1",
+    "timestamp": "2026-04-10T21:14:09.224931",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "index",
+    "target": "",
+    "label": "page_view",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "326171c8-2760-470a-8c33-072cf39247b9",
+    "user_id": "guest_732701daa20b0de1",
+    "timestamp": "2026-04-10T21:14:13.159416",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 3.924,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "9334824e-ae27-4cb5-81bd-5d09b4e2d7d1",
+    "user_id": "guest_732701daa20b0de1",
+    "timestamp": "2026-04-10T22:08:03.917328",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "index",
+    "target": "",
+    "label": "page_view",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "2388cd03-e08e-4bcf-9935-2c2f37bb8d3f",
+    "user_id": "guest_732701daa20b0de1",
+    "timestamp": "2026-04-10T22:08:05.125287",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 1.212,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "90ed371b-3adc-4c71-9480-1491410b2c09",
+    "user_id": "guest_732701daa20b0de1",
+    "timestamp": "2026-04-10T22:08:35.042997",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "index",
+    "target": "",
+    "label": "page_view",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": ""
+    }
+  }
+]

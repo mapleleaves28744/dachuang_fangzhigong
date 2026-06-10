@@ -1,0 +1,158 @@
+[
+  {
+    "id": "0b261640-e8fd-40ea-9165-bd379af14876",
+    "user_id": "guest_1978f14dcaa43cd1",
+    "timestamp": "2026-04-14T23:09:53.628251",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 28.267,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/chat.html"
+    }
+  },
+  {
+    "id": "d74f5d53-17ba-43e7-ba18-ad22890899f5",
+    "user_id": "guest_1978f14dcaa43cd1",
+    "timestamp": "2026-04-14T23:26:14.383475",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "chat",
+    "target": "",
+    "label": "page_view",
+    "title": "智能问答 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/index.html"
+    }
+  },
+  {
+    "id": "f3e57a5c-01df-40d5-a37e-0338708b1ca7",
+    "user_id": "guest_1978f14dcaa43cd1",
+    "timestamp": "2026-04-14T23:28:44.371943",
+    "type": "navigation_click",
+    "behavior_type": "navigation_click",
+    "page": "chat",
+    "target": "question-bank",
+    "label": "◎ 题库练习",
+    "title": "智能问答 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {}
+  },
+  {
+    "id": "e73ca1c4-34f5-4ae2-b6d6-f1765e3306af",
+    "user_id": "guest_1978f14dcaa43cd1",
+    "timestamp": "2026-04-14T23:28:44.423800",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "chat",
+    "target": "",
+    "label": "pagehide",
+    "title": "智能问答 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 150.031,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/index.html"
+    }
+  },
+  {
+    "id": "3d4bd186-c0b1-4cc2-add6-ec327000f25c",
+    "user_id": "guest_1978f14dcaa43cd1",
+    "timestamp": "2026-04-14T23:28:44.490385",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "question-bank",
+    "target": "",
+    "label": "page_view",
+    "title": "题库练习 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/chat.html"
+    }
+  },
+  {
+    "id": "21047d3a-787c-43a7-9c55-502029261546",
+    "user_id": "guest_1978f14dcaa43cd1",
+    "timestamp": "2026-04-14T23:28:47.254463",
+    "type": "navigation_click",
+    "behavior_type": "navigation_click",
+    "page": "question-bank",
+    "target": "knowledge-map",
+    "label": "◇ 知识图谱",
+    "title": "题库练习 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {}
+  },
+  {
+    "id": "7f3b1a04-bb59-4995-8032-32f787bfc522",
+    "user_id": "guest_1978f14dcaa43cd1",
+    "timestamp": "2026-04-14T23:28:47.307671",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "question-bank",
+    "target": "",
+    "label": "pagehide",
+    "title": "题库练习 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 2.814,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/chat.html"
+    }
+  },
+  {
+    "id": "ed519779-3353-4021-a7ca-429e7ac11d26",
+    "user_id": "guest_1978f14dcaa43cd1",
+    "timestamp": "2026-04-14T23:28:47.360930",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "knowledge-map",
+    "target": "",
+    "label": "page_view",
+    "title": "知识图谱 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/question-bank.html"
+    }
+  },
+  {
+    "id": "eb01d0f5-638d-4b9a-be3f-61e5c4fe5ffb",
+    "user_id": "guest_1978f14dcaa43cd1",
+    "timestamp": "2026-04-14T23:28:54.413050",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "knowledge-map",
+    "target": "",
+    "label": "pagehide",
+    "title": "知识图谱 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 7.041,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/question-bank.html"
+    }
+  },
+  {
+    "id": "3978a7f3-c3a4-4024-bdd2-c1f78f4c57f0",
+    "user_id": "guest_1978f14dcaa43cd1",
+    "timestamp": "2026-04-14T23:28:54.487424",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "index",
+    "target": "",
+    "label": "page_view",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/knowledge-map.html"
+    }
+  }
+]

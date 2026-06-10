@@ -1,0 +1,821 @@
+{
+  "user_id": "2874463136@qq.com",
+  "updated_at": "2026-05-19T00:37:37.571369",
+  "learning_style": "visual",
+  "style_scores": {
+    "visual": 0.298,
+    "auditory": 0.356,
+    "kinesthetic": 0.356
+  },
+  "style_method": "kmeans",
+  "style_features": {
+    "image_count": 0,
+    "link_count": 0,
+    "qa_content_count": 15,
+    "note_count": 0,
+    "other_count": 0,
+    "qa_log_count": 30,
+    "concept_count": 34
+  },
+  "interests": [
+    "什么是",
+    "HTML",
+    "标记语言",
+    "Node.js",
+    "V8引擎"
+  ],
+  "best_time_range": "22:00-00:00",
+  "focus_minutes": 45,
+  "content_type_counter": {
+    "note": 0,
+    "link": 0,
+    "image": 0,
+    "qa": 15,
+    "other": 0
+  },
+  "dashboard_hidden": {
+    "updated_at": "2026-05-19T00:37:37.592228",
+    "topic_daily_table": [
+      {
+        "date": "2026-04-10",
+        "topics": [
+          {
+            "topic": "导数",
+            "count": 32
+          },
+          {
+            "topic": "函数",
+            "count": 7
+          },
+          {
+            "topic": "电场",
+            "count": 5
+          },
+          {
+            "topic": "正在学通信原理",
+            "count": 1
+          },
+          {
+            "topic": "没有任何基础",
+            "count": 1
+          },
+          {
+            "topic": "多长",
+            "count": 1
+          },
+          {
+            "topic": "继续下一题",
+            "count": 1
+          },
+          {
+            "topic": "在真空中",
+            "count": 1
+          },
+          {
+            "topic": "两个点电荷",
+            "count": 1
+          },
+          {
+            "topic": "分别固定在",
+            "count": 1
+          },
+          {
+            "topic": "轴上的",
+            "count": 1
+          },
+          {
+            "topic": "的核心定义",
+            "count": 1
+          },
+          {
+            "topic": "并给出",
+            "count": 1
+          },
+          {
+            "topic": "个应用场景",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "date": "2026-04-11",
+        "topics": [
+          {
+            "topic": "什么是",
+            "count": 10
+          },
+          {
+            "topic": "什么是电流",
+            "count": 2
+          },
+          {
+            "topic": "HTML",
+            "count": 2
+          },
+          {
+            "topic": "标记语言",
+            "count": 2
+          },
+          {
+            "topic": "Node.js",
+            "count": 2
+          },
+          {
+            "topic": "V8引擎",
+            "count": 2
+          },
+          {
+            "topic": "导数",
+            "count": 2
+          },
+          {
+            "topic": "电流",
+            "count": 1
+          },
+          {
+            "topic": "电荷定向移动",
+            "count": 1
+          },
+          {
+            "topic": "安培",
+            "count": 1
+          },
+          {
+            "topic": "电路",
+            "count": 1
+          },
+          {
+            "topic": "单位换算",
+            "count": 1
+          },
+          {
+            "topic": "标签",
+            "count": 1
+          },
+          {
+            "topic": "超文本",
+            "count": 1
+          },
+          {
+            "topic": "网页结构",
+            "count": 1
+          },
+          {
+            "topic": "CSS",
+            "count": 1
+          },
+          {
+            "topic": "声明式样式语言",
+            "count": 1
+          },
+          {
+            "topic": "网页内容结构",
+            "count": 1
+          },
+          {
+            "topic": "事件驱动",
+            "count": 1
+          },
+          {
+            "topic": "CommonJS",
+            "count": 1
+          },
+          {
+            "topic": "npm",
+            "count": 1
+          },
+          {
+            "topic": "JavaScript",
+            "count": 1
+          },
+          {
+            "topic": "运行时环境",
+            "count": 1
+          },
+          {
+            "topic": "服务器端",
+            "count": 1
+          },
+          {
+            "topic": "函数",
+            "count": 1
+          }
+        ]
+      }
+    ],
+    "topic_total_table": [
+      {
+        "topic": "导数",
+        "count": 34
+      },
+      {
+        "topic": "什么是",
+        "count": 10
+      },
+      {
+        "topic": "函数",
+        "count": 8
+      },
+      {
+        "topic": "电场",
+        "count": 5
+      },
+      {
+        "topic": "什么是电流",
+        "count": 2
+      },
+      {
+        "topic": "HTML",
+        "count": 2
+      },
+      {
+        "topic": "标记语言",
+        "count": 2
+      },
+      {
+        "topic": "Node.js",
+        "count": 2
+      },
+      {
+        "topic": "V8引擎",
+        "count": 2
+      },
+      {
+        "topic": "正在学通信原理",
+        "count": 1
+      },
+      {
+        "topic": "没有任何基础",
+        "count": 1
+      },
+      {
+        "topic": "多长",
+        "count": 1
+      },
+      {
+        "topic": "继续下一题",
+        "count": 1
+      },
+      {
+        "topic": "在真空中",
+        "count": 1
+      },
+      {
+        "topic": "两个点电荷",
+        "count": 1
+      },
+      {
+        "topic": "分别固定在",
+        "count": 1
+      },
+      {
+        "topic": "轴上的",
+        "count": 1
+      },
+      {
+        "topic": "的核心定义",
+        "count": 1
+      },
+      {
+        "topic": "并给出",
+        "count": 1
+      },
+      {
+        "topic": "个应用场景",
+        "count": 1
+      },
+      {
+        "topic": "电流",
+        "count": 1
+      },
+      {
+        "topic": "电荷定向移动",
+        "count": 1
+      },
+      {
+        "topic": "安培",
+        "count": 1
+      },
+      {
+        "topic": "电路",
+        "count": 1
+      },
+      {
+        "topic": "单位换算",
+        "count": 1
+      },
+      {
+        "topic": "标签",
+        "count": 1
+      },
+      {
+        "topic": "超文本",
+        "count": 1
+      },
+      {
+        "topic": "网页结构",
+        "count": 1
+      },
+      {
+        "topic": "CSS",
+        "count": 1
+      },
+      {
+        "topic": "声明式样式语言",
+        "count": 1
+      },
+      {
+        "topic": "网页内容结构",
+        "count": 1
+      },
+      {
+        "topic": "事件驱动",
+        "count": 1
+      },
+      {
+        "topic": "CommonJS",
+        "count": 1
+      },
+      {
+        "topic": "npm",
+        "count": 1
+      },
+      {
+        "topic": "JavaScript",
+        "count": 1
+      },
+      {
+        "topic": "运行时环境",
+        "count": 1
+      },
+      {
+        "topic": "服务器端",
+        "count": 1
+      }
+    ],
+    "study_window_daily_table": [
+      {
+        "date": "2026-04-10",
+        "label": "22:00-00:00",
+        "count": 109,
+        "duration_seconds": 34.676
+      },
+      {
+        "date": "2026-04-11",
+        "label": "13:00-15:00",
+        "count": 91,
+        "duration_seconds": 3101.105
+      },
+      {
+        "date": "2026-05-19",
+        "label": "00:00-02:00",
+        "count": 20,
+        "duration_seconds": 0.0
+      }
+    ],
+    "study_window_total_table": [
+      {
+        "label": "22:00-00:00",
+        "count": 109,
+        "duration_seconds": 34.676
+      },
+      {
+        "label": "13:00-15:00",
+        "count": 91,
+        "duration_seconds": 3101.105
+      },
+      {
+        "label": "12:00-14:00",
+        "count": 77,
+        "duration_seconds": 265.613
+      },
+      {
+        "label": "21:00-23:00",
+        "count": 62,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "15:00-17:00",
+        "count": 36,
+        "duration_seconds": 40.694
+      },
+      {
+        "label": "01:00-03:00",
+        "count": 30,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "23:00-01:00",
+        "count": 29,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "02:00-04:00",
+        "count": 25,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "11:00-13:00",
+        "count": 23,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "00:00-02:00",
+        "count": 20,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "14:00-16:00",
+        "count": 19,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "10:00-12:00",
+        "count": 17,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "09:00-11:00",
+        "count": 14,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "16:00-18:00",
+        "count": 13,
+        "duration_seconds": 1362.665
+      },
+      {
+        "label": "03:00-05:00",
+        "count": 12,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "17:00-19:00",
+        "count": 11,
+        "duration_seconds": 4604.217
+      },
+      {
+        "label": "20:00-22:00",
+        "count": 7,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "18:00-20:00",
+        "count": 2,
+        "duration_seconds": 5041.764
+      }
+    ],
+    "top_topic": {
+      "topic": "导数",
+      "count": 34
+    },
+    "top_study_window": {
+      "label": "22:00-00:00",
+      "count": 109,
+      "duration_seconds": 34.676
+    }
+  },
+  "recommendation_cache": {
+    "updated_at": "2026-05-19T00:18:27.372160",
+    "reason": "recommendations_api",
+    "focus_concept": "",
+    "items": [
+      {
+        "concept": "链式法则",
+        "mastery": 0.35,
+        "resource_type": "图解示例+互动练习",
+        "title": "链式法则 - 结构修复(图解示例+互动练习)",
+        "reason": "基于视觉型偏好与最近诊断信号，建议把 链式法则 放到今日高效时段做结构修复，目标是分层练习+错因复盘。",
+        "priority": 52.95,
+        "recommend_time": "22:00-00:00",
+        "strategy_tags": [
+          "style:visual",
+          "channel:kinesthetic",
+          "method:kmeans",
+          "focus:knowledge",
+          "mode:结构修复"
+        ],
+        "evidence_brief": "画像:视觉型(kmeans) | 图谱:掌握度35%",
+        "source_evidence": {
+          "profile": {
+            "learning_style": "visual",
+            "style_method": "kmeans",
+            "style_confidence": 0.298,
+            "behavior_channel": "kinesthetic"
+          },
+          "knowledge_graph": {
+            "concept": "链式法则",
+            "mastery": 0.35,
+            "weak_threshold": 0.6
+          },
+          "diagnosis": {
+            "matched_count": 0,
+            "recent_category_count": {
+              "knowledge": 4,
+              "skill": 3,
+              "habit": 0,
+              "unknown": 0
+            },
+            "dominant_category": "knowledge",
+            "dominant_count": 4,
+            "examples": []
+          }
+        }
+      },
+      {
+        "concept": "傅里叶变换",
+        "mastery": 0.35,
+        "resource_type": "图解示例+互动练习",
+        "title": "傅里叶变换 - 结构修复(图解示例+互动练习)",
+        "reason": "基于视觉型偏好与最近诊断信号，建议把 傅里叶变换 放到今日高效时段做结构修复，目标是分层练习+错因复盘。",
+        "priority": 52.95,
+        "recommend_time": "22:00-00:00",
+        "strategy_tags": [
+          "style:visual",
+          "channel:kinesthetic",
+          "method:kmeans",
+          "focus:knowledge",
+          "mode:结构修复"
+        ],
+        "evidence_brief": "画像:视觉型(kmeans) | 图谱:掌握度35%",
+        "source_evidence": {
+          "profile": {
+            "learning_style": "visual",
+            "style_method": "kmeans",
+            "style_confidence": 0.298,
+            "behavior_channel": "kinesthetic"
+          },
+          "knowledge_graph": {
+            "concept": "傅里叶变换",
+            "mastery": 0.35,
+            "weak_threshold": 0.6
+          },
+          "diagnosis": {
+            "matched_count": 0,
+            "recent_category_count": {
+              "knowledge": 4,
+              "skill": 3,
+              "habit": 0,
+              "unknown": 0
+            },
+            "dominant_category": "knowledge",
+            "dominant_count": 4,
+            "examples": []
+          }
+        }
+      },
+      {
+        "concept": "信号处理",
+        "mastery": 0.35,
+        "resource_type": "图解示例+互动练习",
+        "title": "信号处理 - 结构修复(图解示例+互动练习)",
+        "reason": "结合你在知识建模维度的近期表现，信号处理 需要优先安排一轮结构修复，先做小步快跑练习再回看概念。",
+        "priority": 52.95,
+        "recommend_time": "22:00-00:00",
+        "strategy_tags": [
+          "style:visual",
+          "channel:kinesthetic",
+          "method:kmeans",
+          "focus:knowledge",
+          "mode:结构修复"
+        ],
+        "evidence_brief": "画像:视觉型(kmeans) | 图谱:掌握度35%",
+        "source_evidence": {
+          "profile": {
+            "learning_style": "visual",
+            "style_method": "kmeans",
+            "style_confidence": 0.298,
+            "behavior_channel": "kinesthetic"
+          },
+          "knowledge_graph": {
+            "concept": "信号处理",
+            "mastery": 0.35,
+            "weak_threshold": 0.6
+          },
+          "diagnosis": {
+            "matched_count": 0,
+            "recent_category_count": {
+              "knowledge": 4,
+              "skill": 3,
+              "habit": 0,
+              "unknown": 0
+            },
+            "dominant_category": "knowledge",
+            "dominant_count": 4,
+            "examples": []
+          }
+        }
+      },
+      {
+        "concept": "通信原理",
+        "mastery": 0.35,
+        "resource_type": "图解示例+互动练习",
+        "title": "通信原理 - 结构修复(图解示例+互动练习)",
+        "reason": "基于视觉型偏好与最近诊断信号，建议把 通信原理 放到今日高效时段做结构修复，目标是分层练习+错因复盘。",
+        "priority": 52.95,
+        "recommend_time": "22:00-00:00",
+        "strategy_tags": [
+          "style:visual",
+          "channel:kinesthetic",
+          "method:kmeans",
+          "focus:knowledge",
+          "mode:结构修复"
+        ],
+        "evidence_brief": "画像:视觉型(kmeans) | 图谱:掌握度35%",
+        "source_evidence": {
+          "profile": {
+            "learning_style": "visual",
+            "style_method": "kmeans",
+            "style_confidence": 0.298,
+            "behavior_channel": "kinesthetic"
+          },
+          "knowledge_graph": {
+            "concept": "通信原理",
+            "mastery": 0.35,
+            "weak_threshold": 0.6
+          },
+          "diagnosis": {
+            "matched_count": 0,
+            "recent_category_count": {
+              "knowledge": 4,
+              "skill": 3,
+              "habit": 0,
+              "unknown": 0
+            },
+            "dominant_category": "knowledge",
+            "dominant_count": 4,
+            "examples": []
+          }
+        }
+      },
+      {
+        "concept": "上下文记忆",
+        "mastery": 0.35,
+        "resource_type": "图解示例+互动练习",
+        "title": "上下文记忆 - 结构修复(图解示例+互动练习)",
+        "reason": "基于视觉型偏好与最近诊断信号，建议把 上下文记忆 放到今日高效时段做结构修复，目标是分层练习+错因复盘。",
+        "priority": 52.95,
+        "recommend_time": "22:00-00:00",
+        "strategy_tags": [
+          "style:visual",
+          "channel:kinesthetic",
+          "method:kmeans",
+          "focus:knowledge",
+          "mode:结构修复"
+        ],
+        "evidence_brief": "画像:视觉型(kmeans) | 图谱:掌握度35%",
+        "source_evidence": {
+          "profile": {
+            "learning_style": "visual",
+            "style_method": "kmeans",
+            "style_confidence": 0.298,
+            "behavior_channel": "kinesthetic"
+          },
+          "knowledge_graph": {
+            "concept": "上下文记忆",
+            "mastery": 0.35,
+            "weak_threshold": 0.6
+          },
+          "diagnosis": {
+            "matched_count": 0,
+            "recent_category_count": {
+              "knowledge": 4,
+              "skill": 3,
+              "habit": 0,
+              "unknown": 0
+            },
+            "dominant_category": "knowledge",
+            "dominant_count": 4,
+            "examples": []
+          }
+        }
+      },
+      {
+        "concept": "具体函数",
+        "mastery": 0.35,
+        "resource_type": "图解示例+互动练习",
+        "title": "具体函数 - 结构修复(图解示例+互动练习)",
+        "reason": "结合你在知识建模维度的近期表现，具体函数 需要优先安排一轮结构修复，先做小步快跑练习再回看概念。",
+        "priority": 52.95,
+        "recommend_time": "22:00-00:00",
+        "strategy_tags": [
+          "style:visual",
+          "channel:kinesthetic",
+          "method:kmeans",
+          "focus:knowledge",
+          "mode:结构修复"
+        ],
+        "evidence_brief": "画像:视觉型(kmeans) | 图谱:掌握度35%",
+        "source_evidence": {
+          "profile": {
+            "learning_style": "visual",
+            "style_method": "kmeans",
+            "style_confidence": 0.298,
+            "behavior_channel": "kinesthetic"
+          },
+          "knowledge_graph": {
+            "concept": "具体函数",
+            "mastery": 0.35,
+            "weak_threshold": 0.6
+          },
+          "diagnosis": {
+            "matched_count": 0,
+            "recent_category_count": {
+              "knowledge": 4,
+              "skill": 3,
+              "habit": 0,
+              "unknown": 0
+            },
+            "dominant_category": "knowledge",
+            "dominant_count": 4,
+            "examples": []
+          }
+        }
+      },
+      {
+        "concept": "导数推导",
+        "mastery": 0.35,
+        "resource_type": "图解示例+互动练习",
+        "title": "导数推导 - 结构修复(图解示例+互动练习)",
+        "reason": "导数推导 当前掌握度 35%，建议采用视觉型路径做结构修复，重点放在分层练习+错因复盘。",
+        "priority": 52.95,
+        "recommend_time": "22:00-00:00",
+        "strategy_tags": [
+          "style:visual",
+          "channel:kinesthetic",
+          "method:kmeans",
+          "focus:knowledge",
+          "mode:结构修复"
+        ],
+        "evidence_brief": "画像:视觉型(kmeans) | 图谱:掌握度35%",
+        "source_evidence": {
+          "profile": {
+            "learning_style": "visual",
+            "style_method": "kmeans",
+            "style_confidence": 0.298,
+            "behavior_channel": "kinesthetic"
+          },
+          "knowledge_graph": {
+            "concept": "导数推导",
+            "mastery": 0.35,
+            "weak_threshold": 0.6
+          },
+          "diagnosis": {
+            "matched_count": 0,
+            "recent_category_count": {
+              "knowledge": 4,
+              "skill": 3,
+              "habit": 0,
+              "unknown": 0
+            },
+            "dominant_category": "knowledge",
+            "dominant_count": 4,
+            "examples": []
+          }
+        }
+      },
+      {
+        "concept": "智能体",
+        "mastery": 0.35,
+        "resource_type": "图解示例+互动练习",
+        "title": "智能体 - 结构修复(图解示例+互动练习)",
+        "reason": "智能体 当前掌握度 35%，建议采用视觉型路径做结构修复，重点放在分层练习+错因复盘。",
+        "priority": 52.95,
+        "recommend_time": "22:00-00:00",
+        "strategy_tags": [
+          "style:visual",
+          "channel:kinesthetic",
+          "method:kmeans",
+          "focus:knowledge",
+          "mode:结构修复"
+        ],
+        "evidence_brief": "画像:视觉型(kmeans) | 图谱:掌握度35%",
+        "source_evidence": {
+          "profile": {
+            "learning_style": "visual",
+            "style_method": "kmeans",
+            "style_confidence": 0.298,
+            "behavior_channel": "kinesthetic"
+          },
+          "knowledge_graph": {
+            "concept": "智能体",
+            "mastery": 0.35,
+            "weak_threshold": 0.6
+          },
+          "diagnosis": {
+            "matched_count": 0,
+            "recent_category_count": {
+              "knowledge": 4,
+              "skill": 3,
+              "habit": 0,
+              "unknown": 0
+            },
+            "dominant_category": "knowledge",
+            "dominant_count": 4,
+            "examples": []
+          }
+        }
+      }
+    ]
+  }
+}

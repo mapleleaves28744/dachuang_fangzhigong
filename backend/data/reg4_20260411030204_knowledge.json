@@ -1,0 +1,158 @@
+{
+  "concepts": [
+    {
+      "concept": "导数",
+      "first_seen": "2026-04-11T03:02:21.705987",
+      "last_seen": "2026-04-11T03:02:41.141960",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "瞬时变化率",
+      "first_seen": "2026-04-11T03:02:21.705987",
+      "last_seen": "2026-04-11T03:02:33.249708",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "切线斜率",
+      "first_seen": "2026-04-11T03:02:21.705987",
+      "last_seen": "2026-04-11T03:02:33.249708",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "极限定义",
+      "first_seen": "2026-04-11T03:02:21.705987",
+      "last_seen": "2026-04-11T03:02:21.705987",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "极限",
+      "first_seen": "2026-04-11T03:02:26.288232",
+      "last_seen": "2026-04-11T03:02:33.249708",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "积分",
+      "first_seen": "2026-04-11T03:02:26.288232",
+      "last_seen": "2026-04-11T03:02:26.288232",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "derivative",
+      "first_seen": "2026-04-11T03:02:33.943473",
+      "mastery": 0.62,
+      "review_count": 1,
+      "last_reviewed": "2026-04-11T03:02:33.943473"
+    },
+    {
+      "concept": "函数求导",
+      "first_seen": "2026-04-11T03:02:41.141960",
+      "last_seen": "2026-04-11T03:02:41.141960",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "x^2",
+      "first_seen": "2026-04-11T03:02:41.141960",
+      "last_seen": "2026-04-11T03:02:41.141960",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    }
+  ],
+  "relations": [
+    {
+      "source": "导数",
+      "target": "瞬时变化率",
+      "type": "相关",
+      "score": 0.95,
+      "evidence": "导数衡量瞬时变化率",
+      "source_text": "问题：what is derivative\n回答：Hi there! 😊 Great question — you're diving into one of the most beautiful and powerful ideas in",
+      "created_at": "2026-04-11T03:02:21.705987",
+      "from": "qa_qwen"
+    },
+    {
+      "source": "导数",
+      "target": "切线斜率",
+      "type": "相关",
+      "score": 0.92,
+      "evidence": "导数等于切线斜率",
+      "source_text": "问题：what is derivative\n回答：Hi there! 😊 Great question — you're diving into one of the most beautiful and powerful ideas in",
+      "created_at": "2026-04-11T03:02:21.705987",
+      "from": "qa_qwen"
+    },
+    {
+      "source": "导数",
+      "target": "极限定义",
+      "type": "前置",
+      "score": 0.88,
+      "evidence": "导数由极限定义",
+      "source_text": "问题：what is derivative\n回答：Hi there! 😊 Great question — you're diving into one of the most beautiful and powerful ideas in",
+      "created_at": "2026-04-11T03:02:21.705987",
+      "from": "qa_qwen"
+    },
+    {
+      "source": "导数",
+      "target": "极限",
+      "type": "前置",
+      "score": 0.95,
+      "evidence": "derivative depends on limit",
+      "source_text": "derivative depends on limit and integral",
+      "created_at": "2026-04-11T03:02:26.288232",
+      "from": "content_note"
+    },
+    {
+      "source": "导数",
+      "target": "积分",
+      "type": "相关",
+      "score": 0.85,
+      "evidence": "derivative and integral",
+      "source_text": "derivative depends on limit and integral",
+      "created_at": "2026-04-11T03:02:26.288232",
+      "from": "content_note"
+    },
+    {
+      "source": "函数求导",
+      "target": "导数",
+      "type": "相关",
+      "score": 0.95,
+      "evidence": "f(x)=x^2求导即求导数",
+      "source_text": "given f(x)=x^2 find derivative",
+      "created_at": "2026-04-11T03:02:41.141960",
+      "from": "diagnosis"
+    },
+    {
+      "source": "x^2",
+      "target": "导数",
+      "type": "前置",
+      "score": 0.88,
+      "evidence": "给定函数求导的前提",
+      "source_text": "given f(x)=x^2 find derivative",
+      "created_at": "2026-04-11T03:02:41.141960",
+      "from": "diagnosis"
+    },
+    {
+      "source": "导数",
+      "target": "极限定义",
+      "type": "相关",
+      "score": 0.92,
+      "evidence": "导数由极限定义",
+      "source_text": "given f(x)=x^2 find derivative",
+      "created_at": "2026-04-11T03:02:41.141960",
+      "from": "diagnosis"
+    }
+  ],
+  "deleted_concepts": []
+}

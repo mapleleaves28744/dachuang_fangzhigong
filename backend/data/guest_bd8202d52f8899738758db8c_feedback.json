@@ -1,0 +1,12 @@
+[
+  {
+    "task_id": "task_002",
+    "task_type": "practice",
+    "concept": "链式法则",
+    "accuracy": 0.2,
+    "correct_count": 2,
+    "total_count": 10,
+    "duration_seconds": 180,
+    "timestamp": "2026-04-15T16:25:46.716962"
+  }
+]

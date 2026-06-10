@@ -1,0 +1,46 @@
+[
+  {
+    "id": "83565ac7-b8ce-4560-a9aa-1f497fcbb4d0",
+    "timestamp": "2026-04-10T15:57:34.541200",
+    "question": "given f(x)=x^2 find derivative",
+    "correct_answer": "2x",
+    "user_answer": "x",
+    "concept": "",
+    "diagnosis": {
+      "error_type": "知识性错误",
+      "category": "knowledge",
+      "severity": "high",
+      "recommendation": "先暂停刷题，先把“该知识点”补清楚。先看 1 个 5-8 分钟讲解视频，再整理 1 张概念/公式卡片，然后做 2 道基础例题，最后当天重做这道题。",
+      "confidence": 0.8,
+      "signals": [
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低",
+        "知道部分关键点，但答案不够完整"
+      ],
+      "score_detail": {
+        "knowledge_rule_hits": 2,
+        "skill_rule_hits": 1,
+        "habit_rule_hits": 0,
+        "recent_accuracy": 0.0,
+        "time_ratio": null,
+        "standard_time_seconds": 60.0,
+        "response_time_seconds": null,
+        "near_miss": false,
+        "mastery_reference": null
+      },
+      "reason": "该知识点的定义、公式或判断条件还没有真正建立，看到题目时不知道该从哪里开始。",
+      "recommended_actions": [
+        "看该知识点5-8分钟讲解视频",
+        "整理1张公式/概念卡片",
+        "做2道基础例题并对照答案",
+        "当天再复做原题1次"
+      ],
+      "recent_accuracy": 0.0,
+      "time_ratio": null,
+      "near_miss": false
+    },
+    "mastery_assessment": null
+  }
+]

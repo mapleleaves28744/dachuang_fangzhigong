@@ -1,0 +1,47 @@
+[
+  {
+    "id": "497e271a-1fc4-4803-b56b-03b503083267",
+    "timestamp": "2026-05-21T23:47:56.583912",
+    "question_id": "qb-ai-6d87bbfbbd7a",
+    "concept": "导数",
+    "difficulty": "medium",
+    "question_type": "single_choice",
+    "question": "若函数 $ h(x) = \\frac{e^x}{x} $（$ x \\neq 0 $），则其导数 $ h'(x) $ 等于：",
+    "expected_answer": "A",
+    "user_answer": "A",
+    "is_correct": true,
+    "score": 1.0,
+    "evaluation_method": "rule_single_choice",
+    "scoring_type": "single_choice",
+    "evaluation_summary": "选项匹配正确。",
+    "evaluation_breakdown": [
+      {
+        "item": "选项匹配",
+        "score": 1.0,
+        "weight": 1.0,
+        "weighted_score": 1.0,
+        "verdict": "命中正确选项",
+        "evidence": [
+          "学生作答：A",
+          "标准答案：A"
+        ]
+      }
+    ],
+    "evaluation_evidence": {
+      "expected_choice": "A",
+      "matched_choice": "A",
+      "risk_flags": []
+    },
+    "duration_seconds": 14.502,
+    "answer_signature": "1695fd9ed79d1e1d90390a1b5cf62c3f8c92bdd8",
+    "fact_source": {
+      "primary_source": "question_answer",
+      "fact_id": "497e271a-1fc4-4803-b56b-03b503083267",
+      "source_key": "question_answer::497e271a-1fc4-4803-b56b-03b503083267",
+      "question_id": "qb-ai-6d87bbfbbd7a",
+      "task_id": "",
+      "concept": "导数",
+      "timestamp": "2026-05-21T23:47:56.583912"
+    }
+  }
+]

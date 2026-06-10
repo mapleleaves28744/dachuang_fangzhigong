@@ -1,0 +1,61 @@
+{
+  "concepts": [
+    {
+      "concept": "链式法则",
+      "first_seen": "2026-04-10T16:12:06.387715",
+      "last_seen": "2026-04-10T16:12:06.387715",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "导数",
+      "first_seen": "2026-04-10T16:12:06.387715",
+      "last_seen": "2026-04-10T16:12:06.387715",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "复合函数",
+      "first_seen": "2026-04-10T16:12:06.387715",
+      "last_seen": "2026-04-10T16:12:06.387715",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    }
+  ],
+  "relations": [
+    {
+      "source": "链式法则",
+      "target": "导数",
+      "type": "相关",
+      "score": 0.95,
+      "evidence": "链式法则是求导方法",
+      "source_text": "chain rule derivative composite function",
+      "created_at": "2026-04-10T16:12:06.388228",
+      "from": "diag"
+    },
+    {
+      "source": "链式法则",
+      "target": "复合函数",
+      "type": "前置",
+      "score": 0.98,
+      "evidence": "用于求复合函数导数",
+      "source_text": "chain rule derivative composite function",
+      "created_at": "2026-04-10T16:12:06.388228",
+      "from": "diag"
+    },
+    {
+      "source": "复合函数",
+      "target": "导数",
+      "type": "相关",
+      "score": 0.85,
+      "evidence": "复合函数可求导",
+      "source_text": "chain rule derivative composite function",
+      "created_at": "2026-04-10T16:12:06.388228",
+      "from": "diag"
+    }
+  ],
+  "deleted_concepts": []
+}

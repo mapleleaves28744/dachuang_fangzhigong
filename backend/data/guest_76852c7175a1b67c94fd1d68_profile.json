@@ -1,0 +1,30 @@
+{
+  "user_id": "guest_76852c7175a1b67c94fd1d68",
+  "updated_at": "2026-06-10T12:56:44.308081",
+  "learning_style": "",
+  "style_scores": {
+    "visual": 0.0,
+    "auditory": 0.0,
+    "kinesthetic": 0.0
+  },
+  "style_method": "",
+  "style_features": {
+    "image_count": 0,
+    "link_count": 0,
+    "qa_content_count": 0,
+    "note_count": 0,
+    "other_count": 0,
+    "qa_log_count": 0,
+    "concept_count": 0
+  },
+  "interests": [],
+  "best_time_range": "",
+  "focus_minutes": null,
+  "content_type_counter": {
+    "note": 0,
+    "link": 0,
+    "image": 0,
+    "qa": 0,
+    "other": 0
+  }
+}

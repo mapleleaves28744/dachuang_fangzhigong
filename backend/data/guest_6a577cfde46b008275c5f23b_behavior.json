@@ -1,0 +1,18 @@
+[
+  {
+    "id": "0e60beef-6c21-4623-85dd-a501a0f74765",
+    "user_id": "guest_6a577cfde46b008275c5f23b",
+    "timestamp": "2026-05-15T13:52:41.356177",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "dashboard",
+    "target": "",
+    "label": "pagehide",
+    "title": "学习仪表盘 - 智能学习伴侣",
+    "source": "page_shell",
+    "duration_seconds": 5.161,
+    "meta": {
+      "referrer": ""
+    }
+  }
+]

@@ -1,0 +1,14 @@
+[
+  {
+    "user_id": "guest_5eee7bbf1ec163e4fe13d247",
+    "timestamp": "2026-05-11T22:04:55.080343",
+    "question": "OCR文本",
+    "answer": "图像题已解答",
+    "answer_preview": "图像题已解答",
+    "topics": [
+      "文本"
+    ],
+    "is_confusion_request": false,
+    "type": "qa_interaction"
+  }
+]

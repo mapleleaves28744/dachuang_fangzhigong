@@ -1,0 +1,139 @@
+[
+  {
+    "id": "e04d96c3-851f-43ca-bd96-fa2194836e31",
+    "timestamp": "2026-04-11T02:54:34.508270",
+    "content_type": "qa",
+    "title": "智能体问答记录",
+    "content": "OCR文本",
+    "source": "agent_ocr_tutor",
+    "topics": [
+      "文本",
+      "回答",
+      "图像题已解答"
+    ]
+  },
+  {
+    "id": "2e646ff5-05a4-4c87-9915-9a66cf852b15",
+    "timestamp": "2026-04-11T02:55:21.022233",
+    "content_type": "qa",
+    "title": "智能体问答记录",
+    "content": "OCR文本",
+    "source": "agent_ocr_tutor",
+    "topics": [
+      "文本",
+      "OCR文本",
+      "图像题"
+    ]
+  },
+  {
+    "id": "5664c3ab-1e93-48e0-b16f-84dd931eff0b",
+    "timestamp": "2026-04-11T03:20:43.770693",
+    "content_type": "qa",
+    "title": "智能体问答记录",
+    "content": "OCR文本",
+    "source": "agent_ocr_tutor",
+    "topics": [
+      "文本",
+      "OCR文本",
+      "图像题"
+    ]
+  },
+  {
+    "id": "15bbe698-300b-4ee8-8132-736a70fc0f42",
+    "timestamp": "2026-04-14T20:23:20.267543",
+    "content_type": "qa",
+    "title": "智能体问答记录",
+    "content": "OCR文本",
+    "source": "agent_ocr_tutor",
+    "topics": [
+      "文本",
+      "OCR文本",
+      "图像题已解答"
+    ]
+  },
+  {
+    "id": "eaa769c1-80ad-4a8f-a437-123d77b6fb8c",
+    "timestamp": "2026-04-14T21:18:52.870133",
+    "content_type": "qa",
+    "title": "智能体问答记录",
+    "content": "问题：OCR文本\n回答：图像题已解答",
+    "content_preview": "问题：OCR文本 回答：图像题已解答",
+    "content_length": 18,
+    "source": "agent_ocr_tutor",
+    "topics": [
+      "文本",
+      "OCR文本",
+      "图像题已解答"
+    ],
+    "question_text": "OCR文本",
+    "answer_text": "图像题已解答"
+  },
+  {
+    "id": "b913bb4a-2c4e-4548-ac62-0304efb81b5d",
+    "timestamp": "2026-04-14T21:19:20.470485",
+    "content_type": "qa",
+    "title": "智能体问答记录",
+    "content": "问题：OCR文本\n回答：图像题已解答",
+    "content_preview": "问题：OCR文本 回答：图像题已解答",
+    "content_length": 18,
+    "source": "agent_ocr_tutor",
+    "topics": [
+      "文本",
+      "OCR文本",
+      "图像题"
+    ],
+    "question_text": "OCR文本",
+    "answer_text": "图像题已解答"
+  },
+  {
+    "id": "5c337dbd-4673-4d5a-b7b1-3191685deb73",
+    "timestamp": "2026-04-14T21:51:59.575374",
+    "content_type": "qa",
+    "title": "智能体问答记录",
+    "content": "问题：OCR文本\n回答：图像题已解答",
+    "content_preview": "问题：OCR文本 回答：图像题已解答",
+    "content_length": 18,
+    "source": "agent_ocr_tutor",
+    "topics": [
+      "文本",
+      "OCR文本",
+      "图像题已解答"
+    ],
+    "question_text": "OCR文本",
+    "answer_text": "图像题已解答"
+  },
+  {
+    "id": "c5b62550-0545-4240-87a5-dcd68fc488e6",
+    "timestamp": "2026-04-14T21:52:43.968279",
+    "content_type": "qa",
+    "title": "智能体问答记录",
+    "content": "问题：OCR文本\n回答：图像题已解答",
+    "content_preview": "问题：OCR文本 回答：图像题已解答",
+    "content_length": 18,
+    "source": "agent_ocr_tutor",
+    "topics": [
+      "文本",
+      "OCR文本",
+      "图像题已解答"
+    ],
+    "question_text": "OCR文本",
+    "answer_text": "图像题已解答"
+  },
+  {
+    "id": "12c3d6b5-169e-4a85-98ce-e8bfa6914caa",
+    "timestamp": "2026-04-14T21:55:08.485080",
+    "content_type": "qa",
+    "title": "智能体问答记录",
+    "content": "问题：OCR文本\n回答：图像题已解答",
+    "content_preview": "问题：OCR文本 回答：图像题已解答",
+    "content_length": 18,
+    "source": "agent_ocr_tutor",
+    "topics": [
+      "文本",
+      "OCR文本",
+      "图像题已解答"
+    ],
+    "question_text": "OCR文本",
+    "answer_text": "图像题已解答"
+  }
+]

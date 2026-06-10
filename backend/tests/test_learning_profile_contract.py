@@ -1,7 +1,7 @@
 import unittest
 from datetime import datetime
 
-from learning_profile import (
+from app.services.learning_profile import (
     LearningProfileService,
     build_recommendations,
     build_recommendation_context,
@@ -9,6 +9,7 @@ from learning_profile import (
     collect_concept_diagnosis_evidence,
     build_weak_recommendation_item,
     build_interest_recommendation_item,
+    normalize_recommendation_resource_type,
 )
 
 
@@ -74,6 +75,81 @@ class TestLearningProfileContract(unittest.TestCase):
         self.assertTrue(required_keys.issubset(set(profile.keys())))
         self.assertEqual(profile["user_id"], "u1")
         self.assertIn("u1", stored.get("user_id", "u1"))
+
+    def test_build_profile_filters_noise_interests_and_deleted_topics(self):
+        svc = LearningProfileService(kmeans_cls=None, np_module=None)
+        stored = {}
+
+        def get_user_profile(_):
+            return {}
+
+        def set_user_profile(_, profile):
+            stored.update(profile)
+
+        def load_user_event_list(_, suffix):
+            if suffix == "content":
+                return [
+                    {
+                        "content_type": "note",
+                        "timestamp": "2026-03-16T09:30:00",
+                        "topics": ["我是你爹吗", "导数", "你好呀"],
+                    }
+                ]
+            return []
+
+        def get_user_knowledge(_):
+            return {
+                "concepts": [
+                    {"concept": "导数", "mastery": 0.3},
+                    {"concept": "你是谁", "mastery": 0.2},
+                ],
+                "deleted_concepts": ["你是谁"],
+            }
+
+        profile = svc.build_profile(
+            user_id="u1",
+            get_user_profile=get_user_profile,
+            set_user_profile=set_user_profile,
+            load_user_event_list=load_user_event_list,
+            get_user_knowledge=get_user_knowledge,
+            normalize_user_knowledge=None,
+        )
+
+        self.assertIn("导数", profile["interests"])
+        self.assertNotIn("我是你爹吗", profile["interests"])
+        self.assertNotIn("你是谁", profile["interests"])
+        self.assertIn("导数", stored.get("interests", []))
+
+    def test_build_profile_returns_empty_state_without_learning_signal(self):
+        svc = LearningProfileService(kmeans_cls=None, np_module=None)
+        stored = {}
+
+        def get_user_profile(_):
+            return {}
+
+        def set_user_profile(_, profile):
+            stored.update(profile)
+
+        def load_user_event_list(_, __):
+            return []
+
+        def get_user_knowledge(_):
+            return {"concepts": [], "relations": [], "deleted_concepts": []}
+
+        profile = svc.build_profile(
+            user_id="u-empty",
+            get_user_profile=get_user_profile,
+            set_user_profile=set_user_profile,
+            load_user_event_list=load_user_event_list,
+            get_user_knowledge=get_user_knowledge,
+            normalize_user_knowledge=None,
+        )
+
+        self.assertEqual(profile["learning_style"], "")
+        self.assertEqual(profile["interests"], [])
+        self.assertEqual(profile["best_time_range"], "")
+        self.assertIsNone(profile["focus_minutes"])
+        self.assertEqual(stored.get("interests"), [])
 
     def test_build_recommendation_context(self):
         ctx = build_recommendation_context({"learning_style": "auditory", "style_method": "kmeans"}, 4)
@@ -143,6 +219,24 @@ class TestLearningProfileContract(unittest.TestCase):
         self.assertEqual(interest_item["concept"], "函数")
         self.assertIn("source_evidence", interest_item)
 
+    def test_recommendation_resource_type_is_merged_to_broad_buckets(self):
+        self.assertEqual(
+            normalize_recommendation_resource_type("知识导图+图解微课", dominant_category="knowledge", action_mode="基础回补"),
+            "概念梳理",
+        )
+        self.assertEqual(
+            normalize_recommendation_resource_type("图解示例+互动练习", dominant_category="skill", action_mode="结构修复"),
+            "流程拆解",
+        )
+        self.assertEqual(
+            normalize_recommendation_resource_type("图解微课+审题核对卡", dominant_category="habit", action_mode="稳定强化"),
+            "复盘巩固",
+        )
+        self.assertEqual(
+            normalize_recommendation_resource_type("专题精选", dominant_category="unknown", action_mode="概念拓展"),
+            "拓展应用",
+        )
+
     def test_build_recommendations_delegated_flow(self):
         def fake_build_learning_profile(_):
             return {
@@ -191,6 +285,68 @@ class TestLearningProfileContract(unittest.TestCase):
         self.assertIn("evidence_brief", first)
         self.assertIn("source_evidence", first)
         self.assertIn("strategy_tags", first)
+
+    def test_build_recommendations_returns_empty_without_interests_or_weak_points(self):
+        def fake_build_learning_profile(_):
+            return {
+                "learning_style": "",
+                "style_method": "",
+                "style_scores": {"visual": 0.0, "auditory": 0.0, "kinesthetic": 0.0},
+                "style_features": {
+                    "image_count": 0,
+                    "link_count": 0,
+                    "note_count": 0,
+                    "qa_content_count": 0,
+                },
+                "best_time_range": "",
+                "interests": [],
+            }
+
+        def fake_get_user_knowledge(_):
+            return {
+                "concepts": [],
+                "relations": [],
+                "deleted_concepts": [],
+            }
+
+        items = build_recommendations(
+            user_id="u-empty",
+            limit=3,
+            build_learning_profile_fn=fake_build_learning_profile,
+            get_user_knowledge=fake_get_user_knowledge,
+            normalize_user_knowledge=lambda knowledge: knowledge,
+            load_user_event_list=lambda *_: [],
+        )
+
+        self.assertEqual(items, [])
+
+    def test_weak_recommendation_reason_varies_by_context(self):
+        runtime = build_recommendation_runtime({
+            "learning_style": "visual",
+            "style_method": "rule",
+            "style_scores": {"visual": 0.7, "auditory": 0.2, "kinesthetic": 0.1},
+            "style_features": {"image_count": 2, "link_count": 1, "note_count": 0, "qa_content_count": 1},
+            "best_time_range": "19:00-21:00",
+        })
+
+        item_a = build_weak_recommendation_item(
+            concept_name="电流",
+            mastery=0.3,
+            runtime=runtime,
+            diagnosis_examples=[{"category": "knowledge"}],
+            recent_category_count={"knowledge": 2, "skill": 0, "habit": 0, "unknown": 0},
+        )
+        item_b = build_weak_recommendation_item(
+            concept_name="电压",
+            mastery=0.55,
+            runtime=runtime,
+            diagnosis_examples=[],
+            recent_category_count={"knowledge": 0, "skill": 2, "habit": 0, "unknown": 0},
+        )
+
+        self.assertNotEqual(item_a.get("reason"), item_b.get("reason"))
+        self.assertIn("mode:", "|".join(item_a.get("strategy_tags", [])))
+        self.assertIn("focus:", "|".join(item_a.get("strategy_tags", [])))
 
 
 if __name__ == "__main__":

@@ -1,254 +1,280 @@
-# 坊知工 FZG
+﻿# 坊知工 FZG
 
-面向学习场景的智能学习伴侣项目，包含后端 API、前端页面、知识图谱、学习诊断与推荐能力。
+坊知工是面向教育场景的智能学习伴侣系统，当前版本已包含多模态 OCR、工具调用式智能体、知识库检索、知识图谱增强（RAG-Graph）与 SSE 流式交互能力。
 
-## 1. 第一次启动：需要先配置什么环境
+## 系统架构
 
-### 1.1 必需环境
+- 前端：原生 HTML/CSS/JS，多页面结构，支持智能体模式和时间线展示。
+- 后端：Flask API + 可选 Celery/Redis，提供问答、评测、知识库、图谱接口。
+- 智能体：LangChain Tool Calling（掌握度、图谱、知识库、学习计划、错题归因）。
+- 知识增强：文本检索 + Neo4j 关系查询（RAG-Graph）。
 
-- Windows 10/11（当前脚本按 Windows 编写）
-- Python 3.10+
-- `pip`
+## 核心能力
 
-### 1.2 建议环境（用于“完整功能”）
+- 多模态题目解析：`POST /api/agent/ocr-tutor`，图片优先，支持文本回退。
+- 智能体辅导：调用工具链后输出答案，并返回 `steps_log`、`evidence`、`meta`。
+- 流式交互：`stream=true` 时返回 SSE 事件流，支持中间工具调用反馈。
+- 知识库能力：
+  - 入库：`POST /api/agent/kb/ingest`
+  - 检索：`POST /api/agent/kb/search`
+  - 检索结果包含 `hits` 与 `graph_context`。
+- 在线评测：
+  - 单评测：`POST /api/agent/eval`
+  - A/B 对比：`POST /api/agent/eval-ab`
+- 学习反馈（P2 新增）：`POST /api/agent/learning-feedback`
+  - 记录任务完成度、正确率、耗时，并动态更新学生掌握度。
+  - 请求体：`{student_id, task_id, task_type, correct_count, total_count, duration_seconds, concept}`
 
-- Redis（异步任务队列）
-- Celery（后台任务执行）
-- Neo4j Aura（图谱云存储）
-- 可用的 AI Key（例如 Qwen）
+## 🎯 竞赛改进文档
 
-重要说明：
+### 性能基准与优化
 
-- 使用 Neo4j Aura 时，不需要安装本地 Neo4j 服务端。
-- 本地只需要安装 Python `neo4j` 驱动（`pip install neo4j`，`requirements.txt` 已包含）。
+- **[性能基准对比报告](docs/PERFORMANCE_BENCHMARK.md)**：混合检索(RAG-Graph)相比纯文本精度✅+3.5%，延迟+16.7%（在可接受范围）
+- **性能测试脚本**：`backend/scripts/bench_comparison.py` - 对比纯文本/纯图谱/混合检索的性能
+- **教育领域测试集**：`backend/scripts/education_testset.json` - 40个中学数学/英语/物理用例
 
-### 1.3 安装后端依赖
+### 商业模式与成本分析  
 
-在项目根目录执行：
+- **[商业模式报告](docs/BUSINESS_MODEL.md)**：
+  - 收入预测：Y1 ¥4.1M (B2B+B2C+渠道)
+  - 成本结构：Y1 ¥4.6M（86%人力成本）
+  - 盈亏平衡：Year 2 达EBITDA +¥2.7M
+  - 融资路线：Seed ¥2.5M → Series A ¥8-10M → IPO 2028
+
+### 前端优化
+
+- **[主仪表盘](frontend/dashboard.html)**（已对齐展示）：
+  - 📊 知识点热力图（5级掌握度可视化）
+  - 📈 学习进度条动画
+  - 🛤️ AI推荐学习路径（Timeline视图）
+  - 📉 数据分析图表（Chart.js集成）
+
+## 快速启动
+
+### 1. 安装依赖
 
 ```powershell
 cd backend
 python -m pip install -r requirements.txt
 ```
 
-### 1.4 准备环境变量
-
-在 `backend` 目录创建 `.env`（可从 `.env.example` 复制后修改）。
-
-推荐“完整功能”配置示例：
+### 2. 关键环境变量（示例）
 
 ```env
-# AI
 USE_REAL_AI=true
 AI_PROVIDER=qwen
 QWEN_API_KEY=your_api_key
 QWEN_API_URL=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
 QWEN_MODEL_NAME=qwen-plus
 
-# OCR
-OCR_PROVIDER=mock
+AGENT_TIMEOUT_SECONDS=50
+AGENT_MAX_RETRIES=1
+AGENT_ENABLE_GUARD=true
+AGENT_HISTORY_BACKEND=auto
+AGENT_REDIS_URL=redis://127.0.0.1:6379/2
 
-# 存储（当前项目建议 sql + sqlite）
-STORAGE_BACKEND=sql
-DATABASE_URL=sqlite:///data/fzg.db
-
-# 图谱
 USE_NEO4J=auto
 NEO4J_URI=neo4j+s://<your-aura>.databases.neo4j.io
 NEO4J_USERNAME=<username>
 NEO4J_PASSWORD=<password>
 NEO4J_DATABASE=<database>
+```
 
-# 图谱读取/写回策略
-GRAPH_PRIMARY=auto
-GRAPH_SYNC_MODE=auto
+### 2.1 OCR 说明（请保留）
+
+- 智能体入口为 `POST /api/agent/ocr-tutor`，支持“图片优先 + 文本回退”。
+- 默认可使用 `OCR_PROVIDER=mock` 进行本地联调；接入真实 OCR 时建议统一通过 Qwen-VL。
+- 当图片 OCR 上游失败，但请求中包含 `question` 或 `ocr_text` 时，后端会自动降级到文本路径，避免直接 502 中断。
+
+推荐 OCR 相关环境变量：
+
+```env
+OCR_PROVIDER=mock
+# 若使用真实 OCR，可切换并配置上游密钥/地址
+# OCR_PROVIDER=qwen_vl
+```
+
+### 2.2 云端 Neo4j（Aura）说明（请保留）
+
+- 本项目支持云端 Neo4j Aura，不要求本地安装 Neo4j 服务端。
+- 建议 `USE_NEO4J=auto`：当 URI/账号/密码配置齐全并连通时自动启用。
+- 本地仅需安装 Python 驱动（`requirements.txt` 已包含 `neo4j` 依赖）。
+
+Aura 推荐配置：
+
+```env
+USE_NEO4J=auto
+NEO4J_URI=neo4j+s://<your-aura>.databases.neo4j.io
+NEO4J_USERNAME=<username>
+NEO4J_PASSWORD=<password>
+NEO4J_DATABASE=<database>
 ```
 
 说明：
 
-- `USE_NEO4J=auto` 时，配置完整且可连通才启用 Aura。
-- 使用 Aura 时，无需本地安装 Neo4j 数据库。
-- Redis/Celery 不可用时，后端会回退同步流程，但不是“完整异步功能”。
+- `neo4j+s://` 是 Aura 常用安全连接方式。
+- 若只做本地最小可运行，可临时关闭：`USE_NEO4J=false`。
 
----
-
-## 2. 如何启动整个项目（完整功能）
-
-### 2.1 一键启动（推荐）
-
-在项目根目录执行：
+### 3. 启动开发栈
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File backend/start-dev-stack.ps1
+powershell -ExecutionPolicy Bypass -File backend/scripts/start-dev-stack.ps1
 ```
 
-该脚本会尝试启动：
-
-- Redis（6379）
-- Celery Worker
-- Backend（5000）
-- Frontend（5501）
-
-### 2.2 一键停止
+一键停止：
 
 ```powershell
-powershell -ExecutionPolicy Bypass -File backend/stop-dev-stack.ps1
+powershell -ExecutionPolicy Bypass -File backend/scripts/stop-dev-stack.ps1
 ```
 
-### 2.3 手动启动（不使用一键脚本）
+Linux 启动（可选）：
 
-如果你的队友不想使用一键脚本，可以按下面步骤手动启动。
-
-步骤 1：进入项目根目录
-
-```powershell
-cd fzg
+```bash
+chmod +x scripts/start-dev-stack.sh scripts/stop-dev-stack.sh
+./scripts/start-dev-stack.sh
 ```
 
-步骤 2：安装依赖（首次或依赖更新后执行）
+Linux 停止：
+
+```bash
+./scripts/stop-dev-stack.sh
+```
+
+### 3.1 手动启动说明（请保留）
+
+不使用一键脚本时，可按以下顺序手动启动：
+
+1. 安装依赖
 
 ```powershell
 cd backend
 python -m pip install -r requirements.txt
-cd ..
 ```
 
-步骤 3：准备 `.env`
+1. 启动后端
 
-- 在 `backend` 目录创建 `.env`（可复制 `.env.example` 后修改）。
-- 最低可运行建议：`STORAGE_BACKEND=sql`、`DATABASE_URL=sqlite:///data/fzg.db`。
-- 想启用完整功能时，再补充 Neo4j Aura、AI Key、Redis/Celery 相关配置。
+```powershell
+python -m app.server
+```
 
-步骤 4（可选）：启动 Redis（完整异步功能需要）
+1. 启动前端静态服务（新终端）
+
+```powershell
+python -m http.server 5501 --directory frontend
+```
+
+1. 健康检查
+
+```powershell
+Invoke-RestMethod -Uri http://127.0.0.1:5000/health | ConvertTo-Json -Depth 5
+```
+
+1. 可选：启动 Redis/Celery（完整异步功能）
 
 ```powershell
 cd backend
 tools\redis\redis-server.exe tools\redis\redis.windows.conf --port 6379
 ```
 
-说明：该命令会占用当前终端。建议新开一个终端窗口运行。
-
-步骤 5（可选）：启动 Celery Worker（完整异步功能需要）
-
 ```powershell
 cd backend
 $env:CELERY_BROKER_URL='redis://127.0.0.1:6379/0'
 $env:CELERY_RESULT_BACKEND='redis://127.0.0.1:6379/1'
-python -m celery -A app.celery_client worker -l info -P solo
+python -m celery -A app.server:celery_client worker -l info -P solo
 ```
 
-说明：该命令也会占用当前终端，建议在另一个终端窗口运行。
-
-步骤 6：启动后端 API
-
-```powershell
-python backend/app.py
-```
-
-步骤 7：启动前端静态服务（再开一个终端）
-
-```powershell
-python -m http.server 5501 --directory frontend
-```
-
-步骤 8：验证运行状态
+### 4. 健康检查
 
 ```powershell
 Invoke-RestMethod -Uri http://127.0.0.1:5000/health | ConvertTo-Json -Depth 5
 ```
 
-健康检查判断：
+## 智能体模式常见问题排查
 
-- 最低可运行：`status=ok`。
-- 完整功能：`status=ok` 且 `celery_enabled=true`、`neo4j_enabled=true`。
+### 现象 1：页面提示“流式会话已结束，但未收到最终结果”
 
-### 2.4 验证是否“完整功能”启动成功
+可能原因：
+
+- 后端 SSE 流中断，仅返回 `error` 事件。
+- Redis 不可达导致会话历史初始化失败。
+- AI Key 无效或模型上游不可用。
+
+建议排查顺序：
+
+1. 检查后端健康状态
 
 ```powershell
 Invoke-RestMethod -Uri http://127.0.0.1:5000/health | ConvertTo-Json -Depth 5
 ```
 
-重点看：
+1. 若本机未启动 Redis，先强制使用内存会话历史
 
-- `status` 应为 `ok`
-- `celery_enabled` 应为 `true`
-- `neo4j_enabled` 应为 `true`
-- `storage_backend` 应为 `sql`
-- `database_scheme` 应为 `sqlite`（或你配置的 MySQL）
-
-补充：
-
-- 你只要看到 `neo4j_enabled=true`，就说明已成功连接 Aura，不需要本地 Neo4j。
-
-### 2.5 前端访问
-
-- 首页: http://127.0.0.1:5501/index.html
-- 仪表盘: http://127.0.0.1:5501/dashboard.html
-- 知识图谱页: http://127.0.0.1:5501/knowledge-map.html
-
----
-
-## 3. 项目整体介绍
-
-## 3.1 项目目标
-
-坊知工希望提供一体化学习支持：
-
-- 智能问答
-- 学习行为记录
-- 知识点抽取与关系构建
-- 错题认知诊断
-- 学习画像与推荐
-- 复习提醒
-
-## 3.2 目录结构
-
-```text
-fzg/
-  backend/    # Flask API、任务调度、数据存储、图谱同步
-  frontend/   # 页面与前端脚本
-  data/       # 本地数据文件（历史/导出）
+```env
+AGENT_HISTORY_BACKEND=memory
 ```
 
-## 3.3 后端核心模块
+1. 校验 AI 相关配置
 
-- `backend/app.py`：主 API 服务与业务编排入口
-- `backend/database.py`：JSON/SQL 双存储抽象
-- `backend/neo4j_store.py`：Neo4j Aura 读写
-- `backend/cognitive_diagnosis.py`：错题诊断
-- `backend/learning_profile.py`：学习画像与推荐
-- `backend/scripts/sync_local_state_to_neo4j_aura.py`：以本地数据为准同步 Aura
+```env
+USE_REAL_AI=true
+AI_PROVIDER=qwen
+QWEN_API_KEY=<有效密钥>
+QWEN_API_URL=https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions
+QWEN_MODEL_NAME=qwen-plus
+```
 
-## 3.4 关键能力说明
-
-- 问答后可触发知识抽取与图谱同步
-- 图谱同步支持异步任务（Celery）与同步回退
-- 删除知识点支持同步到 Aura，并有重试与日志机制
-- 推荐基于画像、掌握度与诊断证据生成
-
----
-
-## 4. 常见问题
-
-### 4.1 启动后 `neo4j_enabled=false`
-
-- 检查 `.env` 里的 Neo4j 连接信息是否正确
-- 检查网络是否可访问 Aura
-- 检查 Python 环境是否安装 `neo4j` 包
-- 不需要下载安装本地 Neo4j 服务端
-
-### 4.2 启动后 `celery_enabled=false`
-
-- 检查 Redis 是否启动并监听 6379
-- 检查 worker 进程是否运行
-
-### 4.3 Aura 数据比本地多
-
-执行一次本地权威同步：
+1. 修改环境变量后重启后端
 
 ```powershell
-cd backend
-python scripts/sync_local_state_to_neo4j_aura.py
+python -m app.server
 ```
 
-该脚本会删除 Aura 中本地不存在的用户图谱数据，并按本地状态重建。
+说明：当前版本已增强流式兜底逻辑，当智能体运行异常时会返回可展示的 `final` 负载，减少前端“无最终结果”的误报。
+
+## 测试与验收
+
+在 `backend` 目录执行：
+
+```powershell
+python -m unittest tests.test_agent_ocr_tutor_contract -v
+python -m unittest tests.test_agent_kb_contract -v
+python -m unittest tests.test_knowledge_base_graphrag -v
+```
+
+## 版本迭代时间线（倒序）
+
+### 2026-04-11（当前）
+
+- 工具执行时间线改为真实逐步耗时统计，修复步骤耗时同值问题。
+- 学习计划工具升级为“生成即落盘”：写入 `user_plans` 并记录 `learning_plan` 事件。
+- 错题归因工具支持诊断事件落盘，干预看板可直接消费。
+- 图谱新增非知识点三层过滤与停用词扩展，阻止“自学/零基础”等状态词入图。
+
+### 2026-04-10
+
+- 智能体接口支持 SSE 流式返回（`stream=true`）。
+- `ocr-tutor` 增加 OCR 失败文本降级，避免直接中断。
+- 知识库升级为 RAG-Graph 输出：`hits + graph_context`。
+- 新增 GraphRAG 测试：`tests/test_knowledge_base_graphrag.py`。
+- 修复 A/B 评测入参校验顺序，保证契约一致性。
+- 流式事件处理增强：前端不再吞掉 `error` 事件，能展示真实异常原因。
+- 会话历史回退增强：Redis 不可达时自动回退内存会话历史。
+- 流式兜底增强：智能体运行异常时也返回 `final` 负载，避免会话结束无最终结果。
+
+### 2026-04（上旬）
+
+- 新增知识库入库与检索接口（`/api/agent/kb/ingest`、`/api/agent/kb/search`）。
+- 新增在线评测接口（`/api/agent/eval`、`/api/agent/eval-ab`）。
+- 智能体支持结构化步骤日志：`steps_log`。
+
+### 2026-03（历史）
+
+- 基础问答、学习画像、知识图谱可视化、学习空间等核心页面与接口完成首版落地。
+
+## 文档导航
+
+- 前端说明：[frontend/README.md](frontend/README.md)
+- 文档索引：[docs/README.md](docs/README.md)
+- 发布说明模板：[docs/CHANGELOG_TEMPLATE.md](docs/CHANGELOG_TEMPLATE.md)
+- 云端启动：[docs/CLOUD_QUICKSTART.md](docs/CLOUD_QUICKSTART.md)
+- Neo4j 快速接入：[docs/neo4j-quickstart.md](docs/neo4j-quickstart.md)

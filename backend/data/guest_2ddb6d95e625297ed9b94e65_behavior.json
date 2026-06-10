@@ -1,0 +1,82 @@
+[
+  {
+    "id": "c2b0de6d-c6a9-4a6b-8182-968ca1a4849a",
+    "user_id": "guest_2ddb6d95e625297ed9b94e65",
+    "timestamp": "2026-04-19T14:47:48.226572",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 16.499,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "82379dee-7986-4f1e-b65f-07af950c925f",
+    "user_id": "guest_2ddb6d95e625297ed9b94e65",
+    "timestamp": "2026-04-19T14:47:53.174015",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "chat",
+    "target": "",
+    "label": "pagehide",
+    "title": "智能问答 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 4.633,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/"
+    }
+  },
+  {
+    "id": "8f4ddbdd-3b07-4db2-8006-a2e9f504bf2f",
+    "user_id": "guest_2ddb6d95e625297ed9b94e65",
+    "timestamp": "2026-04-19T14:49:58.149901",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "question-bank",
+    "target": "",
+    "label": "pagehide",
+    "title": "题库练习 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 124.548,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/chat.html"
+    }
+  },
+  {
+    "id": "33dd8842-c7af-4ea7-abd1-e8731e710bfe",
+    "user_id": "guest_2ddb6d95e625297ed9b94e65",
+    "timestamp": "2026-04-19T14:50:00.287995",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "dashboard",
+    "target": "",
+    "label": "pagehide",
+    "title": "学习仪表盘 - 智能学习伴侣",
+    "source": "page_shell",
+    "duration_seconds": 1.768,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/question-bank.html"
+    }
+  },
+  {
+    "id": "f9f73d52-0759-4433-b75e-063e48d261db",
+    "user_id": "guest_2ddb6d95e625297ed9b94e65",
+    "timestamp": "2026-04-19T14:50:19.794507",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "knowledge-map",
+    "target": "",
+    "label": "pagehide",
+    "title": "知识图谱 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 19.198,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/dashboard.html"
+    }
+  }
+]

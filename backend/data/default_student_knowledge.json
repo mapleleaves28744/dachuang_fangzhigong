@@ -1,0 +1,159 @@
+{
+  "concepts": [
+    {
+      "concept": "链式法则",
+      "first_seen": "2026-04-11T02:54:31.799483",
+      "last_seen": "2026-04-14T21:55:07.541177",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "导数",
+      "first_seen": "2026-04-15T17:37:49.883297",
+      "last_seen": "2026-04-15T17:46:59.488260",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "极限",
+      "first_seen": "2026-04-15T17:37:49.883312",
+      "last_seen": "2026-04-15T17:46:59.488274",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "瞬时速度",
+      "first_seen": "2026-04-15T17:37:49.883315",
+      "last_seen": "2026-04-15T17:37:49.883315",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "切线斜率",
+      "first_seen": "2026-04-15T17:37:49.883318",
+      "last_seen": "2026-04-15T17:46:59.488282",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "变化率",
+      "first_seen": "2026-04-15T17:37:49.883320",
+      "last_seen": "2026-04-15T17:46:59.488278",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "导数定义",
+      "first_seen": "2026-04-15T17:37:49.883323",
+      "last_seen": "2026-04-15T17:46:59.488289",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "瞬时变化率",
+      "first_seen": "2026-04-15T17:46:59.488285",
+      "last_seen": "2026-04-15T17:46:59.488285",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "导数的意义",
+      "first_seen": "2026-04-15T17:46:59.488292",
+      "last_seen": "2026-04-15T17:46:59.488292",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    }
+  ],
+  "relations": [
+    {
+      "source": "导数",
+      "target": "极限",
+      "type": "前置",
+      "score": 0.94,
+      "evidence": "图谱显示前置依赖",
+      "source_text": "问题：导数是什么意思\n回答：# 分析\n\n根据知识库与图谱联合检索结果：  \n- 学生未查到「导数」掌握度数据，但系统依据题干语义与提问方式（仅问“是什么意思”，无上下文、无公式引用、无例题支撑）判定为**知识性薄弱**，符合掌握度 < 0.",
+      "created_at": "2026-04-15T17:37:49.883331",
+      "from": "agent_ocr_tutor_stream"
+    },
+    {
+      "source": "导数",
+      "target": "瞬时速度",
+      "type": "相关",
+      "score": 0.88,
+      "evidence": "物理意义解释",
+      "source_text": "问题：导数是什么意思\n回答：# 分析\n\n根据知识库与图谱联合检索结果：  \n- 学生未查到「导数」掌握度数据，但系统依据题干语义与提问方式（仅问“是什么意思”，无上下文、无公式引用、无例题支撑）判定为**知识性薄弱**，符合掌握度 < 0.",
+      "created_at": "2026-04-15T17:37:49.883335",
+      "from": "agent_ocr_tutor_stream"
+    },
+    {
+      "source": "导数",
+      "target": "切线斜率",
+      "type": "相关",
+      "score": 0.74,
+      "evidence": "几何意义说明",
+      "source_text": "问题：导数是什么意思\n回答：# 分析\n\n根据知识库与图谱联合检索结果：  \n- 学生未查到「导数」掌握度数据，但系统依据题干语义与提问方式（仅问“是什么意思”，无上下文、无公式引用、无例题支撑）判定为**知识性薄弱**，符合掌握度 < 0.",
+      "created_at": "2026-04-15T17:37:49.883338",
+      "from": "agent_ocr_tutor_stream"
+    },
+    {
+      "source": "导数",
+      "target": "变化率",
+      "type": "相关",
+      "score": 0.85,
+      "evidence": "定义刻画变化快慢",
+      "source_text": "问题：导数是什么意思\n回答：# 分析\n\n根据知识库与图谱联合检索结果：  \n- 学生未查到「导数」掌握度数据，但系统依据题干语义与提问方式（仅问“是什么意思”，无上下文、无公式引用、无例题支撑）判定为**知识性薄弱**，符合掌握度 < 0.",
+      "created_at": "2026-04-15T17:37:49.883341",
+      "from": "agent_ocr_tutor_stream"
+    },
+    {
+      "source": "导数定义",
+      "target": "极限",
+      "type": "前置",
+      "score": 0.94,
+      "evidence": "极限形式定义",
+      "source_text": "问题：导数是什么意思\n回答：# 分析\n\n根据知识库与图谱联合检索结果：  \n- 学生未查到「导数」掌握度数据，但系统依据题干语义与提问方式（仅问“是什么意思”，无上下文、无公式引用、无例题支撑）判定为**知识性薄弱**，符合掌握度 < 0.",
+      "created_at": "2026-04-15T17:37:49.883344",
+      "from": "agent_ocr_tutor_stream"
+    },
+    {
+      "source": "导数",
+      "target": "瞬时变化率",
+      "type": "相关",
+      "score": 0.85,
+      "evidence": "导数即瞬时变化率",
+      "source_text": "问题：导数是什么意思\n回答：# 分析\n\n- **掌握度确认**：学生对「导数」的掌握度为 0.35（< 0.4），属**知识性薄弱**，符合低水平路由策略；  \n- **错因诊断明确**：归因为「知识性错误（high）」，核心问题是**缺乏",
+      "created_at": "2026-04-15T17:46:59.488307",
+      "from": "agent_ocr_tutor_stream"
+    },
+    {
+      "source": "导数",
+      "target": "导数定义",
+      "type": "相关",
+      "score": 0.89,
+      "evidence": "导数由定义刻画",
+      "source_text": "问题：导数是什么意思\n回答：# 分析\n\n- **掌握度确认**：学生对「导数」的掌握度为 0.35（< 0.4），属**知识性薄弱**，符合低水平路由策略；  \n- **错因诊断明确**：归因为「知识性错误（high）」，核心问题是**缺乏",
+      "created_at": "2026-04-15T17:46:59.488311",
+      "from": "agent_ocr_tutor_stream"
+    },
+    {
+      "source": "导数",
+      "target": "导数的意义",
+      "type": "相关",
+      "score": 0.74,
+      "evidence": "意义与导数强关联",
+      "source_text": "问题：导数是什么意思\n回答：# 分析\n\n- **掌握度确认**：学生对「导数」的掌握度为 0.35（< 0.4），属**知识性薄弱**，符合低水平路由策略；  \n- **错因诊断明确**：归因为「知识性错误（high）」，核心问题是**缺乏",
+      "created_at": "2026-04-15T17:46:59.488314",
+      "from": "agent_ocr_tutor_stream"
+    }
+  ],
+  "deleted_concepts": []
+}

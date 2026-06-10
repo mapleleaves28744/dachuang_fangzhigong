@@ -1,0 +1,58 @@
+{
+  "user_id": "guest_6597ac9e61f84d31",
+  "updated_at": "2026-04-10T09:14:09.365217",
+  "learning_style": "visual",
+  "style_scores": {
+    "visual": 0.355,
+    "auditory": 0.36,
+    "kinesthetic": 0.36
+  },
+  "style_method": "kmeans",
+  "style_features": {
+    "image_count": 0,
+    "link_count": 0,
+    "qa_content_count": 0,
+    "note_count": 0,
+    "other_count": 0,
+    "qa_log_count": 1,
+    "concept_count": 1
+  },
+  "interests": [
+    "傅里叶变换"
+  ],
+  "best_time_range": "",
+  "focus_minutes": 45,
+  "content_type_counter": {
+    "note": 0,
+    "link": 0,
+    "image": 0,
+    "qa": 0,
+    "other": 0
+  },
+  "dashboard_hidden": {
+    "updated_at": "2026-04-10T09:14:04.714531",
+    "topic_daily_table": [],
+    "topic_total_table": [],
+    "study_window_daily_table": [
+      {
+        "date": "2026-04-10",
+        "label": "09:00-11:00",
+        "count": 7,
+        "duration_seconds": 0.0
+      }
+    ],
+    "study_window_total_table": [
+      {
+        "label": "09:00-11:00",
+        "count": 7,
+        "duration_seconds": 0.0
+      }
+    ],
+    "top_topic": {},
+    "top_study_window": {
+      "label": "09:00-11:00",
+      "count": 7,
+      "duration_seconds": 0.0
+    }
+  }
+}

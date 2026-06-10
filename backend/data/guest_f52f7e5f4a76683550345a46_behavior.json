@@ -1,0 +1,66 @@
+[
+  {
+    "id": "7389d8fb-61cf-4268-8bda-d3520a2d6b8e",
+    "user_id": "guest_f52f7e5f4a76683550345a46",
+    "timestamp": "2026-05-25T11:14:41.311725",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 2.628,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "125afd73-6226-4272-8113-4d9a7d45ca48",
+    "user_id": "guest_f52f7e5f4a76683550345a46",
+    "timestamp": "2026-05-25T11:14:48.822172",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "index",
+    "target": "",
+    "label": "page_view",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "ccf6e7cd-8da9-404d-8c55-466f3490f5dc",
+    "user_id": "guest_f52f7e5f4a76683550345a46",
+    "timestamp": "2026-05-25T11:14:56.857940",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 8.054,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "e7d90dab-6ce3-41ff-847a-9d6ca23a456e",
+    "user_id": "guest_f52f7e5f4a76683550345a46",
+    "timestamp": "2026-05-25T14:40:17.204223",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "question-bank",
+    "target": "",
+    "label": "pagehide",
+    "title": "题库练习 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 4.679,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/index.html"
+    }
+  }
+]

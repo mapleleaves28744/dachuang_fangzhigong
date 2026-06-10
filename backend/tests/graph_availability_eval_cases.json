@@ -1,0 +1,37 @@
+[
+  {
+    "id": "graph-01",
+    "user_id": "eval_graph_u1",
+    "query": "高等数学 导数 与 微分 核心定义",
+    "expected_graph_terms": ["导数", "微分"]
+  },
+  {
+    "id": "graph-02",
+    "user_id": "eval_graph_u2",
+    "query": "线性代数 矩阵 可逆 条件",
+    "expected_graph_terms": ["矩阵", "可逆"]
+  },
+  {
+    "id": "graph-03",
+    "user_id": "eval_graph_u3",
+    "query": "概率论 分布 与 期望",
+    "expected_graph_terms": ["分布", "期望"]
+  },
+  {
+    "id": "graph-04",
+    "user_id": "eval_graph_u4",
+    "query": "私有笔记中的链式法则概念",
+    "expected_graph_terms": ["链式法则", "复合函数", "求导"],
+    "private_note": {
+      "title": "链式法则图谱笔记",
+      "content": "复合函数求导要用链式法则，先外后内，最后乘以内函数导数。",
+      "tags": ["导数", "链式法则", "复合函数"]
+    }
+  },
+  {
+    "id": "graph-05",
+    "user_id": "eval_graph_u5",
+    "query": "操作系统 死锁 与 互斥 条件",
+    "expected_graph_terms": ["死锁", "互斥"]
+  }
+]

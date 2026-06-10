@@ -1,0 +1,81 @@
+{
+  "generated_at": "2026-04-10T18:24:11.097908",
+  "top_k": 5,
+  "cases_file": "C:\\Users\\28744\\Desktop\\fangwen\\fzg\\backend\\tests\\graph_availability_eval_cases.json",
+  "summary": {
+    "cases": 5,
+    "graph_connectivity_rate": 0.0,
+    "graph_recall_rate": 0.0,
+    "evidence_consistency_rate": 0.0,
+    "graph_context_rate": 0.0,
+    "avg_latency_ms": 18.696,
+    "avg_score": 0.0
+  },
+  "results": [
+    {
+      "id": "graph-01",
+      "query": "高等数学 导数 与 微分 核心定义",
+      "user_id": "eval_graph_u1",
+      "latency_ms": 69.67,
+      "graph_connected": false,
+      "graph_last_error": "neo4j package is not installed",
+      "graph_context_count": 0,
+      "hit_count": 5,
+      "graph_recall": 0.0,
+      "evidence_consistency": 0.0,
+      "score": 0.0
+    },
+    {
+      "id": "graph-02",
+      "query": "线性代数 矩阵 可逆 条件",
+      "user_id": "eval_graph_u2",
+      "latency_ms": 6.49,
+      "graph_connected": false,
+      "graph_last_error": "neo4j package is not installed",
+      "graph_context_count": 0,
+      "hit_count": 5,
+      "graph_recall": 0.0,
+      "evidence_consistency": 0.0,
+      "score": 0.0
+    },
+    {
+      "id": "graph-03",
+      "query": "概率论 分布 与 期望",
+      "user_id": "eval_graph_u3",
+      "latency_ms": 5.75,
+      "graph_connected": false,
+      "graph_last_error": "neo4j package is not installed",
+      "graph_context_count": 0,
+      "hit_count": 5,
+      "graph_recall": 0.0,
+      "evidence_consistency": 0.0,
+      "score": 0.0
+    },
+    {
+      "id": "graph-04",
+      "query": "私有笔记中的链式法则概念",
+      "user_id": "eval_graph_u4",
+      "latency_ms": 6.34,
+      "graph_connected": false,
+      "graph_last_error": "neo4j package is not installed",
+      "graph_context_count": 0,
+      "hit_count": 4,
+      "graph_recall": 0.0,
+      "evidence_consistency": 0.0,
+      "score": 0.0
+    },
+    {
+      "id": "graph-05",
+      "query": "操作系统 死锁 与 互斥 条件",
+      "user_id": "eval_graph_u5",
+      "latency_ms": 5.23,
+      "graph_connected": false,
+      "graph_last_error": "neo4j package is not installed",
+      "graph_context_count": 0,
+      "hit_count": 5,
+      "graph_recall": 0.0,
+      "evidence_consistency": 0.0,
+      "score": 0.0
+    }
+  ]
+}

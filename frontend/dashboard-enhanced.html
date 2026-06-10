@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎓 学习仪表盘 - FZG 智能伴侣</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --primary: #4770ff;
+            --primary-dark: #1d4ed8;
+            --primary-light: #e8f0ff;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --bg: #f4f7fb;
+            --text-dark: #0f172a;
+            --text-mid: #6b7280;
+            --border: #e5e7eb;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: linear-gradient(135deg, var(--bg) 0%, #e8f0ff 100%);
+            color: var(--text-dark);
+            min-height: 100vh;
+        }
+
+        /* ========== 顶部导航栏 ========== */
+        .navbar {
+            background: white;
+            border-bottom: 1px solid var(--border);
+            padding: 16px 28px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .navbar-logo {
+            font-size: 24px;
+            font-weight: 900;
+            background: linear-gradient(135deg, #4770ff, #0f7670);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .navbar-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: #1f2937;
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .nav-info {
+            text-align: right;
+        }
+
+        .nav-user {
+            font-weight: 600;
+            color: #1f2937;
+            font-size: 14px;
+        }
+
+        .nav-date {
+            font-size: 12px;
+            color: var(--text-mid);
+        }
+
+        /* ========== 主容器 ========== */
+        .container {
+            max-width: 1480px;
+            margin: 0 auto;
+            padding: 32px 28px;
+        }
+
+        .page-title {
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--text-dark);
+            margin-bottom: 6px;
+        }
+
+        .page-subtitle {
+            color: var(--text-mid);
+            font-size: 14px;
+            margin-bottom: 32px;
+        }
+
+        /* ========== 统计卡片 ========== */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+            border: 1px solid var(--border);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(71, 112, 255, 0.05), transparent);
+            border-radius: 50%;
+        }
+
+        .stat-card:hover {
+            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.12);
+            transform: translateY(-4px);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-mid);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 900;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-meta {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-bottom: 12px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-progress {
+            height: 6px;
+            background: var(--border);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+        }
+
+        .stat-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), #0f7670);
+            border-radius: 4px;
+        }
+
+        /* ========== 区段标题 ========== */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 32px 0 16px;
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-dark);
+        }
+
+        .section-icon { font-size: 22px; }
+
+        /* ========== 掌握度热力图 ========== */
+        .mastery-grid {
+            background: white;
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+            margin-bottom: 32px;
+        }
+
+        .heatmap {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+            gap: 14px;
+        }
+
+        .heatmap-tile {
+            padding: 18px;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            border: 2px solid transparent;
+            position: relative;
+        }
+
+        .heatmap-tile:hover {
+            transform: scale(1.08);
+            border-color: rgba(71, 112, 255, 0.4);
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+        }
+
+        .heatmap-tile.level-0 { background: #fecaca; color: #991b1b; }
+        .heatmap-tile.level-1 { background: #fed7aa; color: #b45309; }
+        .heatmap-tile.level-2 { background: #fef08a; color: #854d0e; }
+        .heatmap-tile.level-3 { background: #bbf7d0; color: #065f46; }
+        .heatmap-tile.level-4 { background: #86efac; color: #166534; }
+
+        .tile-concept {
+            font-weight: 700;
+            font-size: 13px;
+            margin-bottom: 6px;
+        }
+
+        .tile-mastery {
+            font-size: 24px;
+            font-weight: 900;
+            margin-bottom: 4px;
+        }
+
+        .tile-level {
+            font-size: 11px;
+            opacity: 0.85;
+        }
+
+        /* ========== 学习进度 ========== */
+        .progress-section {
+            background: white;
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+            margin-bottom: 32px;
+        }
+
+        .progress-item {
+            margin-bottom: 24px;
+        }
+
+        .progress-item:last-child { margin-bottom: 0; }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .progress-bar {
+            height: 10px;
+            background: var(--border);
+            border-radius: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--primary), #0f7670);
+            border-radius: 8px;
+            position: relative;
+            animation: wave 2s infinite linear;
+        }
+
+        @keyframes wave {
+            0%, 100% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+        }
+
+        /* ========== 图表 ========== */
+        .charts-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(420px, 1fr));
+            gap: 24px;
+            margin-bottom: 32px;
+        }
+
+        .chart-card {
+            background: white;
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+        }
+
+        .chart-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 20px;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        /* ========== 推荐路径 ========== */
+        .pathway-section {
+            background: white;
+            border-radius: 16px;
+            padding: 28px;
+            box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);
+        }
+
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            position: relative;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 40px;
+            bottom: 0;
+            width: 2px;
+            background: var(--border);
+        }
+
+        .timeline-item {
+            display: flex;
+            gap: 20px;
+            align-items: flex-start;
+            position: relative;
+        }
+
+        .timeline-marker {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: var(--primary-light);
+            border: 3px solid var(--primary);
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            color: var(--primary);
+            z-index: 2;
+        }
+
+        .timeline-marker.completed {
+            background: var(--success);
+            border-color: var(--success);
+            color: white;
+        }
+
+        .timeline-content {
+            flex: 1;
+            padding-top: 4px;
+        }
+
+        .timeline-title {
+            font-weight: 700;
+            color: #1f2937;
+            margin-bottom: 6px;
+        }
+
+        .timeline-desc {
+            font-size: 13px;
+            color: var(--text-mid);
+            margin-bottom: 6px;
+        }
+
+        .timeline-meta {
+            font-size: 12px;
+            color: #9ca3af;
+        }
+
+        /* ========== 响应式 ========== */
+        @media (max-width: 768px) {
+            .navbar {
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
+            }
+
+            .navbar-right {
+                width: 100%;
+                justify-content: space-between;
+            }
+
+            .container {
+                padding: 20px 16px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .charts-section {
+                grid-template-columns: 1fr;
+            }
+
+            .heatmap {
+                grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            }
+
+            .page-title {
+                font-size: 24px;
+            }
+
+            .stat-value {
+                font-size: 24px;
+            }
+        }
+
+    </style>
+</head>
+<body>
+
+<!-- 顶部导航 -->
+<div class="navbar">
+    <div class="navbar-left">
+        <div class="navbar-logo">FZG</div>
+        <div class="navbar-title">智能学习伴侣</div>
+    </div>
+    <div class="navbar-right">
+        <div class="nav-info">
+            <div class="nav-user">👤 张同学</div>
+            <div class="nav-date" id="currentDate"></div>
+        </div>
+    </div>
+</div>
+
+<!-- 主容器 -->
+<div class="container">
+
+    <!-- 页面标题 -->
+    <h1 class="page-title">📚 我的学习中心</h1>
+    <p class="page-subtitle">实时跟踪学习进度，AI驱动的个性化学习路径推荐</p>
+
+    <!-- 统计卡片 -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="stat-label">📊 总体掌握度</div>
+            <div class="stat-value">72%</div>
+            <div class="stat-meta">相比上周 ↑ 4%</div>
+            <div class="stat-progress">
+                <div class="stat-progress-bar" style="width: 72%;"></div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">✅ 完成任务</div>
+            <div class="stat-value">38</div>
+            <div class="stat-meta">本月累计 / 目标50</div>
+            <div class="stat-progress">
+                <div class="stat-progress-bar" style="width: 76%;"></div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">🎯 掌握概念</div>
+            <div class="stat-value">24</div>
+            <div class="stat-meta">共 52 个知识点</div>
+            <div class="stat-progress">
+                <div class="stat-progress-bar" style="width: 46%;"></div>
+            </div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-label">⏱️ 学习时长</div>
+            <div class="stat-value">156h</div>
+            <div class="stat-meta">累计本月</div>
+            <div class="stat-progress">
+                <div class="stat-progress-bar" style="width: 62%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 掌握度热力图 -->
+    <h2 class="section-header"><span class="section-icon">🔥</span> 知识点掌握度热力图</h2>
+    <div class="mastery-grid">
+        <div class="heatmap">
+            <div class="heatmap-tile level-4" title="精通">
+                <div class="tile-concept">一次函数</div>
+                <div class="tile-mastery">96%</div>
+                <div class="tile-level">精通</div>
+            </div>
+            <div class="heatmap-tile level-4" title="精通">
+                <div class="tile-concept">勾股定理</div>
+                <div class="tile-mastery">92%</div>
+                <div class="tile-level">精通</div>
+            </div>
+            <div class="heatmap-tile level-3" title="熟练">
+                <div class="tile-concept">二次函数</div>
+                <div class="tile-mastery">84%</div>
+                <div class="tile-level">熟练</div>
+            </div>
+            <div class="heatmap-tile level-3" title="熟练">
+                <div class="tile-concept">直角三角形</div>
+                <div class="tile-mastery">78%</div>
+                <div class="tile-level">熟练</div>
+            </div>
+            <div class="heatmap-tile level-2" title="中等">
+                <div class="tile-concept">方程组求解</div>
+                <div class="tile-mastery">65%</div>
+                <div class="tile-level">中等</div>
+            </div>
+            <div class="heatmap-tile level-1" title="初级">
+                <div class="tile-concept">集合论基础</div>
+                <div class="tile-mastery">48%</div>
+                <div class="tile-level">初级</div>
+            </div>
+            <div class="heatmap-tile level-0" title="未掌握">
+                <div class="tile-concept">立体几何</div>
+                <div class="tile-mastery">22%</div>
+                <div class="tile-level">未掌握</div>
+            </div>
+            <div class="heatmap-tile level-2" title="中等">
+                <div class="tile-concept">三角恒等式</div>
+                <div class="tile-mastery">58%</div>
+                <div class="tile-level">中等</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 学习进度 -->
+    <h2 class="section-header"><span class="section-icon">📈</span> 本周学习进度</h2>
+    <div class="progress-section">
+        <div class="progress-item">
+            <div class="progress-header">
+                <span>数学基础概念</span>
+                <span>78%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 78%;"></div>
+            </div>
+        </div>
+
+        <div class="progress-item">
+            <div class="progress-header">
+                <span>英语语法结构</span>
+                <span>62%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 62%;"></div>
+            </div>
+        </div>
+
+        <div class="progress-item">
+            <div class="progress-header">
+                <span>物理力学应用</span>
+                <span>85%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 85%;"></div>
+            </div>
+        </div>
+
+        <div class="progress-item">
+            <div class="progress-header">
+                <span>错题集整理</span>
+                <span>51%</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 51%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 图表 -->
+    <h2 class="section-header"><span class="section-icon">📊</span> 数据分析</h2>
+    <div class="charts-section">
+        <div class="chart-card">
+            <div class="chart-title">📅 近7天学习趋势</div>
+            <div class="chart-container">
+                <canvas id="trendChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card">
+            <div class="chart-title">🎓 学科分布</div>
+            <div class="chart-container">
+                <canvas id="subjectChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- 推荐学习路径 -->
+    <h2 class="section-header"><span class="section-icon">🛤️</span> AI推荐学习路径</h2>
+    <div class="pathway-section">
+        <div class="timeline">
+            <div class="timeline-item">
+                <div class="timeline-marker completed">✓</div>
+                <div class="timeline-content">
+                    <div class="timeline-title">✅ 基础三角形性质</div>
+                    <div class="timeline-desc">已完成 · 掌握度 94%</div>
+                    <div class="timeline-meta">完成于 2026年4月8日 · 用时 3小时</div>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-marker completed">✓</div>
+                <div class="timeline-content">
+                    <div class="timeline-title">✅ 勾股定理与应用</div>
+                    <div class="timeline-desc">已完成 · 掌握度 92%</div>
+                    <div class="timeline-meta">完成于 2026年4月9日 · 用时 2.5小时</div>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-marker">3</div>
+                <div class="timeline-content">
+                    <div class="timeline-title">🎯 正在进行：平面直角坐标系</div>
+                    <div class="timeline-desc">预计耗时 3 小时 · 当前进度 58%</div>
+                    <div class="timeline-meta">预计完成于 2026年4月11日</div>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-marker">4</div>
+                <div class="timeline-content">
+                    <div class="timeline-title">📚 推荐：一次函数深化探索</div>
+                    <div class="timeline-desc">基于掌握度与学习节奏AI推荐</div>
+                    <div class="timeline-meta">预计开始于 2026年4月12日</div>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-marker">5</div>
+                <div class="timeline-content">
+                    <div class="timeline-title">📖 补充：集合论基础强化</div>
+                    <div class="timeline-desc">识别到掌握度较低，建议优先补强</div>
+                    <div class="timeline-meta">预计开始于 2026年4月15日</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0"></script>
+<script>
+    // 设置当前日期
+    document.getElementById('currentDate').textContent = new Date().toLocaleDateString('zh-CN', {
+        month: '2-digit',
+        day: '2-digit',
+        year: 'numeric'
+    });
+
+    // 趋势图
+    const trendChart = new Chart(document.getElementById('trendChart'), {
+        type: 'line',
+        data: {
+            labels: ['周一', '周二', '周三', '周四', '周五', '周六', '周日'],
+            datasets: [{
+                label: '掌握度进度',
+                data: [65, 68, 70, 72, 74, 76, 78],
+                borderColor: '#4770ff',
+                backgroundColor: 'rgba(71, 112, 255, 0.1)',
+                borderWidth: 3,
+                tension: 0.4,
+                pointRadius: 5,
+                pointBackgroundColor: '#4770ff',
+                pointBorderColor: 'white',
+                pointBorderWidth: 2,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    grid: { color: '#e5e7eb' },
+                    ticks: { color: '#6b7280' }
+                },
+                x: {
+                    grid: { display: false },
+                    ticks: { color: '#6b7280' }
+                }
+            }
+        }
+    });
+
+    // 学科分布图
+    const subjectChart = new Chart(document.getElementById('subjectChart'), {
+        type: 'doughnut',
+        data: {
+            labels: ['数学 (45%)', '英语 (35%)', '物理 (20%)'],
+            datasets: [{
+                data: [45, 35, 20],
+                backgroundColor: ['#4770ff', '#0f7670', '#f59e0b'],
+                borderColor: 'white',
+                borderWidth: 3,
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom',
+                    labels: { color: '#6b7280', padding: 20, font: { size: 13 } }
+                }
+            }
+        }
+    });
+</script>
+
+</body>
+</html>

@@ -1,0 +1,78 @@
+[
+  {
+    "id": "a95ce113-fc3c-4cab-84b9-16a037420599",
+    "user_id": "guest_22bce8fdeb815cb9",
+    "timestamp": "2026-04-11T12:10:37.103420",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "dashboard",
+    "target": "",
+    "label": "page_view",
+    "title": "学习仪表盘 - 智能学习伴侣",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "3245a4a3-d1ba-49d6-aec5-d6b6d241119f",
+    "user_id": "guest_22bce8fdeb815cb9",
+    "timestamp": "2026-04-11T12:10:39.227533",
+    "type": "navigation_click",
+    "behavior_type": "navigation_click",
+    "page": "dashboard",
+    "target": "chat",
+    "label": "◎ 智能问答",
+    "title": "学习仪表盘 - 智能学习伴侣",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {}
+  },
+  {
+    "id": "8152d2b3-9db0-456c-a685-5923dce8c059",
+    "user_id": "guest_22bce8fdeb815cb9",
+    "timestamp": "2026-04-11T12:10:39.263733",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "chat",
+    "target": "",
+    "label": "page_view",
+    "title": "智能问答 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": "http://127.0.0.1:5501/dashboard.html"
+    }
+  },
+  {
+    "id": "7668bd49-b4b4-4c8f-9aa4-3dd242e0925d",
+    "user_id": "guest_22bce8fdeb815cb9",
+    "timestamp": "2026-04-11T12:10:57.526880",
+    "type": "navigation_click",
+    "behavior_type": "navigation_click",
+    "page": "chat",
+    "target": "knowledge-map",
+    "label": "◇ 知识图谱",
+    "title": "智能问答 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {}
+  },
+  {
+    "id": "7b73096e-bdcf-4e25-a816-dd1f7f8adde2",
+    "user_id": "guest_22bce8fdeb815cb9",
+    "timestamp": "2026-04-11T12:10:57.612627",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "knowledge-map",
+    "target": "",
+    "label": "page_view",
+    "title": "知识图谱 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": "http://127.0.0.1:5501/chat.html"
+    }
+  }
+]

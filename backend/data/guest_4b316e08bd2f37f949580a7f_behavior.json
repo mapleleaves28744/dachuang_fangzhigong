@@ -1,0 +1,34 @@
+[
+  {
+    "id": "b90d5b90-3c68-4122-9522-150bcb0ea3e2",
+    "user_id": "guest_4b316e08bd2f37f949580a7f",
+    "timestamp": "2026-05-26T17:03:55.320684",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 37.861,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "81e2197e-b125-4181-bec8-bbf3e5ffd53a",
+    "user_id": "guest_4b316e08bd2f37f949580a7f",
+    "timestamp": "2026-05-26T17:04:20.783385",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "spaces",
+    "target": "",
+    "label": "pagehide",
+    "title": "新 - 空间",
+    "source": "page_shell",
+    "duration_seconds": 4.533,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/"
+    }
+  }
+]

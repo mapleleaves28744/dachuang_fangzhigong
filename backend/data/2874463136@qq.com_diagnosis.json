@@ -1,0 +1,396 @@
+[
+  {
+    "id": "b2c1a0ca-538f-4fb8-892f-0cfd431f5914",
+    "timestamp": "2026-04-10T22:31:14.037801",
+    "question": "在真空中，两个点电荷 +Q 和 -Q 分别固定在 x 轴上的 x = -a 和 x = +a 处。在原点 O 处的电场强度方向为：",
+    "correct_answer": "B",
+    "user_answer": "A",
+    "concept": "电场",
+    "diagnosis": {
+      "error_type": "知识性错误",
+      "category": "knowledge",
+      "severity": "high",
+      "recommendation": "先暂停刷题，先把“电场”补清楚。先看 1 个 5-8 分钟讲解视频，再整理 1 张概念/公式卡片，然后做 2 道基础例题，最后当天重做这道题。",
+      "confidence": 0.86,
+      "signals": [
+        "该知识点作答前掌握度低于 0.4",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低",
+        "该知识点作答前掌握度低于 0.4",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低",
+        "本次作答明显偏快"
+      ],
+      "score_detail": {
+        "knowledge_rule_hits": 3,
+        "skill_rule_hits": 0,
+        "habit_rule_hits": 1,
+        "recent_accuracy": 0.0,
+        "time_ratio": 0.089,
+        "standard_time_seconds": 60.0,
+        "response_time_seconds": 5.365,
+        "near_miss": false,
+        "mastery_reference": 0.232
+      },
+      "reason": "电场的定义、公式或判断条件还没有真正建立，看到题目时不知道该从哪里开始。",
+      "recommended_actions": [
+        "看该知识点5-8分钟讲解视频",
+        "整理1张公式/概念卡片",
+        "做2道基础例题并对照答案",
+        "当天再复做原题1次"
+      ],
+      "recent_accuracy": 0.0,
+      "time_ratio": 0.089,
+      "near_miss": false
+    },
+    "mastery_assessment": {
+      "知识点": "电场",
+      "掌握度": 0.232,
+      "状态": "薄弱",
+      "正确率": 0.0,
+      "原始正确率": 0.0,
+      "最近正确率": 0.0,
+      "正确次数": 0,
+      "作答次数": 1,
+      "时间得分": 0.6,
+      "中位作答时间": 5.365,
+      "标准作答时间": 15.0,
+      "时间比值": 0.358,
+      "练习系数": 0.55,
+      "基础掌握度": 0.232,
+      "遗忘系数": 1.0,
+      "距今未练天数": 0,
+      "最近作答时间": "2026-04-10T22:31:14.037801"
+    }
+  },
+  {
+    "id": "c8ab5a0c-aecd-4da7-95e9-923b04b88167",
+    "timestamp": "2026-04-10T22:31:26.426728",
+    "question": "请用自己的话解释“电场”的核心定义，并给出 1 个应用场景。",
+    "correct_answer": "应包含定义关键词，并给出可落地的例子。",
+    "user_answer": "不会",
+    "concept": "电场",
+    "diagnosis": {
+      "error_type": "知识性错误",
+      "category": "knowledge",
+      "severity": "high",
+      "recommendation": "先暂停刷题，先把“电场”补清楚。先看 1 个 5-8 分钟讲解视频，再整理 1 张概念/公式卡片，然后做 2 道基础例题，最后当天重做这道题。",
+      "confidence": 0.92,
+      "signals": [
+        "出现不会/不懂类表达",
+        "该知识点作答前掌握度低于 0.4",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低",
+        "出现不会/不懂类表达",
+        "该知识点作答前掌握度低于 0.4",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低"
+      ],
+      "score_detail": {
+        "knowledge_rule_hits": 4,
+        "skill_rule_hits": 0,
+        "habit_rule_hits": 1,
+        "recent_accuracy": 0.0,
+        "time_ratio": 0.505,
+        "standard_time_seconds": 15.0,
+        "response_time_seconds": 7.577,
+        "near_miss": false,
+        "mastery_reference": 0.232
+      },
+      "reason": "电场的定义、公式或判断条件还没有真正建立，看到题目时不知道该从哪里开始。",
+      "recommended_actions": [
+        "看该知识点5-8分钟讲解视频",
+        "整理1张公式/概念卡片",
+        "做2道基础例题并对照答案",
+        "当天再复做原题1次"
+      ],
+      "recent_accuracy": 0.0,
+      "time_ratio": 0.505,
+      "near_miss": false
+    },
+    "mastery_assessment": {
+      "知识点": "电场",
+      "掌握度": 0.292,
+      "状态": "薄弱",
+      "正确率": 0.0,
+      "原始正确率": 0.0,
+      "最近正确率": 0.0,
+      "正确次数": 0,
+      "作答次数": 2,
+      "时间得分": 0.75,
+      "中位作答时间": 6.471,
+      "标准作答时间": 15.0,
+      "时间比值": 0.431,
+      "练习系数": 0.7,
+      "基础掌握度": 0.292,
+      "遗忘系数": 1.0,
+      "距今未练天数": 0,
+      "最近作答时间": "2026-04-10T22:31:26.426728"
+    }
+  },
+  {
+    "id": "1309fbfa-ef79-48cb-9fc2-f865dc368c77",
+    "timestamp": "2026-04-10T22:32:44.301643",
+    "question": "若函数 $ h(x) = \\frac{e^x}{x} $（$ x \\neq 0 $），则其导数 $ h'(x) $ 等于：",
+    "correct_answer": "A",
+    "user_answer": "B",
+    "concept": "导数",
+    "diagnosis": {
+      "error_type": "技能性错误",
+      "category": "skill",
+      "severity": "medium",
+      "recommendation": "先不要盲目加量，先限定题型练习。先做 3 道同题型题并写出关键步骤，再做 1 道限时题，要求先做对再做快。",
+      "confidence": 0.74,
+      "signals": [
+        "作答时间偏长，说明应用步骤还不熟",
+        "与标准答案关键点重合较低",
+        "作答时间偏长，说明应用步骤还不熟",
+        "该知识点近期表现较好"
+      ],
+      "score_detail": {
+        "knowledge_rule_hits": 1,
+        "skill_rule_hits": 1,
+        "habit_rule_hits": 1,
+        "recent_accuracy": 1.0,
+        "time_ratio": 2.394,
+        "standard_time_seconds": 15.0,
+        "response_time_seconds": 35.909,
+        "near_miss": false,
+        "mastery_reference": 0.975
+      },
+      "reason": "导数已经有基础，但迁移到题目里时还不够稳定，容易在变形、代入或审题环节出错。",
+      "recommended_actions": [
+        "做3道同题型题并写出关键步骤",
+        "对照标准答案标记丢步骤的位置",
+        "再做1道限时题",
+        "把本题常用步骤总结成清单"
+      ],
+      "recent_accuracy": 1.0,
+      "time_ratio": 2.394,
+      "near_miss": false
+    },
+    "mastery_assessment": {
+      "知识点": "导数",
+      "掌握度": 0.787,
+      "状态": "一般",
+      "正确率": 0.769,
+      "原始正确率": 0.8,
+      "最近正确率": 0.8,
+      "正确次数": 4,
+      "作答次数": 5,
+      "时间得分": 0.75,
+      "中位作答时间": 9.243,
+      "标准作答时间": 15.0,
+      "时间比值": 0.616,
+      "练习系数": 0.92,
+      "基础掌握度": 0.787,
+      "遗忘系数": 1.0,
+      "距今未练天数": 0,
+      "最近作答时间": "2026-04-10T22:32:44.301643"
+    }
+  },
+  {
+    "id": "103ef2a3-a0f6-40ec-a1fb-11b1b84cbd1e",
+    "timestamp": "2026-04-10T22:42:36.602872",
+    "question": "已知函数 $ g(x) = \\sin(3x + 1) $，求其在 $ x = 0 $ 处的导数值。",
+    "correct_answer": "3\\cos(1)",
+    "user_answer": "B",
+    "concept": "导数",
+    "diagnosis": {
+      "error_type": "技能性错误",
+      "category": "skill",
+      "severity": "medium",
+      "recommendation": "先不要盲目加量，先限定题型练习。先做 3 道同题型题并写出关键步骤，再做 1 道限时题，要求先做对再做快。",
+      "confidence": 0.74,
+      "signals": [
+        "作答时间偏长，说明应用步骤还不熟",
+        "与标准答案关键点重合较低",
+        "作答时间偏长，说明应用步骤还不熟",
+        "该知识点近期表现较好"
+      ],
+      "score_detail": {
+        "knowledge_rule_hits": 1,
+        "skill_rule_hits": 1,
+        "habit_rule_hits": 1,
+        "recent_accuracy": 0.8,
+        "time_ratio": 37.854,
+        "standard_time_seconds": 15.0,
+        "response_time_seconds": 567.814,
+        "near_miss": false,
+        "mastery_reference": 0.868
+      },
+      "reason": "导数已经有基础，但迁移到题目里时还不够稳定，容易在变形、代入或审题环节出错。",
+      "recommended_actions": [
+        "做3道同题型题并写出关键步骤",
+        "对照标准答案标记丢步骤的位置",
+        "再做1道限时题",
+        "把本题常用步骤总结成清单"
+      ],
+      "recent_accuracy": 0.8,
+      "time_ratio": 37.854,
+      "near_miss": false
+    },
+    "mastery_assessment": {
+      "知识点": "导数",
+      "掌握度": 0.726,
+      "状态": "一般",
+      "正确率": 0.647,
+      "原始正确率": 0.714,
+      "最近正确率": 0.6,
+      "正确次数": 5,
+      "作答次数": 7,
+      "时间得分": 0.75,
+      "中位作答时间": 7.896,
+      "标准作答时间": 15.0,
+      "时间比值": 0.526,
+      "练习系数": 1.0,
+      "基础掌握度": 0.726,
+      "遗忘系数": 1.0,
+      "距今未练天数": 0,
+      "最近作答时间": "2026-04-10T22:42:36.602872"
+    }
+  },
+  {
+    "id": "b3c7ee44-03db-4411-950b-544e4c0d4d40",
+    "timestamp": "2026-04-10T22:51:45.920061",
+    "question": "设函数 $ f(x) = x^2 e^x $，则 $ f'(1) $ 的值为？",
+    "correct_answer": "A",
+    "user_answer": "[object PointerEvent]",
+    "concept": "导数",
+    "diagnosis": {
+      "error_type": "技能性错误",
+      "category": "skill",
+      "severity": "medium",
+      "recommendation": "先不要盲目加量，先限定题型练习。先做 3 道同题型题并写出关键步骤，再做 1 道限时题，要求先做对再做快。",
+      "confidence": 0.86,
+      "signals": [
+        "作答时间偏长，说明应用步骤还不熟",
+        "掌握度处于一般区间，说明会但不稳定",
+        "近期正确率一般，说明方法迁移还不稳",
+        "与标准答案关键点重合较低",
+        "作答时间偏长，说明应用步骤还不熟",
+        "掌握度处于一般区间，说明会但不稳定",
+        "近期正确率一般，说明方法迁移还不稳"
+      ],
+      "score_detail": {
+        "knowledge_rule_hits": 1,
+        "skill_rule_hits": 3,
+        "habit_rule_hits": 0,
+        "recent_accuracy": 0.6,
+        "time_ratio": 23.51,
+        "standard_time_seconds": 15.0,
+        "response_time_seconds": 352.646,
+        "near_miss": false,
+        "mastery_reference": 0.726
+      },
+      "reason": "导数已经有基础，但迁移到题目里时还不够稳定，容易在变形、代入或审题环节出错。",
+      "recommended_actions": [
+        "做3道同题型题并写出关键步骤",
+        "对照标准答案标记丢步骤的位置",
+        "再做1道限时题",
+        "把本题常用步骤总结成清单"
+      ],
+      "recent_accuracy": 0.6,
+      "time_ratio": 23.51,
+      "near_miss": false
+    },
+    "mastery_assessment": {
+      "知识点": "导数",
+      "掌握度": 0.635,
+      "状态": "一般",
+      "正确率": 0.579,
+      "原始正确率": 0.625,
+      "最近正确率": 0.4,
+      "正确次数": 5,
+      "作答次数": 8,
+      "时间得分": 0.55,
+      "中位作答时间": 35.909,
+      "标准作答时间": 15.0,
+      "时间比值": 2.394,
+      "练习系数": 1.0,
+      "基础掌握度": 0.635,
+      "遗忘系数": 1.0,
+      "距今未练天数": 0,
+      "最近作答时间": "2026-04-10T22:51:45.920061"
+    }
+  },
+  {
+    "id": "c2e24ee3-abfd-404e-a782-1f68842ca2de",
+    "timestamp": "2026-04-11T13:05:35.106712",
+    "question": "什么是HTML/CSS",
+    "correct_answer": "# 分析（更新）\n\n✅ **错因诊断完成**：  \n- 学生原回答：“HTML/CSS是一种编程语言，用来做网页的。”  \n- 归因结论：**知识性错误（high 严重度）** → 混淆「标记语言/样式表」与「编程语言」本质；忽略 HTML 与 CSS 的分工及依赖关系（「图谱显示：HTML → CSS（前置）」未被认知）。  \n\n✅ **学习计划已生成但需强化**：  \n- 当前计划（D1–D3",
+    "user_answer": "",
+    "concept": "什么是",
+    "diagnosis": {
+      "category": "knowledge",
+      "error_type": "学习建议",
+      "confidence": 0.55,
+      "signals": [
+        "answer_recommendation"
+      ],
+      "recommendation": "> “先用 10 分钟补核心定义 → 做 2 道最基础题校准 → 回到原题复盘”。",
+      "reason": "从问答回复中提取到建议并同步到诊断看板。",
+      "recommended_actions": [
+        "> “先用 10 分钟补核心定义 → 做 2 道最基础题校准 → 回到原题复盘”。"
+      ]
+    },
+    "learning_advice": {
+      "建议": "> “先用 10 分钟补核心定义 → 做 2 道最基础题校准 → 回到原题复盘”。"
+    },
+    "mastery_assessment": {
+      "知识点": "什么是",
+      "掌握度": null,
+      "状态": "待跟进"
+    },
+    "source": "agent_ocr_tutor_stream"
+  },
+  {
+    "id": "521e6a93-3c51-4d2c-97f6-a8baace6c0ee",
+    "timestamp": "2026-04-11T13:34:40.797809",
+    "question": "什么是Node.js？",
+    "correct_answer": "Node.js是一个基于Chrome V8引擎的JavaScript运行时环境，用于构建高性能、可扩展的网络应用。",
+    "user_answer": "Node.js是一种编程语言。",
+    "concept": "Node.js",
+    "diagnosis": {
+      "error_type": "知识性错误",
+      "category": "knowledge",
+      "severity": "high",
+      "recommendation": "建议先用 10 分钟补“Node.js”核心定义，再做 2 道最基础题校准，再回到原题复盘错因。",
+      "confidence": 0.74,
+      "signals": [
+        "该知识点首次接触即答错",
+        "该知识点首次接触即答错",
+        "知道部分关键点，但答案不够完整"
+      ],
+      "score_detail": {
+        "knowledge_rule_hits": 1,
+        "skill_rule_hits": 1,
+        "habit_rule_hits": 0,
+        "recent_accuracy": 0.0,
+        "time_ratio": null,
+        "standard_time_seconds": 60.0,
+        "response_time_seconds": null,
+        "near_miss": false,
+        "mastery_reference": null
+      },
+      "reason": "Node.js的定义、公式或判断条件还没有真正建立，看到题目时不知道该从哪里开始。",
+      "recommended_actions": [
+        "看该知识点5-8分钟讲解视频",
+        "整理1张公式/概念卡片",
+        "做2道基础例题并对照答案",
+        "当天再复做原题1次"
+      ],
+      "recent_accuracy": 0.0,
+      "time_ratio": null,
+      "near_miss": false
+    },
+    "learning_advice": {
+      "建议": "建议先用 10 分钟补“Node.js”核心定义，再做 2 道最基础题校准，再回到原题复盘错因。"
+    },
+    "mastery_assessment": {
+      "知识点": "Node.js",
+      "掌握度": 0.0
+    },
+    "source": "agent_tool"
+  }
+]

@@ -1,0 +1,87 @@
+{
+  "concepts": [
+    {
+      "concept": "链式法则",
+      "first_seen": "2026-04-14T21:16:47.058090",
+      "last_seen": "2026-04-14T21:16:47.058090",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "导数",
+      "first_seen": "2026-04-14T21:16:47.058102",
+      "last_seen": "2026-04-14T21:16:47.058102",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "求导法则",
+      "first_seen": "2026-04-14T21:16:47.058106",
+      "last_seen": "2026-04-14T21:16:47.058106",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "隐函数求导",
+      "first_seen": "2026-04-14T21:16:47.058108",
+      "last_seen": "2026-04-14T21:16:47.058108",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "参数方程求导",
+      "first_seen": "2026-04-14T21:16:47.058111",
+      "last_seen": "2026-04-14T21:16:47.058111",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    }
+  ],
+  "relations": [
+    {
+      "source": "链式法则",
+      "target": "导数",
+      "type": "前置",
+      "score": 0.95,
+      "evidence": "链式法则用于求导",
+      "source_text": "问题：请解释链式法则\n回答：分析\n当前问题聚焦于“链式法则”。\n检索结果显示：命中 3 条资料，图谱增强贡献 1.000。\n优先证据来自《链式法则》，来源通道为 graph_rag。\n\n讲解\n1. 根据资料《链式法则》：\n2. 根据资料《函",
+      "created_at": "2026-04-14T21:16:47.058119",
+      "from": "agent_ocr_tutor"
+    },
+    {
+      "source": "链式法则",
+      "target": "求导法则",
+      "type": "并列",
+      "score": 0.9,
+      "evidence": "图谱提示并列关系",
+      "source_text": "问题：请解释链式法则\n回答：分析\n当前问题聚焦于“链式法则”。\n检索结果显示：命中 3 条资料，图谱增强贡献 1.000。\n优先证据来自《链式法则》，来源通道为 graph_rag。\n\n讲解\n1. 根据资料《链式法则》：\n2. 根据资料《函",
+      "created_at": "2026-04-14T21:16:47.058123",
+      "from": "agent_ocr_tutor"
+    },
+    {
+      "source": "链式法则",
+      "target": "隐函数求导",
+      "type": "相关",
+      "score": 0.85,
+      "evidence": "图谱提示相关路径",
+      "source_text": "问题：请解释链式法则\n回答：分析\n当前问题聚焦于“链式法则”。\n检索结果显示：命中 3 条资料，图谱增强贡献 1.000。\n优先证据来自《链式法则》，来源通道为 graph_rag。\n\n讲解\n1. 根据资料《链式法则》：\n2. 根据资料《函",
+      "created_at": "2026-04-14T21:16:47.058126",
+      "from": "agent_ocr_tutor"
+    },
+    {
+      "source": "链式法则",
+      "target": "参数方程求导",
+      "type": "相关",
+      "score": 0.85,
+      "evidence": "图谱提示相关路径",
+      "source_text": "问题：请解释链式法则\n回答：分析\n当前问题聚焦于“链式法则”。\n检索结果显示：命中 3 条资料，图谱增强贡献 1.000。\n优先证据来自《链式法则》，来源通道为 graph_rag。\n\n讲解\n1. 根据资料《链式法则》：\n2. 根据资料《函",
+      "created_at": "2026-04-14T21:16:47.058129",
+      "from": "agent_ocr_tutor"
+    }
+  ],
+  "deleted_concepts": []
+}

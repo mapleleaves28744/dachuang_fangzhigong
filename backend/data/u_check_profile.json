@@ -1,0 +1,36 @@
+{
+  "user_id": "u_check",
+  "updated_at": "2026-04-14T21:16:47.748648",
+  "learning_style": "visual",
+  "style_scores": {
+    "visual": 0.364,
+    "auditory": 0.39,
+    "kinesthetic": 0.39
+  },
+  "style_method": "kmeans",
+  "style_features": {
+    "image_count": 0,
+    "link_count": 0,
+    "qa_content_count": 1,
+    "note_count": 0,
+    "other_count": 0,
+    "qa_log_count": 1,
+    "concept_count": 5
+  },
+  "interests": [
+    "链式法则",
+    "导数",
+    "求导法则",
+    "隐函数求导",
+    "参数方程求导"
+  ],
+  "best_time_range": "21:00-23:00",
+  "focus_minutes": 45,
+  "content_type_counter": {
+    "note": 0,
+    "link": 0,
+    "image": 0,
+    "qa": 1,
+    "other": 0
+  }
+}

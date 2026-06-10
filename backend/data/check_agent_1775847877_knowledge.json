@@ -1,0 +1,113 @@
+{
+  "concepts": [
+    {
+      "concept": "非谓语动词",
+      "first_seen": "2026-04-11T03:05:25.541411",
+      "last_seen": "2026-04-11T03:05:25.541411",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "应用文写作",
+      "first_seen": "2026-04-11T03:05:25.541411",
+      "last_seen": "2026-04-11T03:05:25.541411",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "功能辨析",
+      "first_seen": "2026-04-11T03:05:25.541411",
+      "last_seen": "2026-04-11T03:05:25.541411",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "位置规则",
+      "first_seen": "2026-04-11T03:05:25.541411",
+      "last_seen": "2026-04-11T03:05:25.541411",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "解题四步法",
+      "first_seen": "2026-04-11T03:05:25.541411",
+      "last_seen": "2026-04-11T03:05:25.541411",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "信息定位",
+      "first_seen": "2026-04-11T03:05:25.541411",
+      "last_seen": "2026-04-11T03:05:25.541411",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "条件判定",
+      "first_seen": "2026-04-11T03:05:25.541411",
+      "last_seen": "2026-04-11T03:05:25.541411",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    }
+  ],
+  "relations": [
+    {
+      "source": "非谓语动词",
+      "target": "应用文写作",
+      "type": "相关",
+      "score": 0.95,
+      "evidence": "教学编码体系中统称",
+      "source_text": "问题：我不会做这道题，完全看不懂\n回答：# 分析  \n学生ID：check_agent_1775847877 当前未在系统中记录对「题目OCR文本」及关联知识点「应用文写作-非谓语-K17」的掌握度数据（「掌握度未知」）；知识图谱中该知识点",
+      "created_at": "2026-04-11T03:05:25.541411",
+      "from": "agent_ocr_tutor"
+    },
+    {
+      "source": "功能辨析",
+      "target": "非谓语动词",
+      "type": "前置",
+      "score": 0.92,
+      "evidence": "先辨析功能再选形式",
+      "source_text": "问题：我不会做这道题，完全看不懂\n回答：# 分析  \n学生ID：check_agent_1775847877 当前未在系统中记录对「题目OCR文本」及关联知识点「应用文写作-非谓语-K17」的掌握度数据（「掌握度未知」）；知识图谱中该知识点",
+      "created_at": "2026-04-11T03:05:25.541411",
+      "from": "agent_ocr_tutor"
+    },
+    {
+      "source": "位置规则",
+      "target": "非谓语动词",
+      "type": "前置",
+      "score": 0.9,
+      "evidence": "先判定成分再匹配功能",
+      "source_text": "问题：我不会做这道题，完全看不懂\n回答：# 分析  \n学生ID：check_agent_1775847877 当前未在系统中记录对「题目OCR文本」及关联知识点「应用文写作-非谓语-K17」的掌握度数据（「掌握度未知」）；知识图谱中该知识点",
+      "created_at": "2026-04-11T03:05:25.541411",
+      "from": "agent_ocr_tutor"
+    },
+    {
+      "source": "解题四步法",
+      "target": "信息定位",
+      "type": "前置",
+      "score": 0.88,
+      "evidence": "步骤1即圈关键词",
+      "source_text": "问题：我不会做这道题，完全看不懂\n回答：# 分析  \n学生ID：check_agent_1775847877 当前未在系统中记录对「题目OCR文本」及关联知识点「应用文写作-非谓语-K17」的掌握度数据（「掌握度未知」）；知识图谱中该知识点",
+      "created_at": "2026-04-11T03:05:25.541411",
+      "from": "agent_ocr_tutor"
+    },
+    {
+      "source": "解题四步法",
+      "target": "条件判定",
+      "type": "前置",
+      "score": 0.87,
+      "evidence": "步骤2即判定条件",
+      "source_text": "问题：我不会做这道题，完全看不懂\n回答：# 分析  \n学生ID：check_agent_1775847877 当前未在系统中记录对「题目OCR文本」及关联知识点「应用文写作-非谓语-K17」的掌握度数据（「掌握度未知」）；知识图谱中该知识点",
+      "created_at": "2026-04-11T03:05:25.541411",
+      "from": "agent_ocr_tutor"
+    }
+  ],
+  "deleted_concepts": []
+}

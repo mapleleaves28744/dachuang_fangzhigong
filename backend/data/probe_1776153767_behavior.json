@@ -1,0 +1,30 @@
+[
+  {
+    "id": "95d01f4d-0fdd-4996-90a8-6a123e0a36db",
+    "user_id": "probe_1776153767",
+    "timestamp": "2026-04-14T16:02:49.702708",
+    "type": "auth_login",
+    "behavior_type": "auth_login",
+    "page": "auth",
+    "target": "",
+    "label": "账号登录",
+    "title": "auth_login",
+    "source": "auth_register",
+    "duration_seconds": 0.0,
+    "meta": {}
+  },
+  {
+    "id": "9432868d-0d51-4e4d-8646-8912e7ccb488",
+    "user_id": "probe_1776153767",
+    "timestamp": "2026-04-14T16:03:19.522995",
+    "type": "auth_login",
+    "behavior_type": "auth_login",
+    "page": "auth",
+    "target": "",
+    "label": "账号登录",
+    "title": "auth_login",
+    "source": "auth_login",
+    "duration_seconds": 0.0,
+    "meta": {}
+  }
+]

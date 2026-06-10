@@ -1,0 +1,22 @@
+[
+  {
+    "id": "acd7b345-469f-4081-aa95-0f50b414e44f",
+    "task_id": "task_refresh_001",
+    "task_type": "practice",
+    "concept": "纱线结构",
+    "accuracy": 0.667,
+    "correct_count": 4,
+    "total_count": 6,
+    "duration_seconds": 240,
+    "timestamp": "2026-05-11T22:04:54.009500",
+    "fact_source": {
+      "primary_source": "learning_feedback",
+      "fact_id": "acd7b345-469f-4081-aa95-0f50b414e44f",
+      "source_key": "",
+      "question_id": "",
+      "task_id": "task_refresh_001",
+      "concept": "纱线结构",
+      "timestamp": "2026-05-11T22:04:54.009500"
+    }
+  }
+]

@@ -1,0 +1,72 @@
+[
+  {
+    "id": "case-01",
+    "student_id": "eval_u1",
+    "ocr_text": "已知函数f(x)=x^2-4x+3，求最小值。",
+    "question": "请给我分步讲解并指出相关知识点。",
+    "expected_keywords": ["二次函数", "顶点", "最小值"]
+  },
+  {
+    "id": "case-02",
+    "student_id": "eval_u2",
+    "ocr_text": "求导：y=sinx * e^x",
+    "question": "我总是不会这类题。",
+    "expected_keywords": ["乘积求导", "sin", "e^x"]
+  },
+  {
+    "id": "case-03",
+    "student_id": "eval_u3",
+    "ocr_text": "解方程：2x+5=17",
+    "question": "请给出最快思路。",
+    "expected_keywords": ["移项", "x=6"]
+  },
+  {
+    "id": "case-04",
+    "student_id": "eval_u4",
+    "ocr_text": "求极限 lim(x->0) (sinx)/x",
+    "question": "这个题为什么结果是1？",
+    "expected_keywords": ["极限", "夹逼", "1"]
+  },
+  {
+    "id": "case-05",
+    "student_id": "eval_u5",
+    "ocr_text": "几何题：已知直角三角形两直角边3和4，求斜边。",
+    "question": "我忘记公式了。",
+    "expected_keywords": ["勾股定理", "5"]
+  },
+  {
+    "id": "case-06",
+    "student_id": "eval_u6",
+    "ocr_text": "概率题：抛两次硬币，至少一次正面的概率。",
+    "question": "请用补集法。",
+    "expected_keywords": ["补集", "3/4"]
+  },
+  {
+    "id": "case-07",
+    "student_id": "eval_u7",
+    "ocr_text": "化简：(a+b)^2 - (a-b)^2",
+    "question": "步骤写详细点。",
+    "expected_keywords": ["平方差", "4ab"]
+  },
+  {
+    "id": "case-08",
+    "student_id": "eval_u8",
+    "ocr_text": "积分：∫2x dx",
+    "question": "要不要加常数C？",
+    "expected_keywords": ["积分", "x^2", "C"]
+  },
+  {
+    "id": "case-09",
+    "student_id": "eval_u9",
+    "ocr_text": "数列：等差数列首项2，公差3，第10项是多少？",
+    "question": "我总算错代入。",
+    "expected_keywords": ["等差数列", "a_n", "29"]
+  },
+  {
+    "id": "case-10",
+    "student_id": "eval_u10",
+    "ocr_text": "函数单调性判定：f'(x)>0 说明什么？",
+    "question": "请结合图像解释。",
+    "expected_keywords": ["单调递增", "导数", "图像"]
+  }
+]

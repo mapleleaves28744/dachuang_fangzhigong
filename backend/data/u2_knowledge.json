@@ -1,0 +1,117 @@
+{
+  "concepts": [
+    {
+      "concept": "文本",
+      "first_seen": "2026-04-11T02:54:35.534912",
+      "last_seen": "2026-04-11T02:54:35.534912",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "回答",
+      "first_seen": "2026-04-11T02:54:35.534912",
+      "last_seen": "2026-04-11T02:54:35.534912",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "图像题已解答",
+      "first_seen": "2026-04-11T02:54:35.534912",
+      "last_seen": "2026-04-14T21:55:10.657685",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "OCR文本",
+      "first_seen": "2026-04-11T02:55:24.499495",
+      "last_seen": "2026-04-14T21:55:10.657671",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "图像题",
+      "first_seen": "2026-04-11T02:55:24.499495",
+      "last_seen": "2026-04-14T21:19:23.951624",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    }
+  ],
+  "relations": [
+    {
+      "source": "回答",
+      "target": "图像题已解答",
+      "type": "相关",
+      "score": 0.52,
+      "evidence": "文本顺序弱关联",
+      "source_text": "问题：OCR文本\n回答：图像题已解答",
+      "created_at": "2026-04-11T02:54:35.534912",
+      "from": "agent_ocr_tutor"
+    },
+    {
+      "source": "文本",
+      "target": "回答",
+      "type": "相关",
+      "score": 0.52,
+      "evidence": "文本顺序弱关联",
+      "source_text": "问题：OCR文本\n回答：图像题已解答",
+      "created_at": "2026-04-11T02:54:35.534912",
+      "from": "agent_ocr_tutor"
+    },
+    {
+      "source": "OCR文本",
+      "target": "图像题",
+      "type": "前置",
+      "score": 0.9,
+      "evidence": "OCR文本是图像题输入",
+      "source_text": "问题：OCR文本\n回答：图像题已解答",
+      "created_at": "2026-04-11T02:55:24.499495",
+      "from": "agent_ocr_tutor"
+    },
+    {
+      "source": "图像题",
+      "target": "图像题已解答",
+      "type": "相关",
+      "score": 0.85,
+      "evidence": "回答中直接关联",
+      "source_text": "问题：OCR文本\n回答：图像题已解答",
+      "created_at": "2026-04-11T02:55:24.499495",
+      "from": "agent_ocr_tutor"
+    },
+    {
+      "source": "OCR文本",
+      "target": "图像题已解答",
+      "type": "因果",
+      "score": 0.85,
+      "evidence": "OCR文本触发解答",
+      "source_text": "问题：OCR文本\n回答：图像题已解答",
+      "created_at": "2026-04-11T03:20:47.277755",
+      "from": "agent_ocr_tutor"
+    },
+    {
+      "source": "OCR文本",
+      "target": "图像题已解答",
+      "type": "前置",
+      "score": 0.9,
+      "evidence": "OCR文本是解答前提",
+      "source_text": "问题：OCR文本\n回答：图像题已解答",
+      "created_at": "2026-04-14T21:18:55.120944",
+      "from": "agent_ocr_tutor"
+    },
+    {
+      "source": "图像题",
+      "target": "图像题已解答",
+      "type": "因果",
+      "score": 0.85,
+      "evidence": "图像题导致已解答",
+      "source_text": "问题：OCR文本\n回答：图像题已解答",
+      "created_at": "2026-04-14T21:19:23.951637",
+      "from": "agent_ocr_tutor"
+    }
+  ],
+  "deleted_concepts": []
+}

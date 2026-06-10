@@ -1,0 +1,18 @@
+[
+  {
+    "id": "6ece08a3-c438-4078-b5d0-b603d7c93192",
+    "user_id": "guest_ac5fb0353d18d1a696c9b506",
+    "timestamp": "2026-05-27T08:02:35.143606",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "question-bank",
+    "target": "",
+    "label": "pagehide",
+    "title": "题库练习 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 5.124,
+    "meta": {
+      "referrer": ""
+    }
+  }
+]

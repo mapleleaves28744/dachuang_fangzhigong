@@ -1,0 +1,119 @@
+{
+  "user_id": "guest_8e5b165f757fa524aaeaab24",
+  "updated_at": "2026-05-11T22:04:53.994294",
+  "learning_style": "visual",
+  "style_scores": {
+    "visual": 0.356,
+    "auditory": 0.37,
+    "kinesthetic": 0.37
+  },
+  "style_method": "kmeans",
+  "style_features": {
+    "image_count": 0,
+    "link_count": 0,
+    "qa_content_count": 1,
+    "note_count": 0,
+    "other_count": 0,
+    "qa_log_count": 1,
+    "concept_count": 1
+  },
+  "interests": [
+    "链式法则"
+  ],
+  "best_time_range": "22:00-00:00",
+  "focus_minutes": 45,
+  "content_type_counter": {
+    "note": 0,
+    "link": 0,
+    "image": 0,
+    "qa": 1,
+    "other": 0
+  },
+  "recommendation_cache": {
+    "updated_at": "2026-05-11T22:04:53.988422",
+    "reason": "learning_feedback",
+    "focus_concept": "链式法则",
+    "items": [
+      {
+        "concept": "链式法则",
+        "mastery": 0.326,
+        "resource_type": "流程拆解",
+        "title": "链式法则 · 基础回补",
+        "reason": "链式法则 当前掌握度 32%，建议采用视觉型路径做基础回补，重点放在先补概念后做题。",
+        "priority": 56.38,
+        "recommend_time": "22:00-00:00",
+        "strategy_tags": [
+          "style:visual",
+          "channel:kinesthetic",
+          "method:kmeans",
+          "focus:unknown",
+          "mode:基础回补"
+        ],
+        "evidence_brief": "画像:视觉型(kmeans) | 图谱:掌握度32%",
+        "source_evidence": {
+          "profile": {
+            "learning_style": "visual",
+            "style_method": "kmeans",
+            "style_confidence": 0.356,
+            "behavior_channel": "kinesthetic"
+          },
+          "knowledge_graph": {
+            "concept": "链式法则",
+            "mastery": 0.326,
+            "weak_threshold": 0.6
+          },
+          "diagnosis": {
+            "matched_count": 0,
+            "recent_category_count": {
+              "knowledge": 0,
+              "skill": 0,
+              "habit": 0,
+              "unknown": 0
+            },
+            "dominant_category": "unknown",
+            "dominant_count": 0,
+            "examples": []
+          }
+        }
+      }
+    ]
+  },
+  "review_reminder_cache": {
+    "updated_at": "2026-05-11T22:04:53.988422",
+    "due_count": 0,
+    "upcoming_count": 1,
+    "due_items": [],
+    "upcoming_items": [
+      {
+        "concept": "链式法则",
+        "mastery": 0.326,
+        "review_count": 10,
+        "interval_days": 7,
+        "next_review": "2026-05-18T22:04:53.982095",
+        "due": false,
+        "overdue_days": 0,
+        "priority": 67.4
+      }
+    ]
+  },
+  "last_learning_feedback": {
+    "source": "learning_feedback",
+    "task_id": "task_002",
+    "task_type": "practice",
+    "concept": "链式法则",
+    "accuracy": 0.2,
+    "correct_count": 2,
+    "total_count": 10,
+    "duration_seconds": 180,
+    "fact_source": {
+      "primary_source": "learning_feedback",
+      "fact_id": "dc0ade0a-24a0-414e-9c2b-c9e36f6e660b",
+      "source_key": "",
+      "question_id": "",
+      "task_id": "task_002",
+      "concept": "链式法则",
+      "timestamp": "2026-05-11T22:04:53.982095"
+    },
+    "refreshed_at": "2026-05-11T22:04:53.988422"
+  }
+}

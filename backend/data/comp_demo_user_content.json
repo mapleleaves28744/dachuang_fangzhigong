@@ -1,0 +1,13 @@
+[
+  {
+    "id": "dbbbbb42-67aa-44a8-9587-fab4e5dcf99d",
+    "timestamp": "2026-04-10T10:49:57",
+    "content_type": "kb_note",
+    "title": "calculus memo",
+    "content": "chain rule derivative of composite function",
+    "source": "agent_kb",
+    "tags": [
+      "derivative"
+    ]
+  }
+]

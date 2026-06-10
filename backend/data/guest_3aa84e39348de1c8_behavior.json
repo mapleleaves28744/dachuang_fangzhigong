@@ -1,0 +1,18 @@
+[
+  {
+    "id": "8cf486c1-2c8a-4c76-921f-2c804e1c37ab",
+    "user_id": "guest_3aa84e39348de1c8",
+    "timestamp": "2026-04-15T00:16:29.533533",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "index",
+    "target": "",
+    "label": "page_view",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/index.html"
+    }
+  }
+]

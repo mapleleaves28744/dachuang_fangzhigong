@@ -1,0 +1,34 @@
+[
+  {
+    "id": "8b1ca16a-f414-47eb-8a8c-8d9a3efdbdcf",
+    "user_id": "guest_75765df0cdb976d2a0b08af8",
+    "timestamp": "2026-05-27T12:32:44.332932",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "chat",
+    "target": "",
+    "label": "page_view",
+    "title": "智能问答 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "de7d2aae-f7dd-40c3-bdb8-947d67bf50f9",
+    "user_id": "guest_75765df0cdb976d2a0b08af8",
+    "timestamp": "2026-05-27T12:32:49.326470",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "chat",
+    "target": "",
+    "label": "pagehide",
+    "title": "智能问答 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 5.048,
+    "meta": {
+      "referrer": ""
+    }
+  }
+]

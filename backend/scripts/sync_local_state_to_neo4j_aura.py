@@ -8,26 +8,25 @@ if str(BACKEND_DIR) not in sys.path:
 
 
 def load_simple_env():
-    env_path = BACKEND_DIR / ".env"
-    if not env_path.exists():
-        return
-    for raw in env_path.read_text(encoding="utf-8").splitlines():
-        line = raw.strip()
-        if not line or line.startswith("#") or "=" not in line:
+    for env_path in (BACKEND_DIR / "config" / ".env", BACKEND_DIR / ".env"):
+        if not env_path.exists():
             continue
-        k, v = line.split("=", 1)
-        k = k.strip()
-        v = v.strip().strip('"').strip("'")
-        if k and not os.getenv(k):
-            os.environ[k] = v
+        for raw in env_path.read_text(encoding="utf-8").splitlines():
+            line = raw.strip()
+            if not line or line.startswith("#") or "=" not in line:
+                continue
+            k, v = line.split("=", 1)
+            k = k.strip()
+            v = v.strip().strip('"').strip("'")
+            if k and not os.getenv(k):
+                os.environ[k] = v
 
 
 load_simple_env()
 
-from database import get_user_knowledge  # noqa: E402
-from db import get_session  # noqa: E402
-from models import UserEvent, UserKnowledge, UserPlan, UserProfile  # noqa: E402
-from neo4j_store import Neo4jGraphStore  # noqa: E402
+from app.models import UserEvent, UserKnowledge, UserPlan, UserProfile, get_session  # noqa: E402
+from app.services.database import get_user_knowledge  # noqa: E402
+from app.services.neo4j_store import Neo4jGraphStore  # noqa: E402
 
 
 def collect_local_user_ids():

@@ -1,0 +1,726 @@
+import copy
+import unittest
+from unittest.mock import patch
+
+try:
+    from app import server as backend_app
+    _APP_IMPORT_ERROR = ""
+except Exception as e:
+    backend_app = None
+    _APP_IMPORT_ERROR = str(e)
+
+
+@unittest.skipIf(backend_app is None, f"backend app unavailable: {_APP_IMPORT_ERROR}")
+class TestAuthContract(unittest.TestCase):
+    def setUp(self):
+        backend_app.app.testing = True
+        self.client = backend_app.app.test_client()
+        self.users = {}
+        self.sessions = {}
+        self.plan_store = {}
+        self.knowledge_store = {}
+        self.profile_store = {}
+        self.event_store = {}
+        self.space_store = {}
+
+    def _set_guest_cookie(self, client, guest_user_id):
+        signed = backend_app.sign_guest_session_cookie_value(guest_user_id)
+        client.set_cookie(backend_app.GUEST_SESSION_COOKIE_NAME, signed, domain="localhost")
+
+    def _patch_auth_storage(self):
+        def get_auth_user(username):
+            item = self.users.get(username)
+            return copy.deepcopy(item) if item else None
+
+        def get_auth_user_by_display_name(display_name):
+            lookup = str(display_name or "").strip().casefold()
+            if not lookup:
+                return None
+            for item in self.users.values():
+                item_display_name = str((item or {}).get("display_name") or "").strip().casefold()
+                if item_display_name == lookup:
+                    return copy.deepcopy(item)
+            return None
+
+        def upsert_auth_user(user):
+            payload = copy.deepcopy(user)
+            self.users[payload["username"]] = payload
+            return copy.deepcopy(payload)
+
+        def get_auth_session_by_token_hash(token_hash):
+            item = self.sessions.get(token_hash)
+            return copy.deepcopy(item) if item else None
+
+        def upsert_auth_session(session_data):
+            payload = copy.deepcopy(session_data)
+            self.sessions[payload["token_hash"]] = payload
+            return copy.deepcopy(payload)
+
+        def revoke_auth_session(token_hash, revoked_at):
+            item = self.sessions.get(token_hash)
+            if not item:
+                return False
+            item["revoked_at"] = revoked_at
+            return True
+
+        def touch_auth_session(token_hash, last_seen_at):
+            item = self.sessions.get(token_hash)
+            if not item:
+                return False
+            item["last_seen_at"] = last_seen_at
+            return True
+
+        def append_user_event(user_id, suffix, item):
+            key = (user_id, suffix)
+            event_list = self.event_store.get(key, [])
+            event_list.append(copy.deepcopy(item))
+            self.event_store[key] = event_list
+
+        def load_user_event_list(user_id, suffix):
+            item = self.event_store.get((user_id, suffix), [])
+            return copy.deepcopy(item)
+
+        def delete_auth_user_account(username):
+            payload = {
+                "user_id": username,
+                "auth_user_deleted": False,
+                "sessions_deleted": 0,
+                "plans_deleted": 0,
+                "knowledge_deleted": 0,
+                "profile_deleted": 0,
+                "events_deleted": 0,
+                "spaces_deleted": 0,
+                "space_items_deleted": 0,
+            }
+
+            if self.users.pop(username, None):
+                payload["auth_user_deleted"] = True
+
+            for token_hash in list(self.sessions.keys()):
+                if self.sessions[token_hash].get("username") != username:
+                    continue
+                del self.sessions[token_hash]
+                payload["sessions_deleted"] += 1
+
+            if self.plan_store.pop(username, None) is not None:
+                payload["plans_deleted"] = 1
+            if self.knowledge_store.pop(username, None) is not None:
+                payload["knowledge_deleted"] = 1
+            if self.profile_store.pop(username, None) is not None:
+                payload["profile_deleted"] = 1
+
+            for key in list(self.event_store.keys()):
+                if key[0] != username:
+                    continue
+                del self.event_store[key]
+                payload["events_deleted"] += 1
+
+            space_payload = self.space_store.pop(username, None) or {"spaces": []}
+            payload["spaces_deleted"] = len(space_payload.get("spaces", [])) if isinstance(space_payload, dict) else 0
+            if isinstance(space_payload, dict):
+                payload["space_items_deleted"] = sum(
+                    len(space.get("items", []))
+                    for space in (space_payload.get("spaces", []) if isinstance(space_payload.get("spaces"), list) else [])
+                    if isinstance(space, dict)
+                )
+
+            return payload
+
+        return patch.multiple(
+            backend_app,
+            delete_auth_user_account=delete_auth_user_account,
+            get_auth_user=get_auth_user,
+            get_auth_user_by_display_name=get_auth_user_by_display_name,
+            upsert_auth_user=upsert_auth_user,
+            get_auth_session_by_token_hash=get_auth_session_by_token_hash,
+            upsert_auth_session=upsert_auth_session,
+            revoke_auth_session=revoke_auth_session,
+            touch_auth_session=touch_auth_session,
+            append_user_event=append_user_event,
+            load_user_event_list=load_user_event_list,
+        )
+
+    def _patch_plan_storage(self):
+        def get_user_plans(user_id):
+            item = self.plan_store.get(user_id, [])
+            return copy.deepcopy(item)
+
+        def set_user_plans(user_id, plans):
+            self.plan_store[user_id] = copy.deepcopy(plans)
+
+        return patch.multiple(
+            backend_app,
+            get_user_plans=get_user_plans,
+            set_user_plans=set_user_plans,
+        )
+
+    def _patch_learning_state_storage(self):
+        def get_user_knowledge(user_id):
+            item = self.knowledge_store.get(user_id, {"concepts": [], "relations": [], "deleted_concepts": []})
+            return copy.deepcopy(item)
+
+        def set_user_knowledge(user_id, knowledge):
+            self.knowledge_store[user_id] = copy.deepcopy(knowledge)
+
+        def get_user_profile(user_id):
+            item = self.profile_store.get(user_id, {})
+            return copy.deepcopy(item)
+
+        def set_user_profile(user_id, profile):
+            self.profile_store[user_id] = copy.deepcopy(profile)
+
+        def load_user_event_list(user_id, suffix):
+            item = self.event_store.get((user_id, suffix), [])
+            return copy.deepcopy(item)
+
+        def save_user_event_list(user_id, suffix, event_list):
+            self.event_store[(user_id, suffix)] = copy.deepcopy(event_list)
+
+        def build_learning_profile(user_id):
+            profile = {
+                "user_id": user_id,
+                "updated_at": "2026-03-30T12:00:00",
+            }
+            self.profile_store[user_id] = copy.deepcopy(profile)
+            return profile
+
+        def get_user_space_payload(user_id):
+            item = self.space_store.get(user_id, {"activeEntrySpaceId": "", "spaces": []})
+            return copy.deepcopy(item)
+
+        def set_user_space_payload(user_id, payload):
+            self.space_store[user_id] = copy.deepcopy(payload)
+
+        return patch.multiple(
+            backend_app,
+            get_user_knowledge=get_user_knowledge,
+            set_user_knowledge=set_user_knowledge,
+            get_user_profile=get_user_profile,
+            set_user_profile=set_user_profile,
+            get_user_space_payload=get_user_space_payload,
+            set_user_space_payload=set_user_space_payload,
+            load_user_event_list=load_user_event_list,
+            save_user_event_list=save_user_event_list,
+            build_learning_profile=build_learning_profile,
+        )
+
+    def test_register_me_logout_contract(self):
+        with self._patch_auth_storage():
+            register_resp = self.client.post("/api/auth/register", json={
+                "username": "student_001",
+                "password": "secret123",
+                "display_name": "小杭",
+                "locale": "CN",
+            })
+
+            self.assertEqual(register_resp.status_code, 200)
+            register_data = register_resp.get_json()
+            self.assertTrue(register_data.get("success"))
+            auth = register_data.get("auth", {})
+            self.assertTrue(auth.get("token"))
+            self.assertEqual(auth.get("user", {}).get("username"), "student_001")
+            self.assertEqual(auth.get("user", {}).get("display_name"), "小杭")
+
+            token = auth.get("token")
+            headers = {"Authorization": f"Bearer {token}"}
+
+            me_resp = self.client.get("/api/auth/me", headers=headers)
+            self.assertEqual(me_resp.status_code, 200)
+            me_data = me_resp.get_json()
+            self.assertTrue(me_data.get("success"))
+            self.assertEqual(me_data.get("auth", {}).get("user", {}).get("user_id"), "student_001")
+
+            logout_resp = self.client.post("/api/auth/logout", headers=headers)
+            self.assertEqual(logout_resp.status_code, 200)
+            logout_data = logout_resp.get_json()
+            self.assertTrue(logout_data.get("success"))
+            self.assertTrue(logout_data.get("logged_out"))
+
+            expired_resp = self.client.get("/api/auth/me", headers=headers)
+            self.assertEqual(expired_resp.status_code, 401)
+            expired_data = expired_resp.get_json()
+            self.assertFalse(expired_data.get("success"))
+            self.assertEqual(expired_data.get("error_code"), "AUTH_REQUIRED")
+
+    def test_login_contract_and_invalid_password(self):
+        with self._patch_auth_storage():
+            self.users["student_002"] = {
+                "username": "student_002",
+                "display_name": "学习者",
+                "password_hash": backend_app.generate_password_hash("secret456"),
+                "locale": "EN",
+                "created_at": "2026-03-29T10:00:00",
+                "updated_at": "2026-03-29T10:00:00",
+                "last_login_at": None,
+            }
+
+            fail_resp = self.client.post("/api/auth/login", json={
+                "username": "student_002",
+                "password": "wrong-password",
+            })
+            self.assertEqual(fail_resp.status_code, 401)
+            fail_data = fail_resp.get_json()
+            self.assertFalse(fail_data.get("success"))
+            self.assertEqual(fail_data.get("error_code"), "AUTH_INVALID_CREDENTIALS")
+
+            ok_resp = self.client.post("/api/auth/login", json={
+                "username": "student_002",
+                "password": "secret456",
+            })
+            self.assertEqual(ok_resp.status_code, 200)
+            ok_data = ok_resp.get_json()
+            self.assertTrue(ok_data.get("success"))
+            self.assertEqual(ok_data.get("auth", {}).get("user", {}).get("locale"), "EN")
+            self.assertTrue(ok_data.get("auth", {}).get("token"))
+            self.assertEqual(ok_data.get("binding", {}).get("message"), "登录后默认使用账号自己的学习数据")
+            behavior_logs = self.event_store.get(("student_002", "behavior"), [])
+            self.assertTrue(any(item.get("behavior_type") == "auth_login" for item in behavior_logs))
+
+    def test_register_rejects_duplicate_username(self):
+        with self._patch_auth_storage():
+            self.users["student_dup"] = {
+                "username": "student_dup",
+                "display_name": "已有账号",
+                "password_hash": backend_app.generate_password_hash("secret456"),
+                "locale": "CN",
+                "created_at": "2026-03-29T10:00:00",
+                "updated_at": "2026-03-29T10:00:00",
+                "last_login_at": None,
+            }
+
+            resp = self.client.post("/api/auth/register", json={
+                "username": "student_dup",
+                "password": "secret123",
+                "display_name": "新昵称",
+            })
+
+            self.assertEqual(resp.status_code, 409)
+            data = resp.get_json()
+            self.assertFalse(data.get("success"))
+            self.assertEqual(data.get("error_code"), "AUTH_USER_EXISTS")
+
+    def test_register_rejects_duplicate_display_name(self):
+        with self._patch_auth_storage():
+            self.users["student_old"] = {
+                "username": "student_old",
+                "display_name": "小杭",
+                "password_hash": backend_app.generate_password_hash("secret456"),
+                "locale": "CN",
+                "created_at": "2026-03-29T10:00:00",
+                "updated_at": "2026-03-29T10:00:00",
+                "last_login_at": None,
+            }
+
+            resp = self.client.post("/api/auth/register", json={
+                "username": "student_new",
+                "password": "secret123",
+                "display_name": "小杭",
+            })
+
+            self.assertEqual(resp.status_code, 409)
+            data = resp.get_json()
+            self.assertFalse(data.get("success"))
+            self.assertEqual(data.get("error_code"), "AUTH_DISPLAY_NAME_EXISTS")
+
+    def test_login_keeps_account_data_isolated_from_guest_state(self):
+        with self._patch_auth_storage(), self._patch_learning_state_storage():
+            self.users["student_004"] = {
+                "username": "student_004",
+                "display_name": "独立账号",
+                "password_hash": backend_app.generate_password_hash("secret999"),
+                "locale": "CN",
+                "created_at": "2026-03-29T10:00:00",
+                "updated_at": "2026-03-29T10:00:00",
+                "last_login_at": None,
+            }
+            self.knowledge_store["guest_abcd1234"] = {
+                "concepts": [{"concept": "导数", "mastery": 0.3}],
+                "relations": [],
+                "deleted_concepts": [],
+            }
+            self.profile_store["guest_abcd1234"] = {
+                "user_id": "guest_abcd1234",
+                "interests": ["导数"],
+            }
+
+            login_resp = self.client.post("/api/auth/login", json={
+                "username": "student_004",
+                "password": "secret999",
+                "guest_user_id": "guest_abcd1234",
+            })
+
+            self.assertEqual(login_resp.status_code, 200)
+            login_data = login_resp.get_json()
+            self.assertTrue(login_data.get("success"))
+            self.assertFalse(login_data.get("binding", {}).get("migrated"))
+            self.assertEqual(
+                self.knowledge_store.get("student_004"),
+                None,
+            )
+            self.assertEqual(
+                self.profile_store.get("student_004"),
+                None,
+            )
+
+    def test_authenticated_business_request_uses_login_user(self):
+        with self._patch_auth_storage(), self._patch_plan_storage():
+            register_resp = self.client.post("/api/auth/register", json={
+                "username": "student_003",
+                "password": "secret789",
+                "display_name": "测试同学",
+                "locale": "CN",
+            })
+
+            self.assertEqual(register_resp.status_code, 200)
+            token = register_resp.get_json().get("auth", {}).get("token")
+            headers = {"Authorization": f"Bearer {token}"}
+
+            add_resp = self.client.post("/api/plans", headers=headers, json={
+                "user_id": "other_user",
+                "time": "09:30",
+                "task": "复习导数",
+            })
+            self.assertEqual(add_resp.status_code, 200)
+            self.assertIn("student_003", self.plan_store)
+            self.assertNotIn("other_user", self.plan_store)
+            self.assertEqual(self.plan_store["student_003"][0]["task"], "复习导数")
+
+            list_resp = self.client.get("/api/plans?user_id=other_user", headers=headers)
+            self.assertEqual(list_resp.status_code, 200)
+            list_data = list_resp.get_json()
+            self.assertTrue(list_data.get("success"))
+            self.assertEqual(list_data.get("count"), 1)
+            self.assertEqual(list_data.get("plans", [])[0].get("task"), "复习导数")
+
+    def test_streak_endpoint_records_authenticated_daily_presence_once(self):
+        with self._patch_auth_storage(), self._patch_learning_state_storage():
+            self.users["student_005"] = {
+                "username": "student_005",
+                "display_name": "连续登录用户",
+                "password_hash": backend_app.generate_password_hash("secret123"),
+                "locale": "CN",
+                "created_at": "2026-03-29T10:00:00",
+                "updated_at": "2026-03-29T10:00:00",
+                "last_login_at": None,
+            }
+
+            login_resp = self.client.post("/api/auth/login", json={
+                "username": "student_005",
+                "password": "secret123",
+            })
+
+            self.assertEqual(login_resp.status_code, 200)
+            token = login_resp.get_json().get("auth", {}).get("token")
+            headers = {"Authorization": f"Bearer {token}"}
+            self.event_store.clear()
+
+            first_resp = self.client.get("/api/dashboard/streak?user_id=other_user", headers=headers)
+            second_resp = self.client.get("/api/dashboard/streak?user_id=other_user", headers=headers)
+
+            self.assertEqual(first_resp.status_code, 200)
+            self.assertEqual(second_resp.status_code, 200)
+
+            first_data = first_resp.get_json()
+            self.assertTrue(first_data.get("success"))
+            self.assertEqual(first_data.get("user_id"), "student_005")
+            self.assertEqual(first_data.get("streak", {}).get("progress_label"), "1/2")
+            self.assertEqual(first_data.get("streak", {}).get("week_active_days"), 1)
+            self.assertEqual(first_data.get("streak", {}).get("current_streak"), 1)
+
+            behavior_logs = self.event_store.get(("student_005", "behavior"), [])
+            auth_session_active_count = sum(
+                1
+                for item in behavior_logs
+                if item.get("behavior_type") == "auth_session_active"
+            )
+            self.assertEqual(auth_session_active_count, 1)
+
+    def test_anonymous_business_request_uses_signed_guest_instead_of_query_user_id(self):
+        with self._patch_learning_state_storage():
+            guest_user_id = "guest_authcase1234"
+            self._set_guest_cookie(self.client, guest_user_id)
+            self.profile_store[guest_user_id] = {"user_id": guest_user_id, "interests": ["纺织材料"]}
+            self.profile_store["victim_user"] = {"user_id": "victim_user", "interests": ["他人的画像"]}
+
+            resp = self.client.get("/api/profile?user_id=victim_user")
+
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+            self.assertTrue(data.get("success"))
+            self.assertEqual(data.get("profile", {}).get("user_id"), guest_user_id)
+            self.assertNotEqual(data.get("profile", {}).get("user_id"), "victim_user")
+
+    def test_first_anonymous_profile_request_issues_guest_scope_instead_of_query_user_id(self):
+        with self._patch_learning_state_storage():
+            self.profile_store["victim_user"] = {"user_id": "victim_user", "interests": ["他人的画像"]}
+
+            resp = self.client.get("/api/profile?user_id=victim_user")
+
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+            self.assertTrue(data.get("success"))
+            self.assertNotEqual(data.get("profile", {}).get("user_id"), "victim_user")
+            self.assertTrue(str(data.get("profile", {}).get("user_id") or "").startswith("guest_"))
+            self.assertIn(backend_app.GUEST_SESSION_COOKIE_NAME, resp.headers.get("Set-Cookie", ""))
+
+    def test_anonymous_dashboard_summary_uses_signed_guest_instead_of_query_user_id(self):
+        guest_user_id = "guest_dashcase1234"
+        self._set_guest_cookie(self.client, guest_user_id)
+
+        with patch.object(backend_app, "build_graph_response", return_value={"graph": {"nodes": [], "edges": []}, "node_count": 0, "edge_count": 0}), \
+             patch.object(backend_app, "build_review_reminders_response", return_value={"due_count": 0, "upcoming_count": 0, "due_items": [], "upcoming_items": []}), \
+             patch.object(backend_app, "build_learning_profile", side_effect=lambda user_id: {"user_id": user_id, "updated_at": "2026-03-30T12:00:00"}), \
+             patch.object(backend_app, "build_diagnosis_report_response", return_value={"success": True, "total": 0, "latest": []}), \
+             patch.object(backend_app, "build_recommendations", return_value=[]), \
+             patch.object(backend_app, "get_user_knowledge", return_value={"concepts": [], "relations": [], "deleted_concepts": []}), \
+             patch.object(backend_app, "load_user_event_list", return_value=[]), \
+             patch.object(backend_app, "sync_wrong_question_bank_from_logs", return_value=[]), \
+             patch.object(backend_app, "get_user_space_payload", return_value={"activeEntrySpaceId": "", "spaces": []}), \
+             patch.object(backend_app, "sync_dashboard_hidden_metrics", side_effect=lambda **kwargs: (kwargs.get("profile"), {})), \
+             patch.object(backend_app, "get_storage_info", return_value={"storage_backend": "json", "database_scheme": "memory"}), \
+             patch.object(backend_app, "get_ai_runtime_config", return_value={"provider": "mock"}), \
+             patch.object(backend_app, "build_dashboard_sections", return_value={
+                 "data_pool": {},
+                 "graph_insights": {},
+                 "profile_insights": {},
+                 "intervention_summary": {},
+             }), \
+             patch.object(backend_app.neo4j_store, "ensure_connected", return_value=False):
+            resp = self.client.get("/api/dashboard/summary?user_id=victim_user")
+
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertTrue(data.get("success"))
+        self.assertEqual(data.get("user_id"), guest_user_id)
+        self.assertEqual(data.get("profile", {}).get("user_id"), guest_user_id)
+
+    def test_invalid_auth_token_blocks_business_request(self):
+        with self._patch_auth_storage():
+            resp = self.client.get("/api/plans?user_id=student_004", headers={
+                "Authorization": "Bearer invalid-token"
+            })
+            self.assertEqual(resp.status_code, 401)
+            data = resp.get_json()
+            self.assertFalse(data.get("success"))
+            self.assertEqual(data.get("error_code"), "AUTH_REQUIRED")
+
+    def test_login_does_not_bind_guest_project_state(self):
+        with self._patch_auth_storage(), self._patch_plan_storage(), self._patch_learning_state_storage():
+            guest_user_id = "guest_abcd1234"
+            self.users["student_bind"] = {
+                "username": "student_bind",
+                "display_name": "已注册用户",
+                "password_hash": backend_app.generate_password_hash("secret456"),
+                "locale": "CN",
+                "created_at": "2026-03-29T10:00:00",
+                "updated_at": "2026-03-29T10:00:00",
+                "last_login_at": None,
+            }
+            self.plan_store[guest_user_id] = [{
+                "id": "plan-guest-1",
+                "time": "09:00",
+                "task": "复习极限",
+                "completed": False,
+                "created_at": "2026-03-30T08:00:00",
+            }]
+            self.knowledge_store[guest_user_id] = {
+                "concepts": [{"concept": "导数", "mastery": 0.35, "review_count": 1}],
+                "relations": [{"source": "极限", "target": "导数", "type": "前置", "score": 0.9}],
+                "deleted_concepts": [],
+            }
+            self.event_store[(guest_user_id, "content")] = [{
+                "content_type": "note",
+                "timestamp": "2026-03-30T09:20:00",
+                "topics": ["导数"],
+            }]
+            self.event_store[(guest_user_id, "qa")] = [{
+                "user_id": guest_user_id,
+                "timestamp": "2026-03-30T09:22:00",
+                "question": "导数是什么",
+                "answer": "变化率",
+                "topics": ["导数"],
+            }]
+            self.space_store[guest_user_id] = {
+                "activeEntrySpaceId": "space_guest_1",
+                "spaces": [{
+                    "id": "space_guest_1",
+                    "name": "访客空间",
+                    "createdAt": 1711771200000,
+                    "updatedAt": 1711771200000,
+                    "items": [{
+                        "id": "item_guest_1",
+                        "name": "访客笔记",
+                        "kind": "note",
+                        "mime": "text/plain",
+                        "size": 12,
+                        "source": "guest",
+                        "content": "导数要点",
+                        "summary": "访客内容",
+                        "fileDataUrl": "",
+                        "audioDataUrl": "",
+                        "addedAt": 1711771200000,
+                        "updatedAt": 1711771200000,
+                    }]
+                }]
+            }
+
+            ok_resp = self.client.post("/api/auth/login", json={
+                "username": "student_bind",
+                "password": "secret456",
+                "guest_user_id": guest_user_id,
+            })
+
+            self.assertEqual(ok_resp.status_code, 200)
+            ok_data = ok_resp.get_json()
+            self.assertTrue(ok_data.get("success"))
+            binding = ok_data.get("binding", {})
+            self.assertFalse(binding.get("migrated"))
+            self.assertEqual(binding.get("guest_user_id"), "")
+            self.assertNotIn("student_bind", self.plan_store)
+            self.assertNotIn("student_bind", self.knowledge_store)
+            self.assertNotIn(("student_bind", "content"), self.event_store)
+            self.assertNotIn(("student_bind", "qa"), self.event_store)
+            self.assertNotIn("student_bind", self.profile_store)
+            self.assertNotIn("student_bind", self.space_store)
+
+            self.assertIn(guest_user_id, self.plan_store)
+            self.assertIn(guest_user_id, self.knowledge_store)
+            self.assertIn((guest_user_id, "qa"), self.event_store)
+            self.assertIn(guest_user_id, self.space_store)
+
+    def test_register_does_not_bind_guest_project_state(self):
+        with self._patch_auth_storage(), self._patch_plan_storage(), self._patch_learning_state_storage():
+            guest_user_id = "guest_reg1234"
+            self.plan_store[guest_user_id] = [{
+                "id": "plan-guest-1",
+                "time": "09:00",
+                "task": "访客待办",
+                "completed": False,
+            }]
+            self.knowledge_store[guest_user_id] = {
+                "concepts": [{"concept": "导数", "mastery": 0.35}],
+                "relations": [],
+                "deleted_concepts": [],
+            }
+            self.event_store[(guest_user_id, "content")] = [{
+                "user_id": guest_user_id,
+                "content_type": "note",
+                "timestamp": "2026-03-30T09:20:00",
+                "topics": ["导数"],
+            }]
+
+            register_resp = self.client.post("/api/auth/register", json={
+                "username": "student_fresh",
+                "password": "secret123",
+                "display_name": "新账号",
+                "guest_user_id": guest_user_id,
+            })
+
+            self.assertEqual(register_resp.status_code, 200)
+            register_data = register_resp.get_json()
+            self.assertTrue(register_data.get("success"))
+            binding = register_data.get("binding", {})
+            self.assertFalse(binding.get("migrated"))
+            self.assertEqual(binding.get("guest_user_id"), "")
+            self.assertEqual(binding.get("message"), "新账号默认不自动继承访客数据")
+            self.assertNotIn("student_fresh", self.plan_store)
+            self.assertNotIn("student_fresh", self.knowledge_store)
+            self.assertIn(guest_user_id, self.plan_store)
+            self.assertIn(guest_user_id, self.knowledge_store)
+            self.assertIn((guest_user_id, "content"), self.event_store)
+
+    def test_login_does_not_bind_legacy_default_user(self):
+        with self._patch_auth_storage(), self._patch_plan_storage(), self._patch_learning_state_storage():
+            self.users["student_skip"] = {
+                "username": "student_skip",
+                "display_name": "已注册用户",
+                "password_hash": backend_app.generate_password_hash("secret456"),
+                "locale": "CN",
+                "created_at": "2026-03-29T10:00:00",
+                "updated_at": "2026-03-29T10:00:00",
+                "last_login_at": None,
+            }
+            self.plan_store["default_user"] = [{
+                "id": "plan-legacy-1",
+                "time": "10:00",
+                "task": "遗留访客计划",
+                "completed": False,
+            }]
+
+            ok_resp = self.client.post("/api/auth/login", json={
+                "username": "student_skip",
+                "password": "secret456",
+                "guest_user_id": "default_user",
+            })
+
+            self.assertEqual(ok_resp.status_code, 200)
+            ok_data = ok_resp.get_json()
+            self.assertTrue(ok_data.get("success"))
+            binding = ok_data.get("binding", {})
+            self.assertFalse(binding.get("migrated"))
+            self.assertEqual(binding.get("guest_user_id"), "")
+            self.assertNotIn("student_skip", self.plan_store)
+
+    def test_delete_account_contract_clears_user_and_session(self):
+        with self._patch_auth_storage():
+            register_resp = self.client.post("/api/auth/register", json={
+                "username": "student_delete",
+                "password": "secret123",
+                "display_name": "删除测试",
+                "locale": "CN",
+            })
+
+            self.assertEqual(register_resp.status_code, 200)
+            token = register_resp.get_json().get("auth", {}).get("token")
+            headers = {"Authorization": f"Bearer {token}"}
+
+            self.plan_store["student_delete"] = [{
+                "id": "plan-delete-1",
+                "time": "18:00",
+                "task": "整理纺织笔记",
+                "completed": False,
+            }]
+            self.knowledge_store["student_delete"] = {
+                "concepts": [{"concept": "纱线结构", "mastery": 0.42}],
+                "relations": [],
+                "deleted_concepts": [],
+            }
+            self.profile_store["student_delete"] = {
+                "user_id": "student_delete",
+                "updated_at": "2026-03-30T12:00:00",
+            }
+            self.event_store[("student_delete", "content")] = [{
+                "content_type": "summary",
+                "timestamp": "2026-03-30T12:30:00",
+            }]
+
+            delete_resp = self.client.delete("/api/auth/account", headers=headers)
+            self.assertEqual(delete_resp.status_code, 200)
+            delete_data = delete_resp.get_json()
+            self.assertTrue(delete_data.get("success"))
+            self.assertTrue(delete_data.get("deleted_account"))
+
+            cleanup = delete_data.get("cleanup", {})
+            self.assertTrue(cleanup.get("auth_user_deleted"))
+            self.assertEqual(cleanup.get("sessions_deleted"), 1)
+            self.assertEqual(cleanup.get("plans_deleted"), 1)
+            self.assertEqual(cleanup.get("knowledge_deleted"), 1)
+            self.assertEqual(cleanup.get("profile_deleted"), 1)
+            self.assertEqual(cleanup.get("events_deleted"), 2)
+
+            self.assertNotIn("student_delete", self.users)
+            self.assertNotIn("student_delete", self.plan_store)
+            self.assertNotIn("student_delete", self.knowledge_store)
+            self.assertNotIn("student_delete", self.profile_store)
+            self.assertNotIn(("student_delete", "content"), self.event_store)
+            self.assertNotIn(("student_delete", "behavior"), self.event_store)
+
+            me_resp = self.client.get("/api/auth/me", headers=headers)
+            self.assertEqual(me_resp.status_code, 401)
+            me_data = me_resp.get_json()
+            self.assertFalse(me_data.get("success"))
+            self.assertEqual(me_data.get("error_code"), "AUTH_REQUIRED")
+
+
+if __name__ == "__main__":
+    unittest.main()

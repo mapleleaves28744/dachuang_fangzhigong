@@ -1,0 +1,110 @@
+[
+  {
+    "id": "6ef85542-3379-428d-9aaf-0b302fbeca4c",
+    "timestamp": "2026-04-15T17:37:14.457954",
+    "question": "导数是什么意思",
+    "correct_answer": "导数是函数在某一点处的瞬时变化率，几何上表示曲线在该点的切线斜率；严格定义为极限：f'(x₀) = lim_{Δx→0} [f(x₀+Δx)−f(x₀)]/Δx。",
+    "user_answer": "",
+    "concept": "导数",
+    "diagnosis": {
+      "error_type": "知识性错误",
+      "category": "knowledge",
+      "severity": "high",
+      "recommendation": "先不要追求做多题，先把“导数”的关键概念讲给自己听，再做 2 道同类型入门题确认是否真正理解。",
+      "confidence": 0.92,
+      "signals": [
+        "答案为空，说明当前缺少稳定思路",
+        "出现不会/不懂类表达",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低",
+        "答案为空，说明当前缺少稳定思路",
+        "出现不会/不懂类表达",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低"
+      ],
+      "score_detail": {
+        "knowledge_rule_hits": 4,
+        "skill_rule_hits": 0,
+        "habit_rule_hits": 0,
+        "recent_accuracy": 0.0,
+        "time_ratio": null,
+        "standard_time_seconds": 60.0,
+        "response_time_seconds": null,
+        "near_miss": false,
+        "mastery_reference": null
+      },
+      "reason": "导数的定义、公式或判断条件还没有真正建立，看到题目时不知道该从哪里开始。",
+      "recommended_actions": [
+        "看该知识点5-8分钟讲解视频",
+        "整理1张公式/概念卡片",
+        "做2道基础例题并对照答案",
+        "当天再复做原题1次"
+      ],
+      "recent_accuracy": 0.0,
+      "time_ratio": null,
+      "near_miss": false
+    },
+    "learning_advice": {
+      "建议": "先不要追求做多题，先把“导数”的关键概念讲给自己听，再做 2 道同类型入门题确认是否真正理解。"
+    },
+    "mastery_assessment": {
+      "知识点": "导数",
+      "掌握度": 0.0
+    },
+    "source": "agent_tool"
+  },
+  {
+    "id": "3072d44d-4fa5-4e14-b86d-d639ef43fa94",
+    "timestamp": "2026-04-15T17:46:22.097113",
+    "question": "导数是什么意思",
+    "correct_answer": "导数是函数在某一点处的瞬时变化率，几何上表示该点切线的斜率，严格定义为极限：f'(x₀) = lim_{Δx→0} [f(x₀+Δx)−f(x₀)]/Δx",
+    "user_answer": "",
+    "concept": "导数",
+    "diagnosis": {
+      "error_type": "知识性错误",
+      "category": "knowledge",
+      "severity": "high",
+      "recommendation": "先不要追求做多题，先把“导数”的关键概念讲给自己听，再做 2 道同类型入门题确认是否真正理解。",
+      "confidence": 0.92,
+      "signals": [
+        "答案为空，说明当前缺少稳定思路",
+        "出现不会/不懂类表达",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低",
+        "答案为空，说明当前缺少稳定思路",
+        "出现不会/不懂类表达",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低"
+      ],
+      "score_detail": {
+        "knowledge_rule_hits": 4,
+        "skill_rule_hits": 0,
+        "habit_rule_hits": 0,
+        "recent_accuracy": 0.0,
+        "time_ratio": null,
+        "standard_time_seconds": 60.0,
+        "response_time_seconds": null,
+        "near_miss": false,
+        "mastery_reference": null
+      },
+      "reason": "导数的定义、公式或判断条件还没有真正建立，看到题目时不知道该从哪里开始。",
+      "recommended_actions": [
+        "看该知识点5-8分钟讲解视频",
+        "整理1张公式/概念卡片",
+        "做2道基础例题并对照答案",
+        "当天再复做原题1次"
+      ],
+      "recent_accuracy": 0.0,
+      "time_ratio": null,
+      "near_miss": false
+    },
+    "learning_advice": {
+      "建议": "先不要追求做多题，先把“导数”的关键概念讲给自己听，再做 2 道同类型入门题确认是否真正理解。"
+    },
+    "mastery_assessment": {
+      "知识点": "导数",
+      "掌握度": 0.0
+    },
+    "source": "agent_tool"
+  }
+]

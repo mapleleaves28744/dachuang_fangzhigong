@@ -1,0 +1,49 @@
+[
+  {
+    "id": "retrieval-01",
+    "user_id": "eval_hybrid_u1",
+    "query": "高等数学 导数 与 微分 核心定义",
+    "expected_keywords": ["高等数学", "导数", "微分"],
+    "expected_channels": ["public_vector"]
+  },
+  {
+    "id": "retrieval-02",
+    "user_id": "eval_hybrid_u2",
+    "query": "线性代数 矩阵 可逆 条件",
+    "expected_keywords": ["线性代数", "矩阵", "可逆"],
+    "expected_channels": ["public_vector"]
+  },
+  {
+    "id": "retrieval-03",
+    "user_id": "eval_hybrid_u3",
+    "query": "概率论 分布 与 期望 题型",
+    "expected_keywords": ["概率", "分布", "期望"],
+    "expected_channels": ["public_vector"]
+  },
+  {
+    "id": "retrieval-04",
+    "user_id": "eval_hybrid_u4",
+    "query": "计算机网络 拥塞控制 与 滑动窗口",
+    "expected_keywords": ["计算机网络", "拥塞控制", "滑动窗口"],
+    "expected_channels": ["public_vector"]
+  },
+  {
+    "id": "retrieval-05",
+    "user_id": "eval_hybrid_u5",
+    "query": "我记录的链式法则私有笔记",
+    "expected_keywords": ["链式法则", "复合函数", "求导"],
+    "expected_channels": ["private_lexical"],
+    "private_note": {
+      "title": "链式法则私有笔记",
+      "content": "复合函数求导优先考虑链式法则，先识别外层函数再识别内层函数。",
+      "tags": ["导数", "链式法则"]
+    }
+  },
+  {
+    "id": "retrieval-06",
+    "user_id": "eval_hybrid_u6",
+    "query": "操作系统 死锁 与 互斥 条件",
+    "expected_keywords": ["操作系统", "死锁", "互斥"],
+    "expected_channels": ["public_vector"]
+  }
+]

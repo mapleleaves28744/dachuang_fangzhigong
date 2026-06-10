@@ -1,0 +1,105 @@
+{
+  "user_id": "guest_f09abaad8678ce1f1685fbe6",
+  "updated_at": "2026-05-11T21:41:09.484360",
+  "learning_style": "visual",
+  "style_scores": {
+    "visual": 0.353,
+    "auditory": 0.354,
+    "kinesthetic": 0.354
+  },
+  "style_method": "kmeans",
+  "style_features": {
+    "image_count": 0,
+    "link_count": 0,
+    "qa_content_count": 0,
+    "note_count": 0,
+    "other_count": 0,
+    "qa_log_count": 0,
+    "concept_count": 1
+  },
+  "interests": [
+    "导数"
+  ],
+  "best_time_range": "",
+  "focus_minutes": 45,
+  "content_type_counter": {
+    "note": 0,
+    "link": 0,
+    "image": 0,
+    "qa": 0,
+    "other": 0
+  },
+  "recommendation_cache": {
+    "updated_at": "2026-05-11T21:41:09.478724",
+    "reason": "question_answer",
+    "focus_concept": "导数",
+    "items": [
+      {
+        "concept": "导数",
+        "mastery": 0.75,
+        "resource_type": "拓展应用",
+        "title": "导数 · 综合提升",
+        "reason": "结合近期学习节奏，导数 适合用于综合提升训练，帮助你把已有优势迁移到新场景。",
+        "priority": 21.6,
+        "recommend_time": "",
+        "strategy_tags": [
+          "style:visual",
+          "channel:visual",
+          "method:kmeans",
+          "mode:综合提升"
+        ],
+        "evidence_brief": "画像:视觉型(kmeans) | 图谱:暂无薄弱点",
+        "source_evidence": {
+          "profile": {
+            "learning_style": "visual",
+            "style_method": "kmeans",
+            "style_confidence": 0.353,
+            "behavior_channel": "visual"
+          },
+          "knowledge_graph": {
+            "concept": "导数",
+            "mastery": null,
+            "weak_threshold": 0.6
+          },
+          "diagnosis": {
+            "matched_count": 0,
+            "recent_category_count": {
+              "knowledge": 0,
+              "skill": 0,
+              "habit": 0,
+              "unknown": 0
+            },
+            "examples": []
+          }
+        }
+      }
+    ]
+  },
+  "review_reminder_cache": {
+    "updated_at": "2026-05-11T21:41:09.478724",
+    "due_count": 0,
+    "upcoming_count": 1,
+    "due_items": [],
+    "upcoming_items": [
+      {
+        "concept": "导数",
+        "mastery": 0.883,
+        "review_count": 1,
+        "interval_days": 5,
+        "next_review": "2026-05-16T21:41:09.476770",
+        "due": false,
+        "overdue_days": 0,
+        "priority": 11.7
+      }
+    ]
+  },
+  "last_learning_feedback": {
+    "source": "question_answer",
+    "question_id": "qb-custom-56cfeda40f6f",
+    "concept": "导数",
+    "score": 1.0,
+    "is_correct": true,
+    "task_timestamp": "2026-05-11T21:41:09.476770",
+    "refreshed_at": "2026-05-11T21:41:09.478724"
+  }
+}

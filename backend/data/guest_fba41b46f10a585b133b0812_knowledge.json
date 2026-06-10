@@ -1,0 +1,27 @@
+{
+  "concepts": [
+    {
+      "concept": "链式法则",
+      "first_seen": "2026-05-12T10:15:51.221400",
+      "mastery": 0.326,
+      "mastery_status": "薄弱",
+      "accuracy": 0.2,
+      "raw_accuracy": 0.2,
+      "recent_accuracy": 0.2,
+      "practice_count": 10,
+      "time_score": 0.65,
+      "practice_score": 0.72,
+      "forgetting_factor": 0.9,
+      "base_mastery": 0.368,
+      "median_answer_seconds": 18.0,
+      "standard_answer_seconds": 45.0,
+      "time_ratio": 0.4,
+      "last_seen": "2026-05-12T10:15:51.221400",
+      "last_practiced": "2026-05-12T10:15:51.221400",
+      "last_reviewed": "2026-05-12T10:15:51.221400",
+      "review_count": 10
+    }
+  ],
+  "relations": [],
+  "deleted_concepts": []
+}

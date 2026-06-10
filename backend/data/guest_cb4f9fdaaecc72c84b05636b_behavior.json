@@ -1,0 +1,146 @@
+[
+  {
+    "id": "072bbf7f-7b69-4d3f-bdd9-2ac81fdaf7fa",
+    "user_id": "guest_cb4f9fdaaecc72c84b05636b",
+    "timestamp": "2026-05-21T23:46:08.746399",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 1556.535,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "0f0ce85e-abd5-4287-b22b-b3815f6afab8",
+    "user_id": "guest_cb4f9fdaaecc72c84b05636b",
+    "timestamp": "2026-05-21T23:46:25.121015",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "question-bank",
+    "target": "",
+    "label": "pagehide",
+    "title": "题库练习 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 16.226,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/index.html"
+    }
+  },
+  {
+    "id": "bb3b262d-4ea5-4297-931d-ce6f908525b4",
+    "user_id": "guest_cb4f9fdaaecc72c84b05636b",
+    "timestamp": "2026-05-22T00:11:03.759766",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "question-bank",
+    "target": "",
+    "label": "pagehide",
+    "title": "题库练习 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 1478.666,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/index.html"
+    }
+  },
+  {
+    "id": "c9b3f5a0-e27c-4c93-bf9c-86fab91a3d70",
+    "user_id": "guest_cb4f9fdaaecc72c84b05636b",
+    "timestamp": "2026-05-22T00:11:17.025394",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "dashboard",
+    "target": "",
+    "label": "pagehide",
+    "title": "学习仪表盘 - 智能学习伴侣",
+    "source": "page_shell",
+    "duration_seconds": 12.471,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/question-bank.html"
+    }
+  },
+  {
+    "id": "ce0d5ceb-6b7b-4515-bf10-01cec717b010",
+    "user_id": "guest_cb4f9fdaaecc72c84b05636b",
+    "timestamp": "2026-05-22T00:11:27.382985",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "knowledge-map",
+    "target": "",
+    "label": "pagehide",
+    "title": "知识图谱 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 9.409,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/dashboard.html"
+    }
+  },
+  {
+    "id": "844f9340-556a-4475-892c-5543fcc78513",
+    "user_id": "guest_cb4f9fdaaecc72c84b05636b",
+    "timestamp": "2026-05-22T00:11:38.564527",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "dashboard",
+    "target": "",
+    "label": "pagehide",
+    "title": "学习仪表盘 - 智能学习伴侣",
+    "source": "page_shell",
+    "duration_seconds": 11.095,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/knowledge-map.html"
+    }
+  },
+  {
+    "id": "8c4a349d-1ec1-4333-9cfe-32ddc2ddf4f2",
+    "user_id": "guest_cb4f9fdaaecc72c84b05636b",
+    "timestamp": "2026-05-22T00:13:06.428382",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "knowledge-map",
+    "target": "",
+    "label": "pagehide",
+    "title": "知识图谱 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 87.777,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/dashboard.html"
+    }
+  },
+  {
+    "id": "01c4f0f2-9104-459a-af9c-ada596e31678",
+    "user_id": "guest_cb4f9fdaaecc72c84b05636b",
+    "timestamp": "2026-05-22T00:29:35.546176",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "dashboard",
+    "target": "",
+    "label": "pagehide",
+    "title": "学习仪表盘 - 智能学习伴侣",
+    "source": "page_shell",
+    "duration_seconds": 989.11,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/knowledge-map.html"
+    }
+  },
+  {
+    "id": "6ff3f699-2ae1-4836-981e-d9e983cd6b00",
+    "user_id": "guest_cb4f9fdaaecc72c84b05636b",
+    "timestamp": "2026-05-22T00:39:10.914325",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "knowledge-map",
+    "target": "",
+    "label": "pagehide",
+    "title": "知识图谱 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 575.179,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/dashboard.html"
+    }
+  }
+]
