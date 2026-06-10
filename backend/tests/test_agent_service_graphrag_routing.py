@@ -1,3 +1,4 @@
+import json
 import unittest
 import sys
 import types
@@ -182,6 +183,60 @@ class TestAgentServiceGraphRagRouting(unittest.TestCase):
         self.assertTrue(result.get("meta", {}).get("kb_retry_triggered"))
         self.assertEqual(result.get("meta", {}).get("preferred_kb_tool"), "tool_graph_rag_search")
         self.assertEqual(result.get("steps_log", [])[0].get("tool_name"), "tool_graph_rag_search")
+
+    def test_stream_graph_question_routes_to_graph_tool(self):
+        service = self._build_service()
+
+        with patch("app.services.agent_service.get_user_knowledge", return_value={}), patch(
+            "app.services.agent_service.agent_metrics.record_request"
+        ):
+            events = list(
+                service.stream_solve_problem(
+                    session_id="s_graph_stream",
+                    student_id="u1",
+                    ocr_text="求复合函数导数",
+                    question_text="链式法则和复合函数是什么关系",
+                )
+            )
+
+        self.assertEqual(service._invoke_with_timeout_retry.call_count, 2)
+        self.assertTrue(any('"type": "retry"' in event for event in events))
+
+        final_raw = next(event for event in events if '"type": "final"' in event)
+        final_payload = json.loads(final_raw.split("data:", 1)[1].strip()).get("payload", {})
+
+        self.assertTrue(final_payload.get("meta", {}).get("kb_retry_triggered"))
+        self.assertEqual(final_payload.get("meta", {}).get("preferred_kb_tool"), "tool_graph_rag_search")
+        self.assertEqual(final_payload.get("steps_log", [])[0].get("tool_name"), "tool_graph_rag_search")
+
+    def test_sanitize_user_visible_answer_hides_internal_analysis_block(self):
+        raw_answer = (
+            "# 分析\n"
+            "学生当前掌握度偏低，依据 `tool_get_student_mastery` 返回值需要先补基础。\n\n"
+            "## 讲解\n"
+            "函数表示输入和输出之间的对应关系。\n\n"
+            "## 建议\n"
+            "先复习定义，再做两道基础题。"
+        )
+
+        cleaned = TutorAgentService._sanitize_user_visible_answer(raw_answer)
+
+        self.assertNotIn("tool_get_student_mastery", cleaned)
+        self.assertNotIn("# 分析", cleaned)
+        self.assertIn("## 讲解", cleaned)
+        self.assertIn("## 建议", cleaned)
+
+    def test_sanitize_user_visible_answer_keeps_normal_explanation(self):
+        raw_answer = (
+            "讲解\n"
+            "函数的核心是每个输入只对应一个输出。\n\n"
+            "建议\n"
+            "记住“唯一对应”这个关键词。"
+        )
+
+        cleaned = TutorAgentService._sanitize_user_visible_answer(raw_answer)
+
+        self.assertEqual(cleaned, raw_answer)
 
 
 if __name__ == "__main__":

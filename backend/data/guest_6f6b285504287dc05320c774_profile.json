@@ -1,0 +1,119 @@
+{
+  "user_id": "guest_6f6b285504287dc05320c774",
+  "updated_at": "2026-05-11T22:04:54.049979",
+  "learning_style": "visual",
+  "style_scores": {
+    "visual": 0.356,
+    "auditory": 0.37,
+    "kinesthetic": 0.37
+  },
+  "style_method": "kmeans",
+  "style_features": {
+    "image_count": 0,
+    "link_count": 0,
+    "qa_content_count": 1,
+    "note_count": 0,
+    "other_count": 0,
+    "qa_log_count": 1,
+    "concept_count": 1
+  },
+  "interests": [
+    "导数基础"
+  ],
+  "best_time_range": "22:00-00:00",
+  "focus_minutes": 45,
+  "content_type_counter": {
+    "note": 0,
+    "link": 0,
+    "image": 0,
+    "qa": 1,
+    "other": 0
+  },
+  "recommendation_cache": {
+    "updated_at": "2026-05-11T22:04:54.044102",
+    "reason": "learning_feedback",
+    "focus_concept": "导数基础",
+    "items": [
+      {
+        "concept": "导数基础",
+        "mastery": 0.414,
+        "resource_type": "流程拆解",
+        "title": "导数基础 · 结构修复",
+        "reason": "基于视觉型偏好与最近诊断信号，建议把 导数基础 放到今日高效时段做结构修复，目标是分层练习+错因复盘。",
+        "priority": 49.02,
+        "recommend_time": "22:00-00:00",
+        "strategy_tags": [
+          "style:visual",
+          "channel:kinesthetic",
+          "method:kmeans",
+          "focus:unknown",
+          "mode:结构修复"
+        ],
+        "evidence_brief": "画像:视觉型(kmeans) | 图谱:掌握度41%",
+        "source_evidence": {
+          "profile": {
+            "learning_style": "visual",
+            "style_method": "kmeans",
+            "style_confidence": 0.356,
+            "behavior_channel": "kinesthetic"
+          },
+          "knowledge_graph": {
+            "concept": "导数基础",
+            "mastery": 0.414,
+            "weak_threshold": 0.6
+          },
+          "diagnosis": {
+            "matched_count": 0,
+            "recent_category_count": {
+              "knowledge": 0,
+              "skill": 0,
+              "habit": 0,
+              "unknown": 0
+            },
+            "dominant_category": "unknown",
+            "dominant_count": 0,
+            "examples": []
+          }
+        }
+      }
+    ]
+  },
+  "review_reminder_cache": {
+    "updated_at": "2026-05-11T22:04:54.044102",
+    "due_count": 0,
+    "upcoming_count": 1,
+    "due_items": [],
+    "upcoming_items": [
+      {
+        "concept": "导数基础",
+        "mastery": 0.414,
+        "review_count": 10,
+        "interval_days": 8,
+        "next_review": "2026-05-19T22:04:54.037145",
+        "due": false,
+        "overdue_days": 0,
+        "priority": 58.6
+      }
+    ]
+  },
+  "last_learning_feedback": {
+    "source": "learning_feedback",
+    "task_id": "task_001",
+    "task_type": "quiz",
+    "concept": "导数基础",
+    "accuracy": 0.8,
+    "correct_count": 8,
+    "total_count": 10,
+    "duration_seconds": 300,
+    "fact_source": {
+      "primary_source": "learning_feedback",
+      "fact_id": "6d7551cc-701c-41d3-8435-627bd18d8b55",
+      "source_key": "",
+      "question_id": "",
+      "task_id": "task_001",
+      "concept": "导数基础",
+      "timestamp": "2026-05-11T22:04:54.037145"
+    },
+    "refreshed_at": "2026-05-11T22:04:54.044102"
+  }
+}

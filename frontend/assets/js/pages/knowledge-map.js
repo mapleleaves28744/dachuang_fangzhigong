@@ -2,6 +2,7 @@
   const API_BASE = window.ApiUtils.getApiBase();
   const parseApiResponse = window.ApiUtils.parseApiResponse;
   const withSuggestion = window.ApiUtils.withSuggestion;
+  const KNOWLEDGE_UPDATED_AT_STORAGE_KEY = 'fangzhigong_knowledge_updated_at';
 
   function getUserId() {
     return window.UserContext ? window.UserContext.getUserId() : 'default_user';
@@ -30,6 +31,7 @@
     extractBtn: document.getElementById('extractBtn'),
     extractResult: document.getElementById('extractResult'),
     dueReminderList: document.getElementById('dueReminderList'),
+    documentMentionList: document.getElementById('documentMentionList'),
     weakConceptList: document.getElementById('weakConceptList'),
     relationScoreRange: document.getElementById('relationScoreRange'),
     relationScoreText: document.getElementById('relationScoreText')
@@ -66,6 +68,55 @@
     return Number.isFinite(num) ? num : (typeof fallback === 'number' ? fallback : 0);
   }
 
+  function getNodeId(node) {
+    return String(node && (node.id || node.name) || '');
+  }
+
+  function getNodeType(node) {
+    return String(node && node.node_type || 'concept');
+  }
+
+  function isConceptNode(node) {
+    return getNodeType(node) === 'concept';
+  }
+
+  function isDocumentNode(node) {
+    return getNodeType(node) === 'document';
+  }
+
+  function getConceptNodes(nodes) {
+    return (Array.isArray(nodes) ? nodes : []).filter(isConceptNode);
+  }
+
+  function getDocumentNodes(nodes) {
+    return (Array.isArray(nodes) ? nodes : []).filter(isDocumentNode);
+  }
+
+  function getLinkEndpointId(value) {
+    if (value && typeof value === 'object') {
+      return getNodeId(value);
+    }
+    return String(value || '');
+  }
+
+  function setConceptControlsEnabled(enabled) {
+    const disabled = !enabled;
+    if (dom.masteryRange) {
+      dom.masteryRange.disabled = disabled;
+      dom.masteryRange.style.opacity = disabled ? '0.55' : '1';
+    }
+    if (dom.saveMasteryBtn) {
+      dom.saveMasteryBtn.disabled = disabled;
+      dom.saveMasteryBtn.style.opacity = disabled ? '0.55' : '1';
+      dom.saveMasteryBtn.title = disabled ? '仅概念节点支持掌握度更新' : '';
+    }
+    if (dom.deleteNodeBtn) {
+      dom.deleteNodeBtn.disabled = disabled;
+      dom.deleteNodeBtn.style.opacity = disabled ? '0.55' : '1';
+      dom.deleteNodeBtn.title = disabled ? '仅概念节点支持删除操作' : '';
+    }
+  }
+
   function masteryToColor(mastery) {
     if (mastery >= 0.8) return '#15803d';
     if (mastery >= 0.6) return '#16a34a';
@@ -93,14 +144,24 @@
 
   function buildNodeInsight(node) {
     if (!node) {
-      return '选择节点后，这里会结合掌握度和难度给出当前学习建议。';
+      return '选择节点后，这里会结合掌握度、难度和文档关联给出当前学习建议。';
+    }
+
+    const nodeId = getNodeId(node);
+    const linkedCount = (state.graph.links || []).filter(function (item) {
+      return getLinkEndpointId(item.source) === nodeId || getLinkEndpointId(item.target) === nodeId;
+    }).length;
+
+    if (isDocumentNode(node)) {
+      const mentionCount = toNumber(node.mention_count, Array.isArray(node.mentions) ? node.mentions.length : 0);
+      if (!mentionCount) {
+        return `“${node.name}”已经同步到图谱，但当前还没有挂接明确概念。可以继续补充正文或在聊天页重新入库，让文档和知识点关系更完整。`;
+      }
+      return `“${node.name}”当前挂接了 ${mentionCount} 个概念节点，并保留 ${linkedCount} 条图谱关系。适合从这里反查“这份资料覆盖了哪些知识点”，再回到概念节点继续补掌握度。`;
     }
 
     const mastery = toNumber(node.mastery, 0);
     const difficulty = toNumber(node.difficulty, 0);
-    const linkedCount = (state.graph.links || []).filter(function (item) {
-      return item.source === node.name || item.target === node.name;
-    }).length;
 
     if (mastery < 0.4) {
       return `“${node.name}”当前掌握偏弱，建议先回看定义和基础例题，再补 2-3 道同类型题。该节点当前关联 ${linkedCount} 条知识关系，适合结合前置知识一起补。`;
@@ -115,12 +176,21 @@
     state.selectedNode = node;
     const mastery = toNumber(node && node.mastery, 0);
     const difficulty = toNumber(node && node.difficulty, 0);
-    dom.nodeTag.textContent = '已选择节点';
+    const documentNode = isDocumentNode(node);
+    const mentions = Array.isArray(node && node.mentions) ? node.mentions.filter(Boolean) : [];
+    dom.nodeTag.textContent = documentNode ? '已选择文档' : '已选择概念';
     dom.nodeName.textContent = node.name;
-    dom.nodeDesc.textContent = node.description || '-';
-    dom.nodeDifficulty.textContent = Math.round(difficulty * 100) + '%';
-    dom.nodeMastery.textContent = masteryToLabel(mastery);
+    dom.nodeDesc.textContent = documentNode
+      ? ((mentions.length ? `提及概念：${mentions.join('、')}` : '') || node.description || '已同步文档')
+      : (node.description || '-');
+    dom.nodeDifficulty.textContent = documentNode
+      ? (node.source ? `来源：${node.source}` : '文档节点')
+      : (Math.round(difficulty * 100) + '%');
+    dom.nodeMastery.textContent = documentNode
+      ? `关联 ${toNumber(node.mention_count, mentions.length)} 个概念`
+      : masteryToLabel(mastery);
     dom.masteryRange.value = Math.round(mastery * 100);
+    setConceptControlsEnabled(!documentNode);
     if (dom.nodeInsight) {
       dom.nodeInsight.textContent = buildNodeInsight(node);
     }
@@ -134,21 +204,30 @@
     dom.nodeDifficulty.textContent = '-';
     dom.nodeMastery.textContent = '-';
     dom.masteryRange.value = 30;
+    setConceptControlsEnabled(false);
     if (dom.nodeInsight) {
       dom.nodeInsight.textContent = buildNodeInsight(null);
     }
   }
 
   function renderStats(nodes, links) {
-    const avg = nodes.length
-      ? (nodes.reduce((sum, n) => sum + n.mastery, 0) / nodes.length)
+    const conceptNodes = getConceptNodes(nodes);
+    const documentNodes = getDocumentNodes(nodes);
+    const avg = conceptNodes.length
+      ? (conceptNodes.reduce((sum, n) => sum + toNumber(n.mastery, 0), 0) / conceptNodes.length)
       : 0;
-    const weak = nodes.filter(n => n.mastery < 0.4).length;
-    const solid = nodes.filter(n => n.mastery >= 0.8).length;
+    const weak = conceptNodes.filter(n => toNumber(n.mastery, 0) < 0.4).length;
+    const solid = conceptNodes.filter(n => toNumber(n.mastery, 0) >= 0.8).length;
+    const mentionEdges = (links || []).filter(function (item) {
+      return (item || {}).edge_type === 'mention' || String((item || {}).label || '').toUpperCase() === 'MENTIONS';
+    }).length;
 
     dom.statsChips.innerHTML = [
       `节点数: ${nodes.length}`,
+      `概念节点: ${conceptNodes.length}`,
+      `文档节点: ${documentNodes.length}`,
       `关系数: ${links.length}`,
+      `MENTIONS: ${mentionEdges}`,
       `平均掌握度: ${Math.round(avg * 100)}%`,
       `薄弱点: ${weak}`,
       `熟练点: ${solid}`
@@ -159,28 +238,28 @@
         <div class="overview-tile">
           <div class="overview-tile-label">平均掌握度</div>
           <div class="overview-tile-value">${Math.round(avg * 100)}%</div>
-          <div class="overview-tile-note">适合用来观察当前整体状态</div>
+          <div class="overview-tile-note">只统计概念节点，适合观察当前整体状态</div>
         </div>
         <div class="overview-tile">
-          <div class="overview-tile-label">薄弱知识点</div>
-          <div class="overview-tile-value">${weak}</div>
-          <div class="overview-tile-note">优先回看基础概念和前置链</div>
+          <div class="overview-tile-label">概念节点</div>
+          <div class="overview-tile-value">${conceptNodes.length}</div>
+          <div class="overview-tile-note">支持掌握度更新、路径规划与弱项筛查</div>
         </div>
         <div class="overview-tile">
-          <div class="overview-tile-label">稳定掌握</div>
-          <div class="overview-tile-value">${solid}</div>
-          <div class="overview-tile-note">可以继续做迁移和综合题</div>
+          <div class="overview-tile-label">文档节点</div>
+          <div class="overview-tile-value">${documentNodes.length}</div>
+          <div class="overview-tile-note">显示已经同步到图谱的资料与笔记</div>
         </div>
         <div class="overview-tile">
-          <div class="overview-tile-label">关系密度</div>
-          <div class="overview-tile-value">${links.length}</div>
-          <div class="overview-tile-note">关系越清晰，路径规划越有价值</div>
+          <div class="overview-tile-label">MENTIONS 关系</div>
+          <div class="overview-tile-value">${mentionEdges}</div>
+          <div class="overview-tile-note">表示文档和概念之间已经建立映射</div>
         </div>
       `;
     }
 
     if (dom.masteryBand) {
-      const sorted = nodes.slice().sort(function (a, b) {
+      const sorted = conceptNodes.slice().sort(function (a, b) {
         return Number(a.mastery || 0) - Number(b.mastery || 0);
       });
       dom.masteryBand.innerHTML = sorted.length
@@ -193,7 +272,7 @@
     }
 
     if (dom.weakConceptList) {
-      const weakNodes = nodes
+      const weakNodes = conceptNodes
         .slice()
         .sort(function (a, b) { return Number(a.mastery || 0) - Number(b.mastery || 0); })
         .slice(0, 5);
@@ -206,8 +285,28 @@
     }
   }
 
+  function renderDocumentList(nodes) {
+    if (!dom.documentMentionList) return;
+    const documents = getDocumentNodes(nodes)
+      .slice()
+      .sort(function (a, b) {
+        return toNumber(b.mention_count, 0) - toNumber(a.mention_count, 0);
+      })
+      .slice(0, 6);
+
+    dom.documentMentionList.innerHTML = documents.length
+      ? documents.map(function (node) {
+          const mentions = Array.isArray(node.mentions) ? node.mentions.filter(Boolean) : [];
+          const mentionText = mentions.length ? mentions.join('、') : '暂未提及概念';
+          const sourceText = node.source ? `来源 ${escapeHtml(node.source)}` : '来源未标注';
+          return `<div class="mini-stack-item"><strong>${escapeHtml(node.name)}</strong><br>${sourceText}<br>MENTIONS：${escapeHtml(mentionText)}</div>`;
+        }).join('')
+      : '<div class="mini-stack-item">当前图谱中还没有同步文档节点</div>';
+  }
+
   function renderTargetSelect(nodes) {
-    dom.targetSelect.innerHTML = nodes
+    const conceptNodes = getConceptNodes(nodes);
+    dom.targetSelect.innerHTML = conceptNodes
       .map(n => `<option value="${escapeHtml(n.name)}">${escapeHtml(n.name)}</option>`)
       .join('');
   }
@@ -224,14 +323,26 @@
         formatter: (params) => {
           if (params.dataType === 'node') {
             const d = params.data;
+            if (isDocumentNode(d)) {
+              const mentions = Array.isArray(d.mentions) ? d.mentions.filter(Boolean) : [];
+              return [
+                `<strong>${escapeHtml(d.name)}</strong>`,
+                `类型: 文档节点`,
+                `来源: ${escapeHtml(d.source || '-')}`,
+                `关联概念: ${escapeHtml(String(toNumber(d.mention_count, mentions.length)))}`,
+                `说明: ${escapeHtml(d.description || '-')}`
+              ].join('<br>');
+            }
             return [
               `<strong>${escapeHtml(d.name)}</strong>`,
+              `类型: 概念节点`,
               `掌握度: ${Math.round((d.mastery || 0) * 100)}%`,
               `难度: ${Math.round((d.difficulty || 0) * 100)}%`,
               `描述: ${escapeHtml(d.description || '-')}`
             ].join('<br>');
           }
-          return `${escapeHtml(params.data.source)} → ${escapeHtml(params.data.target)}`;
+          const edge = params.data || {};
+          return `${escapeHtml(edge.source_label || edge.source || '')} → ${escapeHtml(edge.target_label || edge.target || '')}<br>关系: ${escapeHtml(edge.label || '相关')}`;
         }
       },
       series: [
@@ -266,14 +377,36 @@
           },
           data: nodes.map(n => ({
             ...n,
-            symbolSize: 26 + Math.round((n.mastery || 0) * 28),
+            symbol: isDocumentNode(n) ? 'roundRect' : 'circle',
+            symbolSize: isDocumentNode(n)
+              ? (34 + Math.round(toNumber(n.mention_count, 0) * 4))
+              : (26 + Math.round((n.mastery || 0) * 28)),
             itemStyle: {
-              color: masteryToColor(n.mastery || 0),
+              color: isDocumentNode(n) ? '#2563eb' : masteryToColor(n.mastery || 0),
               borderWidth: 2,
-              borderColor: '#ffffff'
+              borderColor: isDocumentNode(n) ? '#dbeafe' : '#ffffff'
             }
           })),
-          links
+          links: (links || []).map(function (link) {
+            const mentionEdge = (link || {}).edge_type === 'mention' || String((link || {}).label || '').toUpperCase() === 'MENTIONS';
+            return {
+              ...link,
+              lineStyle: mentionEdge
+                ? {
+                    color: '#60a5fa',
+                    opacity: 0.9,
+                    width: 1.6,
+                    type: 'dashed',
+                    curveness: 0.12
+                  }
+                : {
+                    color: '#94a3b8',
+                    opacity: 0.8,
+                    width: 1.5,
+                    curveness: 0.1
+                  }
+            };
+          })
         }
       ]
     };
@@ -292,7 +425,7 @@
     dom.graphMeta.textContent = '载入中...';
     try {
       const threshold = Number.isFinite(state.relationScoreThreshold) ? state.relationScoreThreshold : 0.45;
-      const resp = await fetch(`${API_BASE}/api/knowledge_graph?user_id=${getUserId()}&min_relation_score=${encodeURIComponent(threshold.toFixed(2))}`);
+      const resp = await fetch(`${API_BASE}/api/knowledge_graph?user_id=${getUserId()}&min_relation_score=${encodeURIComponent(threshold.toFixed(2))}&include_documents=true`);
       const data = await parseApiResponse(resp);
 
       const graphPayload = data && typeof data.graph === 'object' ? data.graph : {};
@@ -303,8 +436,12 @@
       renderGraph(state.graph.nodes, state.graph.links);
       renderTargetSelect(state.graph.nodes);
       renderStats(state.graph.nodes, state.graph.links);
+      renderDocumentList(state.graph.nodes);
 
-      if (state.graph.nodes.length > 0) {
+      const conceptNodes = getConceptNodes(state.graph.nodes);
+      if (conceptNodes.length > 0) {
+        setSelectedNode(conceptNodes[0]);
+      } else if (state.graph.nodes.length > 0) {
         setSelectedNode(state.graph.nodes[0]);
       } else {
         clearSelectedNode();
@@ -313,10 +450,17 @@
       const resolvedThreshold = data.min_relation_score == null ? threshold : toNumber(data.min_relation_score, threshold);
       const nodeCount = toNumber(data.node_count, state.graph.nodes.length);
       const edgeCount = toNumber(data.edge_count, state.graph.links.length);
-      dom.graphMeta.textContent = `节点 ${nodeCount} · 关系 ${edgeCount} · 阈值 ${Math.round(resolvedThreshold * 100)}% · 已更新`;
+      const documentCount = toNumber(data.document_count, getDocumentNodes(state.graph.nodes).length);
+      const mentionCount = toNumber(data.mention_count, (state.graph.links || []).filter(function (item) {
+        return (item || {}).edge_type === 'mention' || String((item || {}).label || '').toUpperCase() === 'MENTIONS';
+      }).length);
+      dom.graphMeta.textContent = `节点 ${nodeCount} · 文档 ${documentCount} · 关系 ${edgeCount} · MENTIONS ${mentionCount} · 阈值 ${Math.round(resolvedThreshold * 100)}% · 已更新`;
     } catch (err) {
       dom.graphMeta.textContent = '加载失败';
       dom.pathList.textContent = withSuggestion('图谱数据加载失败', err, '确认后端已启动并刷新页面');
+      if (dom.documentMentionList) {
+        dom.documentMentionList.innerHTML = '<div class="mini-stack-item">文档映射加载失败</div>';
+      }
       console.error(err);
     }
   }
@@ -373,6 +517,10 @@
       alert('请先在图谱中选择一个知识点。');
       return;
     }
+    if (!isConceptNode(state.selectedNode)) {
+      alert('当前选中的是文档节点，请切换到概念节点后再调整掌握度。');
+      return;
+    }
 
     const mastery = Number(dom.masteryRange.value) / 100;
 
@@ -404,6 +552,10 @@
       alert('请先在图谱中选择一个知识点。');
       return;
     }
+    if (!isConceptNode(state.selectedNode)) {
+      alert('文档节点仅用于展示映射关系，暂不支持在此页面删除。');
+      return;
+    }
 
     const concept = state.selectedNode.name;
     const ok = window.confirm(`确认删除知识点「${concept}」吗？该节点关联关系也会被移除。`);
@@ -433,7 +585,7 @@
   async function fetchPath() {
     const target = dom.targetSelect.value;
     if (!target) {
-      dom.pathList.textContent = '请选择目标知识点';
+      dom.pathList.textContent = '当前没有可规划的概念节点，请先同步或抽取知识点。';
       return;
     }
 
@@ -564,6 +716,16 @@
   refreshRelationScoreText();
   loadGraph();
   loadDueReminders();
+  window.addEventListener('knowledge:updated', function () {
+    loadGraph();
+    loadDueReminders();
+  });
+
+  window.addEventListener('storage', function (event) {
+    if (!event || event.key !== KNOWLEDGE_UPDATED_AT_STORAGE_KEY) return;
+    loadGraph();
+    loadDueReminders();
+  });
 
   if (window.UserContext) {
     window.UserContext.onChange(function () {

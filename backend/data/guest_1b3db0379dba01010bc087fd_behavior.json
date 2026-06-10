@@ -1,0 +1,34 @@
+[
+  {
+    "id": "0ad2fd8b-4de7-4f80-a642-427442056339",
+    "user_id": "guest_1b3db0379dba01010bc087fd",
+    "timestamp": "2026-05-15T14:11:02.990879",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "dashboard",
+    "target": "",
+    "label": "page_view",
+    "title": "学习仪表盘 - 智能学习伴侣",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "764f3826-8910-45cc-a37f-572a9434eba8",
+    "user_id": "guest_1b3db0379dba01010bc087fd",
+    "timestamp": "2026-05-15T14:11:08.414973",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "dashboard",
+    "target": "",
+    "label": "pagehide",
+    "title": "学习仪表盘 - 智能学习伴侣",
+    "source": "page_shell",
+    "duration_seconds": 5.298,
+    "meta": {
+      "referrer": ""
+    }
+  }
+]

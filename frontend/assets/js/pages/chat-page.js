@@ -11,9 +11,47 @@
   const ATTACHMENT_PROMPT_TOTAL_LIMIT = 16000;
   const ATTACHMENT_KNOWLEDGE_LIMIT = 4000;
   const DEFAULT_ATTACHMENT_QUESTION = '请先总结我上传的资料，提炼关键知识点，并给出下一步学习建议。';
-  const AGENT_MODE_STORAGE_KEY = 'fangzhigong_chat_agent_mode';
+  const AUTO_AGENT_MODE_ENABLED = true;
+  const KNOWLEDGE_UPDATED_AT_STORAGE_KEY = 'fangzhigong_knowledge_updated_at';
+  const TYPING_RENDER_THROTTLE_MS = 120;
   const PDF_JS_URL = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js';
   const PDF_JS_WORKER_URL = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  const PRIVATE_ANSWER_HEADINGS = new Set([
+    '分析',
+    '思考',
+    '思路',
+    '推理',
+    '推理过程',
+    '内部分析',
+    '内部推理',
+    '解题分析',
+    '路径判断',
+    '证据链',
+    '工具调用',
+    '调用记录',
+    '中间过程',
+    'analysis',
+    'reasoning',
+    'thinking',
+    'scratchpad'
+  ]);
+  const PUBLIC_ANSWER_HEADINGS = new Set([
+    '讲解',
+    '解答',
+    '答案',
+    '结论',
+    '建议',
+    '练习',
+    '总结',
+    '步骤',
+    '解析',
+    '说明',
+    '复习建议',
+    '下一步',
+    '知识点',
+    '易错点'
+  ]);
+  const INTERNAL_ANSWER_LINE_RE = /(?:`?tool_[a-z0-9_]+`?|agent_scratchpad|return_intermediate_steps|kb_retry_triggered|preferred_kb_tool|prompt injection)/i;
 
   const parseApiResponse = window.ApiUtils && typeof window.ApiUtils.parseApiResponse === 'function'
     ? window.ApiUtils.parseApiResponse
@@ -42,7 +80,9 @@
   let sidebarHistoryCollapsed = false;
   let pendingAttachments = [];
   let pdfJsLoader = null;
-  let agentModeEnabled = false;
+  let agentModeEnabled = AUTO_AGENT_MODE_ENABLED;
+  let typingMessageState = null;
+  let streamingAnswerState = null;
 
   function nowLabel(date) {
     const d = date instanceof Date ? date : new Date(date || Date.now());
@@ -61,25 +101,22 @@
   }
 
   function loadAgentModeState() {
-    try {
-      agentModeEnabled = localStorage.getItem(AGENT_MODE_STORAGE_KEY) === '1';
-    } catch (error) {
-      agentModeEnabled = false;
-    }
-  }
-
-  function saveAgentModeState() {
-    try {
-      localStorage.setItem(AGENT_MODE_STORAGE_KEY, agentModeEnabled ? '1' : '0');
-    } catch (error) {
-      console.warn('保存智能体模式失败:', error);
-    }
+    agentModeEnabled = AUTO_AGENT_MODE_ENABLED;
   }
 
   function getUserLabel() {
     return window.UserContext && typeof window.UserContext.getUserLabel === 'function'
       ? window.UserContext.getUserLabel()
       : '访客';
+  }
+
+  function notifyKnowledgeUpdated() {
+    try {
+      localStorage.setItem(KNOWLEDGE_UPDATED_AT_STORAGE_KEY, String(Date.now()));
+    } catch (error) {
+      console.warn('写入知识更新标记失败:', error);
+    }
+    window.dispatchEvent(new Event('knowledge:updated'));
   }
 
   function getSidebarHistoryStateKey() {
@@ -742,7 +779,7 @@
   }
 
   function normalizeAiAnswerText(text) {
-    const content = normalizeMathText(String(text || ''));
+    const content = sanitizeUserVisibleAnswer(normalizeMathText(String(text || '')));
     const hasGarbledHint = /[?？]{8,}/.test(content) || /�/.test(content);
     if (!hasGarbledHint) return content;
 
@@ -752,6 +789,345 @@
       '原始返回：',
       content
     ].join('\n');
+  }
+
+  function normalizeAnswerHeading(line) {
+    return String(line || '')
+      .trim()
+      .replace(/^[#>*\-\d.)\s]+/, '')
+      .trim()
+      .split(/[：:]/, 1)[0]
+      .trim()
+      .replace(/^[:：]+|[:：]+$/g, '')
+      .trim()
+      .toLowerCase();
+  }
+
+  function isPrivateAnswerHeading(line) {
+    return PRIVATE_ANSWER_HEADINGS.has(normalizeAnswerHeading(line));
+  }
+
+  function isPublicAnswerHeading(line) {
+    return PUBLIC_ANSWER_HEADINGS.has(normalizeAnswerHeading(line));
+  }
+
+  function shouldHideAnswerLine(line) {
+    const text = String(line || '').trim();
+    if (!text) return false;
+    if (INTERNAL_ANSWER_LINE_RE.test(text)) return true;
+    return isPrivateAnswerHeading(text);
+  }
+
+  function sanitizeUserVisibleAnswer(text) {
+    const normalized = String(text || '')
+      .replace(/\r\n/g, '\n')
+      .replace(/\r/g, '\n')
+      .replace(/<\/?(analysis|reasoning|thinking|scratchpad)>/gi, '')
+      .trim();
+    if (!normalized) return '';
+
+    const rawLines = normalized.split('\n');
+    const cleanedLines = [];
+    let skippingPrivateBlock = false;
+
+    rawLines.forEach(function (rawLine) {
+      const line = String(rawLine || '').replace(/\s+$/g, '');
+      const stripped = line.trim();
+
+      if (isPrivateAnswerHeading(stripped)) {
+        skippingPrivateBlock = true;
+        return;
+      }
+
+      if (isPublicAnswerHeading(stripped)) {
+        skippingPrivateBlock = false;
+        cleanedLines.push(line);
+        return;
+      }
+
+      if (skippingPrivateBlock) {
+        return;
+      }
+
+      if (shouldHideAnswerLine(stripped)) {
+        return;
+      }
+
+      cleanedLines.push(line);
+    });
+
+    const cleaned = cleanedLines.join('\n').replace(/\n{3,}/g, '\n\n').trim();
+    if (cleaned) return cleaned;
+
+    const fallback = rawLines.filter(function (line) {
+      return !shouldHideAnswerLine(line);
+    }).join('\n').replace(/\n{3,}/g, '\n\n').trim();
+
+    return fallback || normalized;
+  }
+
+  function createTypingMessageState() {
+    return {
+      lastRenderAt: 0,
+      timerId: null
+    };
+  }
+
+  function createStreamingAnswerState() {
+    return {
+      answerText: '',
+      row: null,
+      textNode: null
+    };
+  }
+
+  function ensureTypingMessageState() {
+    if (!typingMessageState) {
+      typingMessageState = createTypingMessageState();
+    }
+    return typingMessageState;
+  }
+
+  function ensureStreamingAnswerState() {
+    if (!streamingAnswerState) {
+      streamingAnswerState = createStreamingAnswerState();
+    }
+    return streamingAnswerState;
+  }
+
+  function resetTypingMessageState() {
+    if (typingMessageState && typingMessageState.timerId) {
+      window.clearInterval(typingMessageState.timerId);
+    }
+    typingMessageState = null;
+  }
+
+  function resetStreamingAnswerState() {
+    streamingAnswerState = null;
+  }
+
+  function buildTypingMessageMarkup() {
+    const state = typingMessageState || {};
+    const statusText = String(state.statusText || '').trim();
+    return `
+      <div class="typing-dots" aria-label="AI 正在生成回答"><span></span><span></span><span></span></div>
+      ${statusText ? `<div class="typing-status">${escapeHtml(statusText)}</div>` : ''}
+    `;
+  }
+
+  function renderTypingMessage(force) {
+    const typingRow = document.getElementById('typingRow');
+    if (!typingRow) return;
+    if (typingRow.classList.contains('streaming-answer-row')) return;
+
+    const bubble = typingRow.querySelector('.message-bubble');
+    if (!bubble) return;
+
+    const state = ensureTypingMessageState();
+    const now = Date.now();
+    if (!force && now - state.lastRenderAt < TYPING_RENDER_THROTTLE_MS) {
+      return;
+    }
+
+    bubble.innerHTML = buildTypingMessageMarkup();
+    state.lastRenderAt = now;
+
+    const chatMessages = document.getElementById('chatMessages');
+    if (chatMessages) {
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+  }
+
+  function startTypingMessageTicker() {
+    const state = ensureTypingMessageState();
+    if (state.timerId) return;
+
+    state.timerId = window.setInterval(function () {
+      renderTypingMessage(true);
+    }, 1000);
+  }
+
+  function noteTypingMessageToken(fragment) {
+    const token = String(fragment || '');
+    if (!token) return;
+
+    let state = ensureStreamingAnswerState();
+    state.answerText += token;
+
+    if (!state.row) {
+      resetTypingMessageState();
+      const typingRow = document.getElementById('typingRow');
+      if (!typingRow) return;
+
+      typingRow.classList.add('streaming-answer-row');
+      const bubble = typingRow.querySelector('.message-bubble');
+      if (!bubble) return;
+
+      bubble.innerHTML = `
+        <div class="message-text streaming-answer"></div>
+      `;
+      state.row = typingRow;
+      state.textNode = bubble.querySelector('.message-text');
+    }
+
+    if (state.textNode) {
+      state.textNode.textContent = state.answerText;
+    }
+
+    const chatMessages = document.getElementById('chatMessages');
+    if (chatMessages) {
+      chatMessages.scrollTop = chatMessages.scrollHeight;
+    }
+  }
+
+  function finalizeStreamingAnswerMessage(answerText, options) {
+    const finalText = normalizeAiAnswerText(String(answerText || ''));
+    const row = document.getElementById('typingRow');
+    const messageOptions = options || {};
+
+    if (!row || !row.parentNode) {
+      resetStreamingAnswerState();
+      return addMessage(finalText, 'ai', messageOptions);
+    }
+
+    const finalRow = createMessageRow(finalText, 'ai', messageOptions);
+    row.parentNode.replaceChild(finalRow, row);
+    renderMathInContainer(finalRow);
+    appendMessageToSession(finalText, 'ai', messageOptions);
+    renderSessionList();
+    scrollChatToLatest();
+    resetStreamingAnswerState();
+    return finalRow;
+  }
+
+  function summarizeStreamingToolOutput(output) {
+    const text = String(output || '').replace(/\s+/g, ' ').trim();
+    if (!text) return '执行完成';
+    if (text.length <= 72) return text;
+    return `${text.slice(0, 72)}...`;
+  }
+
+  async function readStreamEvents(response, onEvent) {
+    if (!response.ok) {
+      return parseApiResponse(response);
+    }
+
+    const contentType = String(response.headers.get('content-type') || '').toLowerCase();
+    if (contentType.indexOf('text/event-stream') < 0) {
+      return parseApiResponse(response);
+    }
+
+    const reader = response.body && response.body.getReader ? response.body.getReader() : null;
+    if (!reader) {
+      throw new Error('浏览器不支持流式读取，无法启用实时模式');
+    }
+
+    const decoder = new TextDecoder('utf-8');
+    let buffer = '';
+    let finalPayload = null;
+    let streamError = null;
+
+    while (true) {
+      const chunk = await reader.read();
+      if (chunk.done) break;
+      buffer += decoder.decode(chunk.value, { stream: true });
+
+      const events = buffer.split('\n\n');
+      buffer = events.pop() || '';
+
+      events.forEach(function (rawEvent) {
+        const lines = String(rawEvent || '').split('\n');
+        const dataLines = lines
+          .filter(function (line) {
+            return line.startsWith('data:');
+          })
+          .map(function (line) {
+            return line.slice(5).trim();
+          });
+
+        if (!dataLines.length) return;
+        const payloadText = dataLines.join('\n');
+        let evt;
+        try {
+          evt = JSON.parse(payloadText);
+        } catch (error) {
+          return;
+        }
+
+        if (typeof onEvent === 'function') {
+          onEvent(evt);
+        }
+
+        if (evt && evt.type === 'final' && evt.payload) {
+          finalPayload = evt.payload;
+        }
+        if (evt && evt.type === 'error' && !streamError) {
+          streamError = new Error(String(evt.content || 'stream_error'));
+        }
+      });
+    }
+
+    if (streamError) {
+      throw streamError;
+    }
+    if (!finalPayload) {
+      throw new Error('流式会话已结束，但未收到最终结果。');
+    }
+    return finalPayload;
+  }
+
+  function createAgentStreamEventHandler(streamEvents, options) {
+    const opts = options || {};
+    const startText = String(opts.startText || '智能体已启动，正在分析问题...');
+    const toolEndText = String(opts.toolEndText || '工具调用完成，正在整理答案...');
+
+    return function (evt) {
+      if (!evt || typeof evt !== 'object') return;
+
+      if (evt.type === 'start') {
+        setTypingMessageText(startText);
+        return;
+      }
+
+      if (evt.type === 'tool_start') {
+        const toolName = String(evt.tool || '工具');
+        streamEvents.push({
+          tool_name: toolName,
+          status: 'running',
+          tool_output_summary: '执行中'
+        });
+        setTypingMessageText(`正在调用 ${toolName}...`);
+        return;
+      }
+
+      if (evt.type === 'tool_end') {
+        const toolName = String(evt.tool || '工具');
+        for (let idx = streamEvents.length - 1; idx >= 0; idx -= 1) {
+          const item = streamEvents[idx];
+          if (item && item.tool_name === toolName && item.status === 'running') {
+            item.status = 'success';
+            item.tool_output_summary = summarizeStreamingToolOutput(evt.output);
+            break;
+          }
+        }
+        setTypingMessageText(toolEndText);
+        return;
+      }
+
+      if (evt.type === 'token') {
+        noteTypingMessageToken(evt.content);
+        return;
+      }
+
+      if (evt.type === 'retry') {
+        setTypingMessageText(`首轮未命中 ${String(evt.tool || '知识库工具')}，正在强制重试...`);
+        return;
+      }
+
+      if (evt.type === 'error') {
+        setTypingMessageText('智能体运行异常，准备降级提示...');
+      }
+    };
   }
 
   function renderMathInContainer(container) {
@@ -908,65 +1284,65 @@
       });
     }
 
-    if (!response.ok) {
-      return parseApiResponse(response);
-    }
+    return readStreamEvents(response, onEvent);
+  }
 
-    const reader = response.body && response.body.getReader ? response.body.getReader() : null;
-    if (!reader) {
-      throw new Error('浏览器不支持流式读取，无法启用智能体实时模式');
-    }
+  async function requestDefaultQaAnswer(question) {
+    let response = await fetch(`${API_BASE}/api/ask`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        question: question,
+        user_id: getUserId()
+      })
+    });
 
-    const decoder = new TextDecoder('utf-8');
-    let buffer = '';
-    let finalPayload = null;
-
-    while (true) {
-      const chunk = await reader.read();
-      if (chunk.done) break;
-      buffer += decoder.decode(chunk.value, { stream: true });
-
-      const events = buffer.split('\n\n');
-      buffer = events.pop() || '';
-
-      events.forEach(function (rawEvent) {
-        const lines = String(rawEvent || '').split('\n');
-        const dataLines = lines
-          .filter(function (line) {
-            return line.startsWith('data:');
-          })
-          .map(function (line) {
-            return line.slice(5).trim();
-          });
-
-        if (!dataLines.length) return;
-        const payloadText = dataLines.join('\n');
-        try {
-          const evt = JSON.parse(payloadText);
-          onEvent(evt);
-          if (evt && evt.type === 'final' && evt.payload) {
-            finalPayload = evt.payload;
-          }
-          if (evt && evt.type === 'error') {
-            throw new Error(String(evt.content || 'stream_error'));
-          }
-        } catch (error) {
-          // 允许非JSON事件静默跳过，避免中断正常流。
-        }
+    if (response.status === 405) {
+      const query = new URLSearchParams({
+        question: question,
+        user_id: getUserId()
+      });
+      response = await fetch(`${API_BASE}/api/ask?${query.toString()}`, {
+        method: 'GET'
       });
     }
 
-    if (!finalPayload) {
-      throw new Error('流式会话已结束，但未收到最终结果。');
+    return parseApiResponse(response);
+  }
+
+  async function requestDefaultQaAnswerStream(question, options) {
+    const opts = options || {};
+    const onEvent = typeof opts.onEvent === 'function' ? opts.onEvent : function () {};
+
+    let response = await fetch(`${API_BASE}/api/ask`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        question: question,
+        user_id: getUserId(),
+        stream: true
+      })
+    });
+
+    if (response.status === 405) {
+      const query = new URLSearchParams({
+        question: question,
+        user_id: getUserId(),
+        stream: 'true'
+      });
+      response = await fetch(`${API_BASE}/api/ask?${query.toString()}`, {
+        method: 'GET'
+      });
     }
-    return finalPayload;
+
+    return readStreamEvents(response, onEvent);
   }
 
   async function ingestKnowledgeFromInput() {
     const input = document.getElementById('questionInput');
     const raw = String(input && input.value || '').trim();
     if (!raw) {
-      addMessage('请先在输入框写下要入库的知识内容，再点击“存为知识库”。', 'ai', {
+      addMessage('请先在输入框写下要入库的知识内容，再点击“存入知识库”。', 'ai', {
         source: 'kb_ingest',
         aiUsed: false,
         error: ''
@@ -986,15 +1362,21 @@
       })
     });
     const data = await parseApiResponse(response);
-    addMessage(`知识库已写入：${title}`, 'ai', {
+    const item = data && typeof data.item === 'object' ? data.item : {};
+    const graphSync = data.graph_sync || item.graph_sync || null;
+    addMessage(generateKbIngestResultHTML(item, graphSync, raw), 'ai', {
       source: 'kb_ingest',
       aiUsed: false,
+      renderAsHtml: true,
       error: '',
+      graphSync: graphSync,
       evidence: {
-        tool_calls: ['kb_ingest'],
-        trace_count: 1
+        tool_calls: graphSync && graphSync.enabled ? ['kb_ingest', 'sync_kb_note_graph'] : ['kb_ingest'],
+        trace_count: 1,
+        has_graph: Boolean(graphSync && graphSync.enabled)
       }
     });
+    notifyKnowledgeUpdated();
     return data;
   }
 
@@ -1042,9 +1424,10 @@
         error: '',
         evidence: {
           tool_calls: ['kb_search'],
-          trace_count: hits.length
+          trace_count: hits.length,
+          has_graph: Boolean(Array.isArray(data.graph_context) && data.graph_context.length)
         },
-        metadata: {
+        meta: {
           search_mode: currentKbSearchMode,
           response_time_ms: data.query_time_ms || 0,
           results_count: hits.length
@@ -1066,19 +1449,135 @@
     }
   }
 
+  function formatKbModeLabel(mode) {
+    return mode === 'dense_vector' ? '🔍 向量搜索'
+      : mode === 'lexical' ? '📝 词法搜索'
+      : '⚡ 混合搜索';
+  }
+
+  function formatKbPercent(value) {
+    const num = Number(value);
+    if (!Number.isFinite(num) || num <= 0) return '';
+    return `${Math.round(num * 100)}%`;
+  }
+
+  function renderKbPills(items, options) {
+    const list = Array.isArray(items) ? items.filter(Boolean) : [];
+    if (!list.length) return '';
+
+    const opts = options || {};
+    const background = opts.background || '#eef5ff';
+    const color = opts.color || '#1146a6';
+    return list.map(function (item) {
+      return `<span style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:999px;background:${background};color:${color};font-size:11px;font-weight:700;">${escapeHtmlForKB(item)}</span>`;
+    }).join('');
+  }
+
+  function generateKbIngestResultHTML(item, graphSync, rawContent) {
+    const record = item && typeof item === 'object' ? item : {};
+    const sync = graphSync && typeof graphSync === 'object' ? graphSync : {};
+    const title = String(record.title || '知识笔记').trim() || '知识笔记';
+    const topics = Array.isArray(record.topics) && record.topics.length
+      ? record.topics
+      : (Array.isArray(sync.concepts) ? sync.concepts : []);
+    const tags = Array.isArray(record.tags) ? record.tags : [];
+    const snippetSource = String(record.content || rawContent || '').trim();
+    const snippet = snippetSource ? `${snippetSource.slice(0, 180)}${snippetSource.length > 180 ? '...' : ''}` : '';
+    const syncEnabled = typeof sync.enabled === 'boolean' ? sync.enabled : false;
+    const syncMode = String(sync.mode || (syncEnabled ? 'sync' : 'disabled'));
+    const syncStatus = !syncEnabled ? '未启用图谱同步'
+      : syncMode === 'async' ? '已提交异步图谱同步'
+      : sync.synced ? '图谱同步完成'
+      : '图谱同步未确认';
+    const syncTone = !syncEnabled ? '#6b7280' : (sync.synced ? '#047857' : '#b45309');
+    const mentionsCount = Number(sync.mentions_count || topics.length || 0);
+
+    return `
+      <div class="kb-enhanced-result" style="display:flex;flex-direction:column;gap:12px;">
+        <div style="padding:14px;border:1px solid #dbe7f5;border-radius:14px;background:linear-gradient(180deg,#f8fbff,#ffffff);">
+          <div style="display:flex;justify-content:space-between;gap:12px;align-items:flex-start;flex-wrap:wrap;">
+            <div>
+              <div style="font-size:15px;font-weight:800;color:#0f63d8;">知识库已写入</div>
+              <div style="margin-top:4px;font-size:13px;color:#334155;">${escapeHtmlForKB(title)}</div>
+            </div>
+            <div style="padding:6px 10px;border-radius:999px;background:#eef8f3;color:${syncTone};font-size:12px;font-weight:800;">
+              ${escapeHtmlForKB(syncStatus)}
+            </div>
+          </div>
+          ${snippet ? `<div style="margin-top:10px;padding:10px 12px;border-radius:12px;background:#f8fafc;color:#475569;font-size:12px;line-height:1.7;">${escapeHtmlForKB(snippet)}</div>` : ''}
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:12px;">
+            <div style="padding:10px 12px;border-radius:12px;background:#f8fbff;border:1px solid #dce9f8;">
+              <div style="font-size:11px;color:#64748b;">图谱模式</div>
+              <div style="margin-top:4px;font-size:14px;font-weight:800;color:#0f172a;">${escapeHtmlForKB(syncMode)}</div>
+            </div>
+            <div style="padding:10px 12px;border-radius:12px;background:#f8fbff;border:1px solid #dce9f8;">
+              <div style="font-size:11px;color:#64748b;">关联概念数</div>
+              <div style="margin-top:4px;font-size:14px;font-weight:800;color:#0f172a;">${escapeHtmlForKB(String(mentionsCount))}</div>
+            </div>
+            <div style="padding:10px 12px;border-radius:12px;background:#f8fbff;border:1px solid #dce9f8;">
+              <div style="font-size:11px;color:#64748b;">文档 ID</div>
+              <div style="margin-top:4px;font-size:13px;font-weight:700;color:#0f172a;word-break:break-all;">${escapeHtmlForKB(String(sync.document_id || record.id || '--'))}</div>
+            </div>
+          </div>
+          ${topics.length ? `<div style="margin-top:12px;"><div style="font-size:12px;color:#64748b;margin-bottom:8px;">本次提取到的概念</div><div style="display:flex;flex-wrap:wrap;gap:8px;">${renderKbPills(topics, { background: '#e6f4ea', color: '#166534' })}</div></div>` : ''}
+          ${tags.length ? `<div style="margin-top:12px;"><div style="font-size:12px;color:#64748b;margin-bottom:8px;">标签</div><div style="display:flex;flex-wrap:wrap;gap:8px;">${renderKbPills(tags, { background: '#eef2ff', color: '#3730a3' })}</div></div>` : ''}
+        </div>
+      </div>
+    `;
+  }
+
+  function generateGraphContextPanelHTML(graphContext, compact) {
+    const rows = Array.isArray(graphContext) ? graphContext.filter(function (item) {
+      return item && typeof item === 'object';
+    }) : [];
+    if (!rows.length) return '';
+
+    const displayRows = rows.slice(0, compact ? 3 : 5);
+    return `
+      <div style="margin-top:${compact ? 10 : 14}px;padding:12px;border-radius:14px;border:1px solid #dbe7f5;background:linear-gradient(180deg,#f7fbff,#ffffff);">
+        <div style="font-size:13px;font-weight:800;color:#0f63d8;margin-bottom:10px;">图谱增强上下文</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          ${displayRows.map(function (ctx) {
+            const relations = Array.isArray(ctx.relations) ? ctx.relations.slice(0, 4) : [];
+            const relationText = relations.length
+              ? relations.map(function (rel) {
+                  return `${escapeHtmlForKB(String(ctx.concept || '概念'))} -${escapeHtmlForKB(String(rel.relation || '相关'))}-> ${escapeHtmlForKB(String(rel.neighbor || '邻居概念'))}`;
+                }).join('<br>')
+              : '暂无显式关系';
+            const similarity = formatKbPercent(ctx.similarity_to_query);
+            return `
+              <div style="padding:10px 12px;border-radius:12px;background:#f8fafc;border:1px solid #e2e8f0;">
+                <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;">
+                  <div style="font-size:13px;font-weight:700;color:#0f172a;">${escapeHtmlForKB(String(ctx.concept || '图谱概念'))}</div>
+                  ${similarity ? `<div style="font-size:11px;color:#0f766e;font-weight:800;">相似度 ${similarity}</div>` : ''}
+                </div>
+                <div style="margin-top:6px;font-size:12px;color:#475569;">命中文档：${escapeHtmlForKB(String(ctx.doc_title || ctx.doc_id || '未挂接文档'))}</div>
+                <div style="margin-top:6px;font-size:12px;line-height:1.7;color:#334155;">${relationText}</div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+        ${rows.length > displayRows.length ? `<div style="margin-top:10px;font-size:12px;color:#64748b;">其余 ${rows.length - displayRows.length} 条图谱上下文已折叠，可通过更具体的问题缩小范围。</div>` : ''}
+      </div>
+    `;
+  }
+
   function generateEnhancedSearchResultsHTML(query, hits, metadata) {
-    if (!hits || hits.length === 0) {
+    const rows = Array.isArray(hits) ? hits : [];
+    const graphContext = Array.isArray(metadata && metadata.graph_context) ? metadata.graph_context : [];
+    const queryConcepts = Array.isArray(metadata && metadata.graph_query_concepts) ? metadata.graph_query_concepts : [];
+    const graphContributionRate = Number(metadata && metadata.graph_contribution_rate || 0);
+    const responseTime = metadata && metadata.query_time_ms ? `${metadata.query_time_ms}ms` : '计算中...';
+    const modeLabel = formatKbModeLabel((metadata && metadata.search_mode) || currentKbSearchMode);
+    const graphContributionLabel = graphContributionRate > 0 ? `${Math.round(graphContributionRate * 100)}%` : '0%';
+
+    if (!rows.length) {
       return `<div class="kb-enhanced-result" style="padding: 12px; background: #fff3cd; border-left: 4px solid #ffc107; border-radius: 4px;">
         <div style="color: #856404;">未找到与 "<strong>${escapeHtmlForKB(query)}</strong>" 相关的知识</div>
         <div style="color: #856404; font-size: 12px; margin-top: 6px;">建议：尝试换个关键词或更长的表述</div>
+        ${generateGraphContextPanelHTML(graphContext, true)}
       </div>`;
     }
-
-    const modeLabel = currentKbSearchMode === 'dense_vector' ? '🔍 向量搜索' :
-                      currentKbSearchMode === 'lexical' ? '📝 词法搜索' :
-                      '⚡ 混合搜索';
-
-    const responseTime = metadata.query_time_ms ? `${metadata.query_time_ms}ms` : '计算中...';
 
     let resultHtml = `
       <div class="kb-enhanced-result">
@@ -1087,21 +1586,37 @@
             ${modeLabel}
           </div>
           <div style="display: flex; gap: 16px; align-items: center;">
-            <span style="color: #666; font-size: 12px;">找到 ${hits.length} 个结果</span>
+            <span style="color: #666; font-size: 12px;">找到 ${rows.length} 个结果</span>
             <span style="color: #2E7D32; font-size: 12px; font-weight: bold;">响应: ${responseTime}</span>
           </div>
         </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px;">
+          <div style="padding:10px 12px;border-radius:12px;background:#f8fbff;border:1px solid #dce9f8;">
+            <div style="font-size:11px;color:#64748b;">图谱贡献率</div>
+            <div style="margin-top:4px;font-size:16px;font-weight:800;color:#0f172a;">${escapeHtmlForKB(graphContributionLabel)}</div>
+          </div>
+          <div style="padding:10px 12px;border-radius:12px;background:#f8fbff;border:1px solid #dce9f8;">
+            <div style="font-size:11px;color:#64748b;">命中概念种子</div>
+            <div style="margin-top:4px;font-size:16px;font-weight:800;color:#0f172a;">${escapeHtmlForKB(String(queryConcepts.length))}</div>
+          </div>
+          <div style="padding:10px 12px;border-radius:12px;background:#f8fbff;border:1px solid #dce9f8;">
+            <div style="font-size:11px;color:#64748b;">图谱上下文条数</div>
+            <div style="margin-top:4px;font-size:16px;font-weight:800;color:#0f172a;">${escapeHtmlForKB(String(graphContext.length))}</div>
+          </div>
+        </div>
+        ${queryConcepts.length ? `<div style="margin-bottom:12px;"><div style="font-size:12px;color:#64748b;margin-bottom:8px;">本次检索在图谱中优先展开的概念</div><div style="display:flex;flex-wrap:wrap;gap:8px;">${renderKbPills(queryConcepts, { background: '#e0f2fe', color: '#075985' })}</div></div>` : ''}
         <div style="display: flex; flex-direction: column; gap: 12px;">
     `;
 
-    hits.forEach((hit, index) => {
+    rows.forEach((hit, index) => {
       resultHtml += generateSearchResultItemHTML(hit, index + 1);
     });
 
     resultHtml += `
         </div>
+        ${generateGraphContextPanelHTML(graphContext, false)}
         <div style="margin-top: 12px; padding-top: 8px; border-top: 1px solid #e0e0e0; text-align: center; color: #999; font-size: 12px;">
-          💡 这是使用高效的向量检索技术获取的结果，能够理解语义相似性。
+          本次结果已经把文本检索与图谱证据合并展示，能更直观看到“命中了什么内容”和“为什么命中”。
         </div>
       </div>
     `;
@@ -1111,30 +1626,40 @@
 
   function generateSearchResultItemHTML(hit, index) {
     const sourceType = String(hit.source_type || hit.channel || hit.source || '').toLowerCase();
-    const sourceLabel = sourceType.indexOf('vector') >= 0 ? '向量' :
-                        sourceType.indexOf('graph') >= 0 ? '图谱' :
-                        sourceType.indexOf('private') >= 0 ? '私有' :
-                        sourceType.indexOf('lexical') >= 0 ? '词法' : '混合';
+    const sourceLabel = sourceType.indexOf('vector') >= 0 ? '向量'
+      : sourceType.indexOf('graph') >= 0 ? '图谱'
+      : sourceType.indexOf('private') >= 0 ? '私有'
+      : sourceType.indexOf('lexical') >= 0 ? '词法'
+      : '混合';
 
-    const vectorPercent = hit.vector_score ? Math.round(hit.vector_score * 100) : null;
-    const lexicalPercent = hit.lexical_score ? Math.round(hit.lexical_score * 100) : null;
-    const hybridPercent = Math.round((hit.score || 0) * 100);
+    const vectorPercent = formatKbPercent(hit.vector_score);
+    const lexicalPercent = formatKbPercent(hit.lexical_score || hit.text_score);
+    const graphPercent = formatKbPercent(hit.graph_score);
+    const hybridPercent = formatKbPercent(hit.hybrid_score != null ? hit.hybrid_score : hit.score);
+    const matchedConcepts = Array.isArray(hit.matched_concepts) ? hit.matched_concepts.filter(Boolean) : [];
+    const graphRelations = Array.isArray(hit.graph_relations) ? hit.graph_relations.filter(function (item) {
+      return item && item.neighbor;
+    }) : [];
+    const tags = Array.isArray(hit.tags) ? hit.tags.filter(Boolean) : [];
 
     let scoreHtml = '';
     if (vectorPercent) {
-      scoreHtml += `<span style="background: #E3F2FD; color: #1976D2; padding: 2px 6px; border-radius: 3px; font-size: 11px;">向量: ${vectorPercent}%</span>`;
+      scoreHtml += `<span style="background: #E3F2FD; color: #1976D2; padding: 2px 6px; border-radius: 3px; font-size: 11px;">向量: ${vectorPercent}</span>`;
     }
     if (lexicalPercent) {
-      scoreHtml += `<span style="background: #FFF3E0; color: #F57C00; padding: 2px 6px; border-radius: 3px; font-size: 11px;">词法: ${lexicalPercent}%</span>`;
+      scoreHtml += `<span style="background: #FFF3E0; color: #F57C00; padding: 2px 6px; border-radius: 3px; font-size: 11px;">词法: ${lexicalPercent}</span>`;
     }
-    scoreHtml += `<span style="background: #E8F5E9; color: #2E7D32; padding: 2px 6px; border-radius: 3px; font-size: 11px; font-weight: bold;">综合: ${hybridPercent}%</span>`;
+    if (graphPercent) {
+      scoreHtml += `<span style="background: #ECFDF5; color: #047857; padding: 2px 6px; border-radius: 3px; font-size: 11px;">图谱: ${graphPercent}</span>`;
+    }
+    scoreHtml += `<span style="background: #E8F5E9; color: #2E7D32; padding: 2px 6px; border-radius: 3px; font-size: 11px; font-weight: bold;">综合: ${hybridPercent || '0%'}</span>`;
 
     let metadataHtml = `<span style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 11px; color: #999;">源: ${sourceLabel}</span>`;
-    
+
     if (hit.discipline) {
       metadataHtml += `<span style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 11px; color: #999;">${hit.discipline}</span>`;
     }
-    
+
     if (hit.chapter) {
       metadataHtml += `<span style="background: #f5f5f5; padding: 2px 6px; border-radius: 3px; font-size: 11px; color: #999;">${hit.chapter}</span>`;
     }
@@ -1146,6 +1671,11 @@
     const snippetRaw = hit.snippet || hit.content || '（无内容预览）';
     const snippet = String(snippetRaw || '').slice(0, 420);
     const title = hit.title || '知识片段';
+    const graphRelationHtml = graphRelations.length
+      ? graphRelations.slice(0, 4).map(function (relation) {
+          return `<div style="font-size:12px;line-height:1.6;color:#334155;">${escapeHtmlForKB(title)} -${escapeHtmlForKB(String(relation.relation || '相关'))}-> ${escapeHtmlForKB(String(relation.neighbor || '邻居概念'))}</div>`;
+        }).join('')
+      : '';
 
     return `
       <div style="padding: 12px; background: white; border: 1px solid #e0e0e0; border-radius: 4px; transition: all 0.2s;">
@@ -1167,8 +1697,11 @@
             <div style="color: #666; font-size: 12px; line-height: 1.45; margin: 8px 0; padding: 6px; background: #fafafa; border-radius: 3px; max-height: 110px; overflow: hidden;">
               ${escapeHtmlForKB(snippet)}
             </div>
+            ${matchedConcepts.length ? `<div style="margin:8px 0 0;"><div style="font-size:12px;color:#64748b;margin-bottom:6px;">命中的图谱概念</div><div style="display:flex;flex-wrap:wrap;gap:8px;">${renderKbPills(matchedConcepts, { background: '#e6f4ea', color: '#166534' })}</div></div>` : ''}
+            ${graphRelationHtml ? `<div style="margin-top:10px;padding:10px 12px;border-radius:12px;background:#f8fbff;border:1px solid #dbe7f5;"><div style="font-size:12px;color:#64748b;margin-bottom:6px;">关联关系</div>${graphRelationHtml}</div>` : ''}
+            ${tags.length ? `<div style="margin-top:10px;"><div style="display:flex;flex-wrap:wrap;gap:8px;">${renderKbPills(tags.slice(0, 6), { background: '#fef3c7', color: '#92400e' })}</div></div>` : ''}
             <button onclick="insertKBResultToInput('${escapeJsString(title)}')" 
-                    style="background: #4CAF50; color: white; border: none; padding: 6px 12px; border-radius: 3px; cursor: pointer; font-size: 12px; transition: background 0.2s; margin-top: 4px;">
+                    style="background: #4CAF50; color: white; border: none; padding: 6px 12px; border-radius: 3px; cursor: pointer; font-size: 12px; transition: background 0.2s; margin-top: 8px;">
               引用这个答案
             </button>
           </div>
@@ -1255,16 +1788,17 @@
     }
 
     const metaItems = [];
-    if (sender === 'ai' && opts.source) {
+    const showMeta = sender === 'ai' && opts.showMeta === true;
+    if (showMeta && opts.source) {
       metaItems.push(`<span class="meta-chip">来源：${escapeHtml(opts.source)}</span>`);
     }
-    if (sender === 'ai' && typeof opts.aiUsed === 'boolean') {
+    if (showMeta && typeof opts.aiUsed === 'boolean') {
       metaItems.push(`<span class="meta-chip">${opts.aiUsed ? '真实AI回答' : '回退回答'}</span>`);
     }
-    if (sender === 'ai' && opts.error) {
+    if (showMeta && opts.error) {
       metaItems.push(`<span class="meta-chip error">${escapeHtml(opts.error)}</span>`);
     }
-    if (sender === 'ai' && opts.evidence && typeof opts.evidence === 'object') {
+    if (showMeta && opts.evidence && typeof opts.evidence === 'object') {
       if (Array.isArray(opts.evidence.tool_calls) && opts.evidence.tool_calls.length) {
         metaItems.push(`<span class="meta-chip">工具链：${escapeHtml(opts.evidence.tool_calls.join(' -> '))}</span>`);
       }
@@ -1275,7 +1809,7 @@
         metaItems.push(`<span class="meta-chip">知识库：${opts.evidence.has_kb ? '已命中' : '未命中'}</span>`);
       }
     }
-    if (sender === 'ai' && opts.meta && typeof opts.meta === 'object') {
+    if (showMeta && opts.meta && typeof opts.meta === 'object') {
       if (opts.meta.kb_routing_required) {
         metaItems.push('<span class="meta-chip">路由：要求知识库</span>');
       }
@@ -1283,11 +1817,16 @@
         metaItems.push('<span class="meta-chip">补偿：已触发重试</span>');
       }
     }
-    if (sender === 'ai' && opts.graphSync && typeof opts.graphSync === 'object') {
+    if (showMeta && opts.graphSync && typeof opts.graphSync === 'object') {
       const mode = opts.graphSync.mode || 'unknown';
-      const status = opts.graphSync.synced ? '已同步' : '待同步';
+      const status = opts.graphSync.enabled === false
+        ? '未启用'
+        : (opts.graphSync.synced ? '已同步' : (opts.graphSync.mode === 'async' ? '排队中' : '待同步'));
       const taskType = opts.graphSync.task_type ? ` / ${opts.graphSync.task_type}` : '';
       metaItems.push(`<span class="meta-chip">图谱同步：${escapeHtml(mode)} / ${escapeHtml(status)}${escapeHtml(taskType)}</span>`);
+      if (typeof opts.graphSync.mentions_count === 'number') {
+        metaItems.push(`<span class="meta-chip">关联概念：${escapeHtml(String(opts.graphSync.mentions_count))}</span>`);
+      }
       if (opts.graphSync.task_id) {
         const taskHref = `${API_BASE}/api/tasks/${encodeURIComponent(String(opts.graphSync.task_id))}`;
         metaItems.push(`<a class="meta-chip link" href="${taskHref}" target="_blank" rel="noopener noreferrer">查看任务</a>`);
@@ -1333,9 +1872,17 @@
     saveSessionsToLocal();
   }
 
+  function shouldHideTechnicalMessage(sender, options) {
+    const opts = options || {};
+    if (sender !== 'ai') return false;
+    if (opts.source === 'agent_workflow') return true;
+    return Array.isArray(opts.workflowSteps) && opts.workflowSteps.length > 0;
+  }
+
   function addMessage(text, sender, options, persist) {
     const chatMessages = document.getElementById('chatMessages');
     if (!chatMessages) return null;
+    if (shouldHideTechnicalMessage(sender, options)) return null;
 
     const row = createMessageRow(text, sender, options || {});
     chatMessages.appendChild(row);
@@ -1717,34 +2264,35 @@
     const chatMessages = document.getElementById('chatMessages');
     if (!chatMessages) return;
 
+    removeTypingMessage();
+    typingMessageState = createTypingMessageState();
+
     const row = document.createElement('div');
     row.className = 'message-row assistant';
     row.id = 'typingRow';
     row.innerHTML = `
       <div class="avatar">AI</div>
-      <div class="message-bubble">
-        <div class="typing-dots"><span></span><span></span><span></span></div>
-      </div>
+      <div class="message-bubble"></div>
     `;
     chatMessages.appendChild(row);
-    chatMessages.scrollTop = chatMessages.scrollHeight;
+    startTypingMessageTicker();
+    renderTypingMessage(true);
   }
 
   function setTypingMessageText(text) {
     const typingRow = document.getElementById('typingRow');
-    if (!typingRow) return;
+    if (typingRow && typingRow.classList.contains('streaming-answer-row')) {
+      return;
+    }
 
-    const bubble = typingRow.querySelector('.message-bubble');
-    if (!bubble) return;
-
-    const safe = escapeHtml(String(text || '正在分析中...'));
-    bubble.innerHTML = `
-      <div class="typing-dots"><span></span><span></span><span></span></div>
-      <div class="typing-status">${safe}</div>
-    `;
+    const state = ensureTypingMessageState();
+    state.statusText = String(text || '正在分析中...');
+    renderTypingMessage(true);
   }
 
   function removeTypingMessage() {
+    resetTypingMessageState();
+    resetStreamingAnswerState();
     const typingRow = document.getElementById('typingRow');
     if (typingRow && typingRow.parentNode) {
       typingRow.parentNode.removeChild(typingRow);
@@ -1875,53 +2423,19 @@
           imageFile: imageAttachment.file,
           question: question || DEFAULT_ATTACHMENT_QUESTION,
           sessionId: session ? session.id : '',
-          onEvent: function (evt) {
-            if (!evt || typeof evt !== 'object') return;
-            if (evt.type === 'start') {
-              setTypingMessageText('智能体已启动，正在读取题目...');
-              return;
-            }
-            if (evt.type === 'tool_start') {
-              const toolName = String(evt.tool || '工具');
-              streamEvents.push({ tool_name: toolName, status: 'running', tool_output_summary: '执行中' });
-              setTypingMessageText(`正在调用 ${toolName}...`);
-              return;
-            }
-            if (evt.type === 'tool_end') {
-              setTypingMessageText('工具调用完成，正在整理答案...');
-              return;
-            }
-            if (evt.type === 'token') {
-              setTypingMessageText('正在生成讲解内容...');
-              return;
-            }
-            if (evt.type === 'error') {
-              setTypingMessageText('智能体运行异常，准备降级提示...');
-            }
-          }
+          onEvent: createAgentStreamEventHandler(streamEvents, {
+            startText: '智能体已启动，正在读取题目...',
+            toolEndText: '工具调用完成，正在整理答案...'
+          })
         });
 
-        removeTypingMessage();
-        addMessage(normalizeAiAnswerText(agentData.answer || ''), 'ai', {
+        finalizeStreamingAnswerMessage(agentData.answer || '', {
           source: 'agent_ocr_tutor',
           aiUsed: true,
           error: '',
           evidence: agentData.evidence || null,
           meta: agentData.meta || null
         });
-
-        const workflow = Array.isArray(agentData.steps_log) && agentData.steps_log.length
-          ? agentData.steps_log
-          : streamEvents;
-        if (Array.isArray(workflow) && workflow.length) {
-          addMessage('已生成本次辅导的可视化执行轨迹：', 'ai', {
-            source: 'agent_workflow',
-            aiUsed: true,
-            workflowSteps: workflow,
-            evidence: agentData.evidence || null,
-            meta: agentData.meta || null
-          });
-        }
 
         const ignoredCount = attachmentsToSend.filter(function (item) {
           return item && item.kind !== 'image';
@@ -1944,91 +2458,50 @@
       if (agentModeEnabled) {
         const session = ensureActiveSession();
         const streamEvents = [];
-        const agentData = await askTutorAgentStream({
-          question: questionForApi,
-          sessionId: session ? session.id : '',
-          onEvent: function (evt) {
-            if (!evt || typeof evt !== 'object') return;
-            if (evt.type === 'start') {
-              setTypingMessageText('智能体已启动，正在分析问题...');
-              return;
-            }
-            if (evt.type === 'tool_start') {
-              const toolName = String(evt.tool || '工具');
-              streamEvents.push({ tool_name: toolName, status: 'running', tool_output_summary: '执行中' });
-              setTypingMessageText(`正在调用 ${toolName}...`);
-              return;
-            }
-            if (evt.type === 'tool_end') {
-              setTypingMessageText('工具调用完成，正在整合证据...');
-              return;
-            }
-            if (evt.type === 'token') {
-              setTypingMessageText('正在生成讲解内容...');
-              return;
-            }
-            if (evt.type === 'error') {
-              setTypingMessageText('智能体运行异常，准备降级提示...');
-            }
-          }
-        });
+        try {
+          const agentData = await askTutorAgentStream({
+            question: questionForApi,
+            sessionId: session ? session.id : '',
+            onEvent: createAgentStreamEventHandler(streamEvents, {
+              startText: '正在自动分析问题，并判断是否需要检索知识库...',
+              toolEndText: '工具调用完成，正在整合证据...'
+            })
+          });
 
-        removeTypingMessage();
-        addMessage(normalizeAiAnswerText(agentData.answer || ''), 'ai', {
-          source: 'agent_text_tutor',
-          aiUsed: true,
-          error: '',
-          graphSync: (agentData.knowledge_extract && agentData.knowledge_extract.graph_sync) || null,
-          evidence: agentData.evidence || null,
-          meta: agentData.meta || null
-        });
-        renderAdviceHint(agentData, 'agent_diagnosis_hint');
-
-        const workflow = Array.isArray(agentData.steps_log) && agentData.steps_log.length
-          ? agentData.steps_log
-          : streamEvents;
-        if (Array.isArray(workflow) && workflow.length) {
-          addMessage('已生成本次辅导的可视化执行轨迹：', 'ai', {
-            source: 'agent_workflow',
+          finalizeStreamingAnswerMessage(agentData.answer || '', {
+            source: 'agent_text_tutor',
             aiUsed: true,
-            workflowSteps: workflow,
+            error: '',
+            graphSync: (agentData.knowledge_extract && agentData.knowledge_extract.graph_sync) || null,
             evidence: agentData.evidence || null,
             meta: agentData.meta || null
           });
-        }
+          renderAdviceHint(agentData, 'agent_diagnosis_hint');
 
-        if (attachmentResult.warnings.length) {
-          addMessage(`附件处理提醒：\n${attachmentResult.warnings.map(function (item, index) {
-            return `${index + 1}. ${item}`;
-          }).join('\n')}`, 'ai', {
-            source: 'attachment',
-            aiUsed: false,
-            error: ''
-          });
+          if (attachmentResult.warnings.length) {
+            addMessage(`附件处理提醒：\n${attachmentResult.warnings.map(function (item, index) {
+              return `${index + 1}. ${item}`;
+            }).join('\n')}`, 'ai', {
+              source: 'attachment',
+              aiUsed: false,
+              error: ''
+            });
+          }
+          return;
+        } catch (agentError) {
+          console.warn('智能体自动路由失败，准备回退普通问答:', agentError);
+          removeTypingMessage();
+          addTypingMessage();
+          setTypingMessageText('智能体通道暂不可用，正在自动切换普通问答...');
         }
-        return;
       }
 
-      let response = await fetch(`${API_BASE}/api/ask`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          question: questionForApi,
-          user_id: getUserId()
+      const data = await requestDefaultQaAnswerStream(questionForApi, {
+        onEvent: createAgentStreamEventHandler([], {
+          startText: '正在生成回答...',
+          toolEndText: '正在整理答案...'
         })
       });
-
-      if (response.status === 405) {
-        const query = new URLSearchParams({
-          question: questionForApi,
-          user_id: getUserId()
-        });
-        response = await fetch(`${API_BASE}/api/ask?${query.toString()}`, {
-          method: 'GET'
-        });
-      }
-
-      const data = await parseApiResponse(response);
       const knowledgeSeed = buildKnowledgeSeedText(question, attachmentResult.attachments);
       let extractData = data.knowledge_extract || {};
       if (!extractData || typeof extractData !== 'object' || !Object.keys(extractData).length) {
@@ -2040,8 +2513,7 @@
         return attachment.graphSync;
       });
 
-      removeTypingMessage();
-      addMessage(normalizeAiAnswerText(data.answer), 'ai', {
+      finalizeStreamingAnswerMessage(data.answer, {
         source: data.source,
         aiUsed: data.ai_used,
         error: data.error,
@@ -2049,15 +2521,6 @@
         evidence: data.evidence || null
       });
       renderAdviceHint(data, 'qa_diagnosis_hint');
-
-      if (Array.isArray(data.steps_log) && data.steps_log.length) {
-        addMessage('已生成本次辅导的可视化执行轨迹：', 'ai', {
-          source: 'agent_workflow',
-          aiUsed: true,
-          workflowSteps: data.steps_log,
-          evidence: data.evidence || null
-        });
-      }
 
       if (attachmentResult.warnings.length) {
         addMessage(`附件处理提醒：\n${attachmentResult.warnings.map(function (item, index) {
@@ -2163,26 +2626,8 @@
 
   function initAgentExperienceControls() {
     loadAgentModeState();
-    const toggle = document.getElementById('agentModeToggle');
     const kbSaveBtn = document.getElementById('kbSaveBtn');
     const kbSearchBtn = document.getElementById('kbSearchBtn');
-    const kbSearchModeSelect = document.getElementById('kbSearchModeSelect');
-
-    if (toggle) {
-      toggle.checked = agentModeEnabled;
-      if (!toggle.dataset.bound) {
-        toggle.addEventListener('change', function () {
-          agentModeEnabled = !!toggle.checked;
-          saveAgentModeState();
-          addMessage(`已切换为${agentModeEnabled ? '智能体模式（文本也走工具链）' : '普通问答模式（走 /api/ask）'}。`, 'ai', {
-            source: 'agent_mode',
-            aiUsed: false,
-            error: ''
-          });
-        });
-        toggle.dataset.bound = '1';
-      }
-    }
 
     if (kbSaveBtn && !kbSaveBtn.dataset.bound) {
       kbSaveBtn.addEventListener('click', async function () {
@@ -2214,16 +2659,6 @@
         }
       });
       kbSearchBtn.dataset.bound = '1';
-    }
-
-    if (kbSearchModeSelect) {
-      kbSearchModeSelect.value = currentKbSearchMode;
-      if (!kbSearchModeSelect.dataset.bound) {
-        kbSearchModeSelect.addEventListener('change', function () {
-          switchKBSearchMode(String(kbSearchModeSelect.value || '').trim());
-        });
-        kbSearchModeSelect.dataset.bound = '1';
-      }
     }
   }
 

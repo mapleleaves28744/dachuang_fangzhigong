@@ -1,0 +1,18 @@
+[
+  {
+    "id": "770ca060-b29c-45b9-9948-2a1d8d1e684d",
+    "user_id": "guest_7ffe1c43c7b4fe819c296ba5",
+    "timestamp": "2026-05-22T00:12:58.879721",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "index",
+    "target": "",
+    "label": "page_view",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/question-bank.html"
+    }
+  }
+]

@@ -1,8 +1,9 @@
-from flask import Flask, Response, request, jsonify, send_from_directory
+from flask import Flask, Response, request, jsonify, send_from_directory, g, stream_with_context
 from flask_cors import CORS
 import requests
 import json
 import copy
+import io
 from datetime import datetime, timedelta
 from collections import Counter, defaultdict, deque
 import os
@@ -16,10 +17,16 @@ from .services.cognitive_diagnosis import CognitiveDiagnosis
 from .services.celery_app import create_celery
 from .services.knowledge_graph import KnowledgeGraph
 from .services.mastery_engine import calculate_concept_mastery, build_learning_advice
+from .services.learning_feedback import build_feedback_mastery_assessment
 from .services.learning_profile import (
     build_learning_profile as build_learning_profile_core,
     build_recommendations as build_recommendations_core,
     build_recommendation_context,
+)
+from .services.question_evaluator import (
+    SUPPORTED_QUESTION_TYPES,
+    evaluate_answer as evaluate_question_answer_by_type,
+    normalize_question_type,
 )
 from .services.topic_guard import filter_learning_topics, is_learning_topic
 from .services.concept_mapping import (
@@ -28,19 +35,33 @@ from .services.concept_mapping import (
     build_concept_profiles,
     map_learning_items,
 )
-from .services.dashboard_summary import build_dashboard_sections, has_learning_evidence
+from .services.dashboard_summary import (
+    build_dashboard_sections,
+    build_streak_widget_summary,
+    has_learning_evidence,
+)
+from .services.demo_tutor import build_rule_based_tutor_response
+from .services.document_ingest import (
+    extract_text_from_learning_asset,
+    normalize_text_preview,
+    split_text_into_chunks,
+)
+from .services.knowledge_base import get_kb_readiness_report, invalidate_user_kb_cache
 from .services.neo4j_store import Neo4jGraphStore
 from .services.ocr_service import extract_text_from_image as extract_text_from_image_service
 from .api.agent_routes import agent_bp
 import logging
 import time
+from werkzeug.datastructures import FileStorage
 from werkzeug.security import check_password_hash, generate_password_hash
+from itsdangerous import BadData, SignatureExpired, URLSafeSerializer, URLSafeTimedSerializer
 
 # 简单日志配置
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BACKEND_DATA_DIR = os.path.join(BACKEND_DIR, "data")
 PROJECT_ROOT = os.path.dirname(BACKEND_DIR)
 
 
@@ -74,7 +95,13 @@ except Exception:
     AsyncResult = None
 
 app = Flask(__name__)
-CORS(app)  # 允许跨域请求
+app.secret_key = (
+    os.getenv("APP_SIGNING_SECRET")
+    or os.getenv("SECRET_KEY")
+    or os.getenv("FLASK_SECRET_KEY")
+    or secrets.token_hex(32)
+)
+CORS(app, supports_credentials=True)  # 允许跨域请求并携带匿名会话 cookie
 app.register_blueprint(agent_bp)
 
 TASK_META = {}
@@ -178,8 +205,16 @@ AUTH_BINDABLE_EVENT_SUFFIXES = (
     "question_answer",
 )
 GUEST_USER_ID_PATTERN = re.compile(r"^guest_[a-z0-9]{8,40}$")
+GUEST_SESSION_COOKIE_NAME = os.getenv("GUEST_SESSION_COOKIE_NAME", "fangzhigong_guest_session")
+GUEST_SESSION_COOKIE_SALT = "fangzhigong-guest-session-v1"
+SPACE_PREVIEW_TOKEN_SALT = "fangzhigong-space-preview-v1"
+SPACE_PREVIEW_SIGNATURE_QUERY_PARAM = "preview_signature"
+SPACE_PREVIEW_TOKEN_TTL_SECONDS = max(60, int(os.getenv("SPACE_PREVIEW_TOKEN_TTL_SECONDS", "900")))
 SPACE_MAX_ITEM_COUNT = max(20, int(os.getenv("SPACE_MAX_ITEM_COUNT", "200")))
 SPACE_MAX_FILE_BYTES = max(1024, int(os.getenv("SPACE_MAX_FILE_BYTES", "10485760")))
+LEARNING_CONTENT_MAX_CHARS = max(2000, int(os.getenv("LEARNING_CONTENT_MAX_CHARS", "120000")))
+LEARNING_CONTENT_PREVIEW_CHARS = max(160, int(os.getenv("LEARNING_CONTENT_PREVIEW_CHARS", "500")))
+LOCAL_DEMO_FALLBACK_ENABLED = str(os.getenv("LOCAL_DEMO_FALLBACK_ENABLED", "true")).strip().lower() == "true"
 
 
 def utcnow():
@@ -222,6 +257,23 @@ def build_api_absolute_url(path, params=None):
     return f"{base}{path}{query}"
 
 
+def should_use_secure_cookie():
+    forwarded_proto = str(request.headers.get("X-Forwarded-Proto", "") or "").split(",", 1)[0].strip().lower()
+    return bool(request.is_secure or forwarded_proto == "https")
+
+
+def get_guest_session_serializer():
+    return URLSafeSerializer(app.secret_key, salt=GUEST_SESSION_COOKIE_SALT)
+
+
+def get_space_preview_token_serializer():
+    return URLSafeTimedSerializer(app.secret_key, salt=SPACE_PREVIEW_TOKEN_SALT)
+
+
+def generate_guest_user_id():
+    return f"guest_{secrets.token_hex(12)}"
+
+
 def clamp_text(value, limit):
     text = str(value or "")
     if len(text) <= limit:
@@ -258,6 +310,56 @@ def summarize_space_item(name, kind, mime, size, source, content, has_file):
     else:
         lines.append("当前条目已保存，可直接在空间中查看。")
     return "\n".join(lines)
+
+
+def build_learning_content_event(
+    *,
+    content_type,
+    title,
+    content,
+    source,
+    topics=None,
+    extra=None,
+):
+    body = clamp_text(content or "", LEARNING_CONTENT_MAX_CHARS)
+    preview = normalize_text_preview(body, LEARNING_CONTENT_PREVIEW_CHARS)
+    payload = {
+        "id": str(uuid.uuid4()),
+        "timestamp": datetime.now().isoformat(),
+        "content_type": str(content_type or "note").strip() or "note",
+        "title": clamp_text(title or "学习记录", 180).strip() or "学习记录",
+        "content": body,
+        "content_preview": preview,
+        "content_length": len(body),
+        "source": clamp_text(source or "manual", 64).strip() or "manual",
+        "topics": [str(item).strip() for item in (topics or []) if str(item).strip()][:8],
+    }
+    if isinstance(extra, dict):
+        payload.update(extra)
+    return payload
+
+
+def append_learning_content_event(
+    user_id,
+    *,
+    content_type,
+    title,
+    content,
+    source,
+    topics=None,
+    extra=None,
+):
+    event = build_learning_content_event(
+        content_type=content_type,
+        title=title,
+        content=content,
+        source=source,
+        topics=topics,
+        extra=extra,
+    )
+    append_user_event(user_id, "content", event)
+    invalidate_user_kb_cache(user_id)
+    return event
 
 
 def decode_space_data_url(data_url):
@@ -310,6 +412,42 @@ def create_space_record(name):
     }
 
 
+def is_image_space_item(name, mime, kind):
+    lower_name = str(name or "").strip().lower()
+    mime_text = str(mime or "").strip().lower()
+    kind_text = str(kind or "").strip().lower()
+    return (
+        kind_text in {"image", "photo", "picture"}
+        or mime_text.startswith("image/")
+        or lower_name.endswith((".png", ".jpg", ".jpeg", ".bmp", ".gif", ".webp"))
+    )
+
+
+def build_space_item_learning_metadata(name, content, summary="", topics=None):
+    body = clamp_text(content or "", LEARNING_CONTENT_MAX_CHARS)
+    merged_topics = normalize_topic_list(topics)
+    if not merged_topics:
+        seed_parts = []
+        if body:
+            seed_parts.append(body[:4000])
+        elif summary:
+            seed_parts.append(str(summary or "")[:1000])
+        if name:
+            seed_parts.append(str(name or "")[:160])
+        seed_text = "\n".join(part for part in seed_parts if str(part or "").strip()).strip()
+        if seed_text:
+            merged_topics = normalize_topic_list(detect_concepts_from_text(seed_text))[:6]
+
+    chunks = split_text_into_chunks(body, chunk_size=720, overlap=120, max_chunks=24) if body else []
+    return {
+        "contentPreview": normalize_text_preview(body, 220),
+        "contentLength": len(body),
+        "textChunkCount": len(chunks),
+        "topics": merged_topics[:6],
+        "retrievalReady": bool(body and chunks),
+    }
+
+
 def normalize_space_item_input(raw_item, index_offset=0):
     if not isinstance(raw_item, dict):
         return None
@@ -322,9 +460,41 @@ def normalize_space_item_input(raw_item, index_offset=0):
         raise ValueError(f"单个文件不能超过 {max(1, SPACE_MAX_FILE_BYTES // 1024 // 1024)} MB")
 
     ts = now_ms() + max(0, int(index_offset or 0))
-    content = clamp_text(raw_item.get("content"), 120000)
     mime = str(raw_item.get("mime") or decoded_mime or "").strip()
     kind = str(raw_item.get("kind") or "document").strip() or "document"
+    extracted = extract_text_from_learning_asset(
+        name=str(raw_item.get("name") or ""),
+        mime=mime,
+        content=str(raw_item.get("content") or ""),
+        summary=str(raw_item.get("summary") or ""),
+        file_bytes=decoded_bytes,
+    )
+    content = clamp_text(extracted.get("text") or raw_item.get("content") or "", LEARNING_CONTENT_MAX_CHARS)
+    text_extract_method = str(extracted.get("method") or "")
+    text_extract_warnings = extracted.get("warnings", []) if isinstance(extracted.get("warnings", []), list) else []
+    ocr_provider = ""
+    ocr_fallback_used = False
+    ocr_error_code = ""
+
+    if decoded_bytes and is_image_space_item(raw_item.get("name"), mime, kind) and not content:
+        ocr_result = extract_text_from_image_service(
+            FileStorage(
+                stream=io.BytesIO(decoded_bytes),
+                filename=str(raw_item.get("name") or "学习图片"),
+                content_type=mime or "application/octet-stream",
+            )
+        )
+        ocr_text = clamp_text((ocr_result or {}).get("text") or "", LEARNING_CONTENT_MAX_CHARS)
+        if ocr_text:
+            content = ocr_text
+            text_extract_method = "image_ocr"
+        ocr_provider = str((ocr_result or {}).get("provider") or "").strip()
+        ocr_fallback_used = bool((ocr_result or {}).get("fallback_used", False))
+        ocr_error_code = str((ocr_result or {}).get("error_code") or "").strip()
+        if ocr_error_code:
+            text_extract_warnings = list(text_extract_warnings) + [ocr_error_code]
+
+    summary = clamp_text(raw_item.get("summary"), 4000).strip()
     size = int(raw_item.get("size") or 0)
     if decoded_bytes:
         size = max(size, len(decoded_bytes))
@@ -339,11 +509,16 @@ def normalize_space_item_input(raw_item, index_offset=0):
         "size": max(0, size),
         "source": clamp_text(raw_item.get("source") or "space_upload", 64).strip(),
         "content": content,
-        "summary": clamp_text(raw_item.get("summary"), 4000).strip(),
+        "summary": summary,
         "audioDataUrl": audio_data_url if kind == "audio" or mime.startswith("audio/") else "",
         "fileDataUrl": file_data_url or (audio_data_url if kind == "audio" or mime.startswith("audio/") else ""),
         "addedAt": ts,
         "updatedAt": ts,
+        "textExtractMethod": text_extract_method,
+        "textExtractWarnings": text_extract_warnings,
+        "ocrProvider": ocr_provider,
+        "ocrFallbackUsed": ocr_fallback_used,
+        "ocrErrorCode": ocr_error_code,
     }
     if not item["summary"]:
         item["summary"] = summarize_space_item(
@@ -355,6 +530,14 @@ def normalize_space_item_input(raw_item, index_offset=0):
             content=item["content"],
             has_file=bool(item["fileDataUrl"] or item["audioDataUrl"]),
         )
+    item.update(
+        build_space_item_learning_metadata(
+            name=item.get("name"),
+            content=item.get("content"),
+            summary=item.get("summary"),
+            topics=raw_item.get("topics"),
+        )
+    )
     return item
 
 
@@ -496,17 +679,16 @@ def merge_space_payloads(existing_payload, incoming_payload):
 
 
 def serialize_space_item(item, user_id):
-    auth_token = extract_bearer_token()
     preview_available = bool(
         str(item.get("audioDataUrl") or "").strip()
         or str(item.get("fileDataUrl") or "").strip()
         or str(item.get("content") or "").strip()
     )
+    preview_signature = create_space_preview_token(user_id, item.get("id")) if preview_available else ""
     preview_url = build_api_absolute_url(
         f"/api/spaces/items/{requests.utils.quote(str(item.get('id') or ''), safe='')}/preview",
         {
-            "user_id": user_id,
-            "auth_token": auth_token or None,
+            SPACE_PREVIEW_SIGNATURE_QUERY_PARAM: preview_signature or None,
         },
     ) if preview_available else ""
 
@@ -519,6 +701,16 @@ def serialize_space_item(item, user_id):
         "source": str(item.get("source") or ""),
         "content": str(item.get("content") or ""),
         "summary": str(item.get("summary") or ""),
+        "contentPreview": str(item.get("contentPreview") or normalize_text_preview(item.get("content") or "", 220)),
+        "contentLength": int(item.get("contentLength") or len(str(item.get("content") or ""))),
+        "textExtractMethod": str(item.get("textExtractMethod") or ""),
+        "textExtractWarnings": item.get("textExtractWarnings", []) if isinstance(item.get("textExtractWarnings", []), list) else [],
+        "textChunkCount": int(item.get("textChunkCount") or 0),
+        "topics": normalize_topic_list(item.get("topics"))[:6],
+        "retrievalReady": bool(item.get("retrievalReady", bool(str(item.get("content") or "").strip()))),
+        "ocrProvider": str(item.get("ocrProvider") or ""),
+        "ocrFallbackUsed": bool(item.get("ocrFallbackUsed", False)),
+        "ocrErrorCode": str(item.get("ocrErrorCode") or ""),
         "addedAt": int(item.get("addedAt") or now_ms()),
         "updatedAt": int(item.get("updatedAt") or item.get("addedAt") or now_ms()),
         "previewUrl": preview_url,
@@ -630,14 +822,6 @@ def extract_bearer_token():
     if auth_header.lower().startswith("bearer "):
         return auth_header[7:].strip()
 
-    token = (request.headers.get("X-Auth-Token", "") or "").strip()
-    if token:
-        return token
-
-    token = (request.args.get("auth_token", "") or "").strip()
-    if token:
-        return token
-
     return ""
 
 
@@ -698,12 +882,88 @@ def require_auth_context():
     )
 
 
-def normalize_request_user_id(value, fallback="default_user"):
+def normalize_request_user_id(value, fallback=""):
     text = str(value or "").strip()
-    return text or str(fallback or "default_user").strip() or "default_user"
+    if text:
+        return text
+    return str(fallback or "").strip()
 
 
-def resolve_request_user_id(explicit_user_id=None, touch_session=True, fallback="default_user"):
+def _build_guest_identity(user_id, issued_new_guest_cookie=False):
+    normalized_user_id = normalize_request_user_id(user_id, fallback="")
+    return {
+        "authenticated": False,
+        "guest": True,
+        "user_id": normalized_user_id,
+        "session_id": normalized_user_id,
+        "issued_new_guest_cookie": bool(issued_new_guest_cookie),
+    }
+
+
+def sign_guest_session_cookie_value(user_id):
+    normalized_user_id = normalize_request_user_id(user_id, fallback="")
+    if not normalized_user_id or not GUEST_USER_ID_PATTERN.fullmatch(normalized_user_id):
+        return ""
+    return get_guest_session_serializer().dumps({
+        "guest_user_id": normalized_user_id,
+    })
+
+
+def unsign_guest_session_cookie_value(value):
+    raw_value = str(value or "").strip()
+    if not raw_value:
+        return ""
+
+    try:
+        payload = get_guest_session_serializer().loads(raw_value)
+    except BadData:
+        return ""
+
+    guest_user_id = normalize_request_user_id((payload or {}).get("guest_user_id"), fallback="")
+    if not guest_user_id or not GUEST_USER_ID_PATTERN.fullmatch(guest_user_id):
+        return ""
+    if get_auth_user(guest_user_id):
+        return ""
+    return guest_user_id
+
+
+def get_request_identity():
+    identity = getattr(g, "request_identity", None)
+    return identity if isinstance(identity, dict) else None
+
+
+def set_request_identity(identity):
+    g.request_identity = identity if isinstance(identity, dict) else {}
+    return g.request_identity
+
+
+def queue_guest_session_cookie(user_id):
+    signed_value = sign_guest_session_cookie_value(user_id)
+    if not signed_value:
+        return ""
+    g.pending_guest_session_cookie = signed_value
+    g.pending_guest_user_id = str(user_id or "").strip()
+    return signed_value
+
+
+def resolve_guest_request_identity():
+    existing = get_request_identity()
+    if existing and not existing.get("authenticated"):
+        return existing, None
+
+    cookie_value = str(request.cookies.get(GUEST_SESSION_COOKIE_NAME, "") or "").strip()
+    guest_user_id = unsign_guest_session_cookie_value(cookie_value)
+    issued_new_cookie = False
+    if not guest_user_id:
+        guest_user_id = generate_guest_user_id()
+        queue_guest_session_cookie(guest_user_id)
+        issued_new_cookie = True
+
+    return set_request_identity(_build_guest_identity(guest_user_id, issued_new_cookie)), None
+
+
+def resolve_request_identity(explicit_user_id=None, touch_session=True, allow_guest=True):
+    requested_user_id = normalize_request_user_id(explicit_user_id, fallback="")
     token = extract_bearer_token()
     if token:
         auth_context = resolve_auth_context(touch=touch_session)
@@ -717,36 +977,285 @@ def resolve_request_user_id(explicit_user_id=None, touch_session=True, fallback=
 
         auth_user_id = normalize_request_user_id(
             (auth_context.get("user") or {}).get("username"),
-            fallback=fallback,
+            fallback="",
         )
-        requested_user_id = normalize_request_user_id(explicit_user_id, fallback=fallback)
-        if requested_user_id != auth_user_id:
+        if auth_user_id and request.method != "OPTIONS":
+            ensure_auth_session_active_behavior(auth_user_id, request.path)
+        if requested_user_id and requested_user_id != auth_user_id:
             logger.info(
                 "override request user_id=%s with authenticated user=%s for path=%s",
                 requested_user_id,
                 auth_user_id,
                 request.path,
             )
-        return auth_user_id, None
 
-    return normalize_request_user_id(explicit_user_id, fallback=fallback), None
+        identity = {
+            "authenticated": True,
+            "guest": False,
+            "user_id": auth_user_id,
+            "session_id": str((auth_context.get("session") or {}).get("session_id") or auth_user_id).strip(),
+            "auth_context": auth_context,
+        }
+        return set_request_identity(identity), None
+
+    if not allow_guest:
+        return None, error_response(
+            get_request_id(),
+            401,
+            "AUTH_REQUIRED",
+            "请先登录后再访问",
+        )
+
+    existing_identity = get_request_identity()
+    if existing_identity and not existing_identity.get("authenticated"):
+        guest_user_id = str((existing_identity or {}).get("user_id") or "").strip()
+        if requested_user_id and requested_user_id != guest_user_id:
+            logger.info(
+                "ignore anonymous request user_id=%s and use existing guest user=%s for path=%s",
+                requested_user_id,
+                guest_user_id,
+                request.path,
+            )
+        return existing_identity, None
+
+    cookie_value = str(request.cookies.get(GUEST_SESSION_COOKIE_NAME, "") or "").strip()
+    guest_user_id = unsign_guest_session_cookie_value(cookie_value)
+    if guest_user_id:
+        if requested_user_id and requested_user_id != guest_user_id:
+            logger.info(
+                "ignore anonymous request user_id=%s and use signed guest user=%s for path=%s",
+                requested_user_id,
+                guest_user_id,
+                request.path,
+            )
+        return set_request_identity(_build_guest_identity(guest_user_id, issued_new_guest_cookie=False)), None
+
+    if requested_user_id:
+        return set_request_identity(_build_guest_identity(requested_user_id, issued_new_guest_cookie=False)), None
+
+    identity, guest_error = resolve_guest_request_identity()
+    if guest_error:
+        return None, guest_error
+
+    return identity, None
 
 
-def resolve_request_user_id_from_args(key="user_id", fallback="default_user", touch_session=True):
+def resolve_request_user_id(explicit_user_id=None, touch_session=True, fallback=""):
+    identity, auth_error = resolve_request_identity(
+        explicit_user_id=explicit_user_id,
+        touch_session=touch_session,
+        allow_guest=True,
+    )
+    if auth_error:
+        return None, auth_error
+    return normalize_request_user_id((identity or {}).get("user_id"), fallback=fallback), None
+
+
+def resolve_current_request_identity(touch_session=True, allow_guest=True):
+    return resolve_request_identity(
+        explicit_user_id=None,
+        touch_session=touch_session,
+        allow_guest=allow_guest,
+    )
+
+
+def resolve_current_request_user_id(touch_session=True, fallback="", allow_guest=True):
+    identity, auth_error = resolve_current_request_identity(
+        touch_session=touch_session,
+        allow_guest=allow_guest,
+    )
+    if auth_error:
+        return None, auth_error
+    return normalize_request_user_id((identity or {}).get("user_id"), fallback=fallback), None
+
+
+def resolve_current_request_identity_from_args(touch_session=True, allow_guest=True):
+    return resolve_current_request_identity(
+        touch_session=touch_session,
+        allow_guest=allow_guest,
+    )
+
+
+def resolve_current_request_identity_from_json(data=None, touch_session=True, allow_guest=True):
+    return resolve_current_request_identity(
+        touch_session=touch_session,
+        allow_guest=allow_guest,
+    )
+
+
+def resolve_current_request_identity_from_form(touch_session=True, allow_guest=True):
+    return resolve_current_request_identity(
+        touch_session=touch_session,
+        allow_guest=allow_guest,
+    )
+
+
+def resolve_current_request_user_id_from_args(fallback="", touch_session=True, allow_guest=True):
+    return resolve_current_request_user_id(
+        touch_session=touch_session,
+        fallback=fallback,
+        allow_guest=allow_guest,
+    )
+
+
+def resolve_current_request_user_id_from_json(data=None, fallback="", touch_session=True, allow_guest=True):
+    return resolve_current_request_user_id(
+        touch_session=touch_session,
+        fallback=fallback,
+        allow_guest=allow_guest,
+    )
+
+
+def resolve_current_request_user_id_from_form(fallback="", touch_session=True, allow_guest=True):
+    return resolve_current_request_user_id(
+        touch_session=touch_session,
+        fallback=fallback,
+        allow_guest=allow_guest,
+    )
+
+
+def resolve_request_identity_from_args(key="user_id", touch_session=True, allow_guest=True):
+    explicit_user_id = request.args.get(key, "")
+    return resolve_request_identity(
+        explicit_user_id=explicit_user_id,
+        touch_session=touch_session,
+        allow_guest=allow_guest,
+    )
+
+
+def resolve_request_identity_from_json(data=None, key="user_id", touch_session=True, allow_guest=True):
+    explicit_user_id = (data or {}).get(key, "") if isinstance(data, dict) else ""
+    return resolve_request_identity(
+        explicit_user_id=explicit_user_id,
+        touch_session=touch_session,
+        allow_guest=allow_guest,
+    )
+
+
+def resolve_request_identity_from_form(key="user_id", touch_session=True, allow_guest=True):
+    explicit_user_id = request.form.get(key, "")
+    return resolve_request_identity(
+        explicit_user_id=explicit_user_id,
+        touch_session=touch_session,
+        allow_guest=allow_guest,
+    )
+
+
+def resolve_request_user_id_from_args(key="user_id", fallback="", touch_session=True):
+    explicit_user_id = request.args.get(key, "")
     return resolve_request_user_id(
-        request.args.get(key, fallback),
+        explicit_user_id=explicit_user_id,
         touch_session=touch_session,
         fallback=fallback,
     )
 
 
-def resolve_request_user_id_from_json(data=None, key="user_id", fallback="default_user", touch_session=True):
-    body = data if isinstance(data, dict) else {}
+def resolve_request_user_id_from_json(data=None, key="user_id", fallback="", touch_session=True):
+    explicit_user_id = (data or {}).get(key, "") if isinstance(data, dict) else ""
     return resolve_request_user_id(
-        body.get(key, fallback),
+        explicit_user_id=explicit_user_id,
         touch_session=touch_session,
         fallback=fallback,
     )
+
+
+def resolve_request_user_id_from_form(key="user_id", fallback="", touch_session=True):
+    explicit_user_id = request.form.get(key, "")
+    return resolve_request_user_id(
+        explicit_user_id=explicit_user_id,
+        touch_session=touch_session,
+        fallback=fallback,
+    )
+
+
+def build_scoped_agent_session_id(identity, raw_session_id=None):
+    user_id = normalize_request_user_id((identity or {}).get("user_id"), fallback="")
+    scope_id = normalize_request_user_id(
+        (identity or {}).get("session_id"),
+        fallback=user_id,
+    )
+    session_key = str(raw_session_id or "").strip()
+    if not session_key:
+        session_key = scope_id or user_id or f"agent_{uuid.uuid4().hex[:12]}"
+
+    safe_user_id = re.sub(r"[^a-zA-Z0-9_.:-]", "_", user_id)[:120] or "anonymous"
+    safe_scope_id = re.sub(r"[^a-zA-Z0-9_.:-]", "_", scope_id)[:120] or safe_user_id
+    safe_session_key = re.sub(r"[^a-zA-Z0-9_.:-]", "_", session_key)[:120] or f"agent_{uuid.uuid4().hex[:12]}"
+    return f"agent:{safe_user_id}:{safe_scope_id}:{safe_session_key}"
+
+
+def create_space_preview_token(user_id, item_id):
+    normalized_user_id = normalize_request_user_id(user_id, fallback="")
+    normalized_item_id = str(item_id or "").strip()
+    if not normalized_user_id or not normalized_item_id:
+        return ""
+    return get_space_preview_token_serializer().dumps({
+        "user_id": normalized_user_id,
+        "item_id": normalized_item_id,
+    })
+
+
+def resolve_space_preview_user_id(item_id):
+    if extract_bearer_token():
+        identity, auth_error = resolve_current_request_identity(allow_guest=False, touch_session=True)
+        if auth_error:
+            return None, auth_error
+        return str((identity or {}).get("user_id") or "").strip(), None
+
+    preview_signature = str(request.args.get(SPACE_PREVIEW_SIGNATURE_QUERY_PARAM, "") or "").strip()
+    if not preview_signature:
+        return None, error_response(
+            get_request_id(),
+            401,
+            "AUTH_REQUIRED",
+            "预览链接已失效，请重新打开内容详情后再试",
+        )
+
+    try:
+        payload = get_space_preview_token_serializer().loads(
+            preview_signature,
+            max_age=SPACE_PREVIEW_TOKEN_TTL_SECONDS,
+        )
+    except SignatureExpired:
+        return None, error_response(
+            get_request_id(),
+            401,
+            "PREVIEW_TOKEN_EXPIRED",
+            "预览链接已过期，请重新打开内容详情后再试",
+        )
+    except BadData:
+        return None, error_response(
+            get_request_id(),
+            401,
+            "PREVIEW_TOKEN_INVALID",
+            "预览链接无效，请重新打开内容详情后再试",
+        )
+
+    preview_item_id = str((payload or {}).get("item_id") or "").strip()
+    preview_user_id = normalize_request_user_id((payload or {}).get("user_id"), fallback="")
+    if preview_item_id != str(item_id or "").strip() or not preview_user_id:
+        return None, error_response(
+            get_request_id(),
+            401,
+            "PREVIEW_TOKEN_INVALID",
+            "预览链接无效，请重新打开内容详情后再试",
+        )
+    return preview_user_id, None
+
+
+@app.after_request
+def persist_guest_session_cookie(response):
+    pending_cookie = str(getattr(g, "pending_guest_session_cookie", "") or "").strip()
+    if pending_cookie:
+        response.set_cookie(
+            GUEST_SESSION_COOKIE_NAME,
+            pending_cookie,
+            httponly=True,
+            secure=should_use_secure_cookie(),
+            samesite="Lax",
+            path="/",
+        )
+    return response
 
 
 def merge_plan_lists(existing_plans, incoming_plans):
@@ -970,7 +1479,7 @@ def bind_guest_user_data_to_auth_user(guest_user_id, target_user_id):
     source_user_id = normalize_guest_binding_user_id(guest_user_id, target_user_id)
     summary = {
         "guest_user_id": source_user_id,
-        "user_id": normalize_request_user_id(target_user_id, fallback="default_user"),
+        "user_id": normalize_request_user_id(target_user_id, fallback=""),
         "migrated": False,
         "plans": 0,
         "spaces": 0,
@@ -1067,7 +1576,7 @@ def bind_guest_user_data_to_auth_user(guest_user_id, target_user_id):
 def build_auth_register_binding_summary(target_user_id):
     return {
         "guest_user_id": "",
-        "user_id": normalize_request_user_id(target_user_id, fallback="default_user"),
+        "user_id": normalize_request_user_id(target_user_id, fallback=""),
         "migrated": False,
         "plans": 0,
         "spaces": 0,
@@ -1083,7 +1592,7 @@ def build_auth_register_binding_summary(target_user_id):
 def build_auth_login_binding_summary(target_user_id):
     return {
         "guest_user_id": "",
-        "user_id": normalize_request_user_id(target_user_id, fallback="default_user"),
+        "user_id": normalize_request_user_id(target_user_id, fallback=""),
         "migrated": False,
         "plans": 0,
         "spaces": 0,
@@ -1170,6 +1679,7 @@ from .services.database import (
     delete_user_space_payload,
     get_auth_session_by_token_hash,
     get_auth_user,
+    get_auth_user_by_display_name,
     get_user_plans,
     set_user_plans,
     get_user_knowledge,
@@ -1193,7 +1703,7 @@ from .services.database import (
 # 初始化数据目录
 def init_data():
     """初始化数据目录和文件"""
-    os.makedirs("data", exist_ok=True)
+    os.makedirs(BACKEND_DATA_DIR, exist_ok=True)
     init_storage()
 
 init_data()
@@ -1283,7 +1793,7 @@ def get_configured_concept_stopwords():
         stopwords.update(parsed_words)
 
     # 2) 本地文件：backend/data/concept_stopwords.json
-    file_path = os.path.join("data", "concept_stopwords.json")
+    file_path = os.path.join(BACKEND_DATA_DIR, "concept_stopwords.json")
     if os.path.exists(file_path):
         try:
             with open(file_path, "r", encoding="utf-8") as f:
@@ -1556,6 +2066,67 @@ def parse_datetime_safe(value):
         return datetime.fromisoformat(text)
     except Exception:
         return None
+
+
+AUTH_STREAK_BEHAVIOR_TYPES = {"auth_login", "auth_register", "auth_session_active"}
+
+
+def is_auth_streak_behavior(item):
+    if not isinstance(item, dict):
+        return False
+
+    behavior_type = str(item.get("behavior_type") or item.get("type") or "").strip().lower()
+    source = str(item.get("source") or "").strip().lower()
+    return behavior_type in AUTH_STREAK_BEHAVIOR_TYPES or source in AUTH_STREAK_BEHAVIOR_TYPES
+
+
+def has_auth_streak_behavior_on_date(user_id, target_date):
+    user_key = str(user_id or "").strip()
+    if not user_key or not target_date:
+        return False
+
+    target_day = target_date.isoformat()
+    behavior_logs = load_user_event_list(user_key, "behavior")
+    for item in reversed(behavior_logs if isinstance(behavior_logs, list) else []):
+        if not is_auth_streak_behavior(item):
+            continue
+
+        dt = parse_datetime_safe(item.get("timestamp") or item.get("updated_at") or item.get("created_at"))
+        if not dt:
+            continue
+
+        item_day = dt.date().isoformat()
+        if item_day < target_day:
+            break
+        if item_day == target_day:
+            return True
+    return False
+
+
+def ensure_auth_session_active_behavior(user_id, source):
+    user_key = str(user_id or "").strip()
+    if not user_key:
+        return False
+
+    today = datetime.now().date()
+    if has_auth_streak_behavior_on_date(user_key, today):
+        return False
+
+    append_user_event(user_key, "behavior", {
+        "id": str(uuid.uuid4()),
+        "user_id": user_key,
+        "timestamp": datetime.now().isoformat(),
+        "type": "auth_session_active",
+        "behavior_type": "auth_session_active",
+        "page": "auth",
+        "target": "",
+        "label": "账号在线",
+        "title": "auth_session_active",
+        "source": str(source or "auth_session_active").strip() or "auth_session_active",
+        "duration_seconds": 0.0,
+        "meta": {},
+    })
+    return True
 
 
 def _build_learning_path_adjacency(user_knowledge):
@@ -2484,7 +3055,7 @@ def build_recommendations(user_id, limit=6):
     )
 
 
-def build_graph_response(user_id, min_relation_score=None):
+def build_graph_response(user_id, min_relation_score=None, include_documents=False):
     """内部构建图谱响应对象。"""
     threshold = RELATION_MIN_SCORE if min_relation_score is None else float(min_relation_score)
     threshold = max(0.0, min(1.0, threshold))
@@ -2494,7 +3065,7 @@ def build_graph_response(user_id, min_relation_score=None):
 
     prefer_neo4j = GRAPH_PRIMARY in {"auto", "neo4j"}
     if prefer_neo4j and getattr(neo4j_store, "enabled", False) and neo4j_store.ensure_connected():
-        neo4j_payload = neo4j_store.fetch_graph(user_id)
+        neo4j_payload = neo4j_store.fetch_graph(user_id, include_documents=include_documents)
         if neo4j_payload is not None:
             for link in neo4j_payload.get("links", []) or []:
                 if isinstance(link, dict) and "score" not in link:
@@ -2505,15 +3076,20 @@ def build_graph_response(user_id, min_relation_score=None):
             ]
             # auto 模式仅在 Neo4j 有用户图数据时返回；neo4j 模式直接返回。
             if GRAPH_PRIMARY == "neo4j" or neo4j_payload.get("nodes"):
+                document_count = len([n for n in (neo4j_payload.get("nodes", []) or []) if (n or {}).get("node_type") == "document"])
+                mention_count = len([l for l in (neo4j_payload.get("links", []) or []) if (l or {}).get("edge_type") == "mention"])
                 return {
                     "success": True,
                     "user_id": user_id,
                     "graph": neo4j_payload,
                     "node_count": len(neo4j_payload.get("nodes", [])),
                     "edge_count": len(neo4j_payload.get("links", [])),
+                    "document_count": document_count,
+                    "mention_count": mention_count,
                     "storage": "neo4j",
                     "graph_primary": GRAPH_PRIMARY,
                     "min_relation_score": threshold,
+                    "include_documents": bool(include_documents),
                 }
 
     if not user_concepts and not user_relations:
@@ -2527,9 +3103,12 @@ def build_graph_response(user_id, min_relation_score=None):
             },
             "node_count": 0,
             "edge_count": 0,
+            "document_count": 0,
+            "mention_count": 0,
             "storage": "json",
             "graph_primary": GRAPH_PRIMARY,
             "min_relation_score": threshold,
+            "include_documents": bool(include_documents),
         }
 
     kg = build_knowledge_graph()
@@ -2561,9 +3140,12 @@ def build_graph_response(user_id, min_relation_score=None):
         "graph": payload,
         "node_count": len(payload["nodes"]),
         "edge_count": len(payload["links"]),
+        "document_count": 0,
+        "mention_count": 0,
         "storage": "json",
         "graph_primary": GRAPH_PRIMARY,
         "min_relation_score": threshold,
+        "include_documents": bool(include_documents),
     }
 
 
@@ -2618,6 +3200,117 @@ def build_review_reminders_response(user_id):
     }
 
 
+def build_evaluation_answer_signature(question="", correct_answer="", user_answer="", concept="", question_id=""):
+    payload = {
+        "question_id": str(question_id or "").strip(),
+        "concept": normalize_concept_name(concept or ""),
+        "question": normalize_text_preview(str(question or ""), 240),
+        "correct_answer": normalize_text_preview(str(correct_answer or ""), 240),
+        "user_answer": normalize_text_preview(str(user_answer or ""), 240),
+    }
+    signature = json.dumps(payload, ensure_ascii=False, sort_keys=True)
+    return hashlib.sha1(signature.encode("utf-8")).hexdigest()
+
+
+def build_evaluation_fact_source(primary_source, fact_id="", source_key="", question_id="", task_id="", concept="", timestamp="", extra=None):
+    payload = {
+        "primary_source": str(primary_source or "").strip() or "unknown",
+        "fact_id": str(fact_id or "").strip(),
+        "source_key": str(source_key or "").strip(),
+        "question_id": str(question_id or "").strip(),
+        "task_id": str(task_id or "").strip(),
+        "concept": normalize_concept_name(concept or ""),
+        "timestamp": str(timestamp or "").strip(),
+    }
+    if isinstance(extra, dict):
+        payload.update(extra)
+    return payload
+
+
+def find_primary_question_answer_fact(user_id, question="", correct_answer="", user_answer="", concept="", question_id="", limit=20):
+    signature = build_evaluation_answer_signature(
+        question=question,
+        correct_answer=correct_answer,
+        user_answer=user_answer,
+        concept=concept,
+        question_id=question_id,
+    )
+    question_logs = load_user_event_list(user_id, "question_answer")
+    for item in reversed(question_logs[-max(1, int(limit)):]):
+        if not isinstance(item, dict):
+            continue
+        if question_id and str(item.get("question_id") or "").strip() == str(question_id).strip():
+            return item
+        if signature and signature == str(item.get("answer_signature") or "").strip():
+            return item
+    return None
+
+
+def build_diagnosis_source_key(fact_source=None, question="", correct_answer="", user_answer="", concept=""):
+    source = fact_source if isinstance(fact_source, dict) else {}
+    primary_source = str(source.get("primary_source") or "").strip()
+    fact_id = str(source.get("fact_id") or "").strip()
+    if primary_source and fact_id:
+        return f"diagnosis::{primary_source}::{fact_id}"
+
+    return "diagnosis::manual::" + build_evaluation_answer_signature(
+        question=question,
+        correct_answer=correct_answer,
+        user_answer=user_answer,
+        concept=concept,
+    )
+
+
+def append_diagnosis_event_once(user_id, record):
+    if not isinstance(record, dict):
+        return False, None
+
+    source_key = str(record.get("source_key") or "").strip()
+    if source_key:
+        for item in load_user_event_list(user_id, "diagnosis"):
+            if not isinstance(item, dict):
+                continue
+            if str(item.get("source_key") or "").strip() == source_key:
+                return False, item
+
+    append_user_event(user_id, "diagnosis", record)
+    return True, record
+
+
+def refresh_learning_runtime_cache(user_id, reason="", focus_concept="", recommendation_limit=6, context=None):
+    now_iso = datetime.now().isoformat()
+    profile = build_learning_profile(user_id)
+    recommendations = build_recommendations(user_id, limit=max(1, min(int(recommendation_limit or 6), 12)))
+    reminders = build_review_reminders_response(user_id)
+
+    profile_obj = deep_copy_data(profile, {}) if isinstance(profile, dict) else {}
+    profile_obj["recommendation_cache"] = {
+        "updated_at": now_iso,
+        "reason": str(reason or "").strip() or "runtime_refresh",
+        "focus_concept": normalize_concept_name(focus_concept or ""),
+        "items": recommendations,
+    }
+    profile_obj["review_reminder_cache"] = {
+        "updated_at": now_iso,
+        "due_count": int(reminders.get("due_count", 0) or 0),
+        "upcoming_count": int(reminders.get("upcoming_count", 0) or 0),
+        "due_items": (reminders.get("due_items") or [])[:6],
+        "upcoming_items": (reminders.get("upcoming_items") or [])[:6],
+    }
+    if isinstance(context, dict):
+        profile_obj["last_learning_feedback"] = {
+            **context,
+            "refreshed_at": now_iso,
+        }
+
+    set_user_profile(user_id, profile_obj)
+    return {
+        "profile": profile_obj,
+        "recommendations": recommendations,
+        "review_reminders": reminders,
+    }
+
+
 def build_diagnosis_report_response(user_id):
     """内部构建诊断报告响应对象。"""
     items = load_user_event_list(user_id, "diagnosis")
@@ -2641,7 +3334,7 @@ def build_diagnosis_report_response(user_id):
 @app.route('/api/spaces', methods=['GET'])
 def get_spaces():
     request_id = get_request_id()
-    user_id, auth_error = resolve_request_user_id_from_args()
+    user_id, auth_error = resolve_current_request_user_id_from_args()
     if auth_error:
         return auth_error
 
@@ -2669,7 +3362,7 @@ def get_spaces():
 def create_space():
     request_id = get_request_id()
     data = request.json or {}
-    user_id, auth_error = resolve_request_user_id_from_json(data)
+    user_id, auth_error = resolve_current_request_user_id_from_json(data)
     if auth_error:
         return auth_error
 
@@ -2695,7 +3388,7 @@ def create_space():
 def update_space(space_id):
     request_id = get_request_id()
     data = request.json or {}
-    user_id, auth_error = resolve_request_user_id_from_json(data)
+    user_id, auth_error = resolve_current_request_user_id_from_json(data)
     if auth_error:
         return auth_error
 
@@ -2731,7 +3424,7 @@ def update_space(space_id):
 @app.route('/api/spaces/<space_id>', methods=['DELETE'])
 def delete_space(space_id):
     request_id = get_request_id()
-    user_id, auth_error = resolve_request_user_id_from_args()
+    user_id, auth_error = resolve_current_request_user_id_from_args()
     if auth_error:
         return auth_error
 
@@ -2755,6 +3448,7 @@ def delete_space(space_id):
         payload["activeEntrySpaceId"] = str((spaces[0] or {}).get("id") or "").strip() if spaces else ""
     payload["spaces"] = spaces
     set_user_space_payload(user_id, payload)
+    invalidate_user_kb_cache(user_id)
 
     removed_items = removed_space.get("items", []) if isinstance(removed_space.get("items"), list) else []
     return jsonify(success_payload(
@@ -2774,7 +3468,7 @@ def delete_space(space_id):
 def create_space_items(space_id):
     request_id = get_request_id()
     data = request.json or {}
-    user_id, auth_error = resolve_request_user_id_from_json(data)
+    user_id, auth_error = resolve_current_request_user_id_from_json(data)
     if auth_error:
         return auth_error
 
@@ -2804,6 +3498,7 @@ def create_space_items(space_id):
     space["updatedAt"] = now_ms()
     payload["activeEntrySpaceId"] = str(space.get("id") or "").strip()
     set_user_space_payload(user_id, payload)
+    invalidate_user_kb_cache(user_id)
 
     return jsonify(success_payload(
         request_id,
@@ -2820,7 +3515,7 @@ def create_space_items(space_id):
 @app.route('/api/spaces/items/<item_id>', methods=['GET'])
 def get_space_item_detail(item_id):
     request_id = get_request_id()
-    user_id, auth_error = resolve_request_user_id_from_args()
+    user_id, auth_error = resolve_current_request_user_id_from_args()
     if auth_error:
         return auth_error
 
@@ -2846,7 +3541,7 @@ def get_space_item_detail(item_id):
 def update_space_item(item_id):
     request_id = get_request_id()
     data = request.json or {}
-    user_id, auth_error = resolve_request_user_id_from_json(data)
+    user_id, auth_error = resolve_current_request_user_id_from_json(data)
     if auth_error:
         return auth_error
 
@@ -2875,6 +3570,10 @@ def update_space_item(item_id):
 
     item.update(updates)
     item["updatedAt"] = now_ms()
+    if "content" in updates:
+        item["textExtractMethod"] = "manual_edit"
+        item["textExtractWarnings"] = []
+        item["ocrErrorCode"] = ""
     if "content" in updates and "summary" not in updates:
         item["summary"] = summarize_space_item(
             name=item.get("name"),
@@ -2884,6 +3583,15 @@ def update_space_item(item_id):
             source=item.get("source"),
             content=item.get("content"),
             has_file=bool(item.get("fileDataUrl") or item.get("audioDataUrl")),
+        )
+    if {"name", "content", "summary"} & set(updates.keys()):
+        item.update(
+            build_space_item_learning_metadata(
+                name=item.get("name"),
+                content=item.get("content"),
+                summary=item.get("summary"),
+                topics=item.get("topics"),
+            )
         )
     space["updatedAt"] = item["updatedAt"]
     if move_target_space and move_target_space is not space:
@@ -2901,6 +3609,7 @@ def update_space_item(item_id):
             move_target_space["items"] = move_target_space["items"][:SPACE_MAX_ITEM_COUNT]
         move_target_space["updatedAt"] = item["updatedAt"]
     set_user_space_payload(user_id, payload)
+    invalidate_user_kb_cache(user_id)
 
     return jsonify(success_payload(
         request_id,
@@ -2917,7 +3626,7 @@ def update_space_item(item_id):
 @app.route('/api/spaces/items/<item_id>', methods=['DELETE'])
 def delete_space_item(item_id):
     request_id = get_request_id()
-    user_id, auth_error = resolve_request_user_id_from_args()
+    user_id, auth_error = resolve_current_request_user_id_from_args()
     if auth_error:
         return auth_error
 
@@ -2934,6 +3643,7 @@ def delete_space_item(item_id):
     ]
     space["updatedAt"] = now_ms()
     set_user_space_payload(user_id, payload)
+    invalidate_user_kb_cache(user_id)
 
     return jsonify(success_payload(
         request_id,
@@ -2951,7 +3661,7 @@ def delete_space_item(item_id):
 @app.route('/api/spaces/items/<item_id>/preview', methods=['GET'])
 def preview_space_item(item_id):
     request_id = get_request_id()
-    user_id, auth_error = resolve_request_user_id_from_args()
+    user_id, auth_error = resolve_space_preview_user_id(item_id)
     if auth_error:
         return auth_error
 
@@ -3595,7 +4305,7 @@ QUESTION_BANK_TEMPLATES = [
 
 QUESTION_BANK_CUSTOM_FILE = "question_bank_custom.json"
 QUESTION_BANK_OFFICIAL_FILE = "question_bank_official_ai.json"
-QUESTION_TYPES = {"single_choice", "short_answer", "retry"}
+QUESTION_TYPES = set(SUPPORTED_QUESTION_TYPES)
 QUESTION_DIFFICULTY = {"easy", "medium", "hard"}
 QUESTION_BANK_SCOPE = {"ai", "mine", "both", "official", "all"}
 QUESTION_BANK_USER_SOURCES = {"user_custom", "user_import"}
@@ -3649,7 +4359,7 @@ def normalize_question_item(raw, fallback_id="", creator="", is_public_default=T
     concept = normalize_concept_name(raw.get("concept") or "")
     question = str(raw.get("question") or "").strip()
     answer = str(raw.get("answer") or "").strip()
-    question_type = str(raw.get("question_type") or "single_choice").strip().lower()
+    question_type = normalize_question_type(raw.get("question_type") or "single_choice")
     difficulty = str(raw.get("difficulty") or "medium").strip().lower()
     analysis = str(raw.get("analysis") or "").strip()
     options = normalize_question_options(raw.get("options", []))
@@ -3982,57 +4692,13 @@ def extract_choice_letter(text):
 
 
 def evaluate_question_answer(question_item, user_answer):
-    q_type = str(question_item.get("question_type") or "single_choice").strip().lower()
-    expected_answer = str(question_item.get("answer") or "").strip()
-    analysis = str(question_item.get("analysis") or "").strip()
-    user_text = str(user_answer or "").strip()
-
-    if q_type == "single_choice":
-        expected_choice = extract_choice_letter(expected_answer)
-        user_choice = extract_choice_letter(user_text)
-        is_correct = bool(expected_choice and user_choice and expected_choice == user_choice)
-        score = 1.0 if is_correct else 0.0
-        feedback = "回答正确，继续下一题。" if is_correct else f"回答不正确，正确答案是 {expected_choice or expected_answer}。"
-        if analysis:
-            feedback = f"{feedback}\n解析：{analysis}"
-        return {
-            "is_correct": is_correct,
-            "score": score,
-            "expected_answer": expected_answer,
-            "feedback": feedback,
-            "evaluation_method": "rule_single_choice",
+    question_obj = question_item if isinstance(question_item, dict) else {}
+    if "question_type" in question_obj:
+        question_obj = {
+            **question_obj,
+            "question_type": normalize_question_type(question_obj.get("question_type")),
         }
-
-    keywords = []
-    for token in re.findall(r"[\u4e00-\u9fff]{2,8}|[A-Za-z]{4,}", expected_answer):
-        t = token.strip().lower()
-        if t and t not in keywords:
-            keywords.append(t)
-        if len(keywords) >= 6:
-            break
-
-    user_lower = user_text.lower()
-    hit = sum(1 for kw in keywords if kw in user_lower)
-    denom = max(1, len(keywords))
-    score = round(min(1.0, hit / denom), 3)
-    if expected_answer and expected_answer in user_text:
-        score = 1.0
-
-    is_correct = score >= 0.6
-    if is_correct:
-        feedback = "回答基本正确，关键点覆盖较好。"
-    else:
-        feedback = "回答还不完整，建议补充定义关键词和关键步骤。"
-    if analysis:
-        feedback = f"{feedback}\n参考解析：{analysis}"
-
-    return {
-        "is_correct": is_correct,
-        "score": score,
-        "expected_answer": expected_answer,
-        "feedback": feedback,
-        "evaluation_method": "rule_keyword_match",
-    }
+    return evaluate_question_answer_by_type(question_obj, user_answer)
 
 
 def find_question_by_id(user_id, question_id):
@@ -4175,7 +4841,7 @@ def build_question_bank_for_user(user_id):
     return bank, mastery_map
 
 
-def select_question_from_bank(bank, mastery_map, concept=None, difficulty=None, recent_ids=None, bank_scope="all", user_id="default_user"):
+def select_question_from_bank(bank, mastery_map, concept=None, difficulty=None, recent_ids=None, bank_scope="all", user_id=""):
     """按知识薄弱程度加权抽题。"""
     target_concept = normalize_concept_name(concept or "")
     target_difficulty = (difficulty or "").strip().lower()
@@ -4263,6 +4929,145 @@ def build_question_prompt_text(question_item):
 
     return "\n".join(lines)
 
+
+def build_ai_question_prompt(question):
+    """构造问答提示词，供同步与流式接口复用。"""
+    return f"""
+        你是一个智能学习伴侣，请回答用户的学习问题。
+        要求：
+        1. 回答要专业、准确
+        2. 语言要亲切、鼓励
+        3. 如果问题不清晰，可以询问更多细节
+        4. 适当提供学习建议
+
+        用户问题：{question}
+        """
+
+
+def build_ai_question_payload(question, cfg, stream=False):
+    payload = {
+        "model": cfg["model"],
+        "messages": [{"role": "user", "content": build_ai_question_prompt(question)}],
+        "temperature": 0.7,
+        "max_tokens": 1000,
+    }
+    if stream:
+        payload["stream"] = True
+    return payload
+
+
+def is_truthy_value(value):
+    return str(value).strip().lower() in {"1", "true", "yes", "on"}
+
+
+def chunk_text_for_stream(text, chunk_size=32):
+    normalized = str(text or "").replace("\r\n", "\n").replace("\r", "\n")
+    if not normalized:
+        return
+
+    size = max(8, int(chunk_size or 32))
+    for idx in range(0, len(normalized), size):
+        chunk = normalized[idx: idx + size]
+        if chunk:
+            yield chunk
+
+
+def extract_ai_stream_content(event_obj):
+    if not isinstance(event_obj, dict):
+        return ""
+
+    choices = event_obj.get("choices")
+    if isinstance(choices, list) and choices:
+        first_choice = choices[0] if isinstance(choices[0], dict) else {}
+        delta = first_choice.get("delta") if isinstance(first_choice.get("delta"), dict) else {}
+        if delta:
+            content = delta.get("content") or delta.get("reasoning_content") or ""
+            if content:
+                return str(content)
+
+        message = first_choice.get("message") if isinstance(first_choice.get("message"), dict) else {}
+        if message:
+            content = message.get("content") or ""
+            if content:
+                return str(content)
+
+        text = first_choice.get("text") or ""
+        if text:
+            return str(text)
+
+    delta = event_obj.get("delta")
+    if isinstance(delta, dict):
+        content = delta.get("content") or delta.get("reasoning_content") or ""
+        if content:
+            return str(content)
+
+    content = event_obj.get("content")
+    if isinstance(content, str) and content:
+        return content
+
+    text = event_obj.get("text")
+    if isinstance(text, str) and text:
+        return text
+
+    return ""
+
+
+def iter_real_ai_answer_fragments(question):
+    cfg = get_ai_runtime_config()
+    if not cfg["api_key"]:
+        raise ValueError(f"未配置 {cfg['provider']} API Key")
+
+    headers = {
+        "Content-Type": "application/json",
+        "Authorization": f"Bearer {cfg['api_key']}",
+    }
+    payload = build_ai_question_payload(question, cfg, stream=True)
+
+    with requests.post(cfg["api_url"], headers=headers, json=payload, timeout=30, stream=True) as response:
+        response.raise_for_status()
+        content_type = str(response.headers.get("Content-Type", "") or "").lower()
+        if "text/event-stream" not in content_type:
+            result = response.json()
+            answer = result.get("choices", [{}])[0].get("message", {}).get("content", "")
+            if not answer:
+                raise ValueError("AI_EMPTY_RESPONSE")
+            yield from chunk_text_for_stream(answer)
+            return
+
+        seen_fragment = False
+        for raw_line in response.iter_lines(decode_unicode=True):
+            line = str(raw_line or "").strip()
+            if not line:
+                continue
+
+            if line.startswith("data:"):
+                line = line[5:].strip()
+
+            if not line or line in {"[DONE]", "DONE"}:
+                continue
+
+            try:
+                event_obj = json.loads(line)
+            except Exception:
+                continue
+
+            content = extract_ai_stream_content(event_obj)
+            if content:
+                seen_fragment = True
+                yield content
+
+        if not seen_fragment:
+            try:
+                result = response.json()
+                answer = result.get("choices", [{}])[0].get("message", {}).get("content", "")
+                if answer:
+                    yield from chunk_text_for_stream(answer)
+                    return
+            except Exception:
+                pass
+
+            raise ValueError("AI_EMPTY_RESPONSE")
+
 def ask_ai_question(question, user_id):
     """调用大模型进行智能问答（支持 Qwen/DeepSeek）。"""
     try:
@@ -4282,23 +5087,7 @@ def ask_ai_question(question, user_id):
             "Authorization": f"Bearer {cfg['api_key']}"
         }
         
-        prompt = f"""
-        你是一个智能学习伴侣，请回答用户的学习问题。
-        要求：
-        1. 回答要专业、准确
-        2. 语言要亲切、鼓励
-        3. 如果问题不清晰，可以询问更多细节
-        4. 适当提供学习建议
-        
-        用户问题：{question}
-        """
-        
-        payload = {
-            "model": cfg["model"],
-            "messages": [{"role": "user", "content": prompt}],
-            "temperature": 0.7,
-            "max_tokens": 1000
-        }
+        payload = build_ai_question_payload(question, cfg, stream=False)
         
         response = requests.post(cfg["api_url"], headers=headers, json=payload, timeout=30)
         response.raise_for_status()
@@ -4336,6 +5125,32 @@ def ask_ai_question(question, user_id):
             "error_code": "AI_UPSTREAM_ERROR",
             "error_message": str(e),
         }
+
+
+def build_qa_response_payload(request_id, user_id, question, answer, source, ai_used, offline_fallback_used):
+    """统一问答后处理与最终响应体拼装。"""
+    post_process = post_process_qa_interaction(
+        user_id=user_id,
+        question=question,
+        answer=answer,
+        source=f"qa_{source}",
+        include_wrong_question=True,
+        suggested_advice_text=extract_learning_advice_from_answer(answer),
+    )
+
+    return success_payload(
+        request_id,
+        message="问答成功",
+        answer=answer,
+        source=source,
+        offline_fallback_used=offline_fallback_used,
+        knowledge_extract=(post_process or {}).get("knowledge_extract", {}),
+        diagnosis=(post_process or {}).get("diagnosis"),
+        learning_advice=(post_process or {}).get("learning_advice"),
+        ai_used=ai_used,
+        error_code="",
+        error_message="",
+    )
 
 
 def extract_text_from_image(file_storage):
@@ -4525,11 +5340,142 @@ def ask_question():
     if not question:
         return error_response(request_id, 400, "INVALID_INPUT", "问题不能为空")
 
-    if not USE_REAL_AI:
-        return error_response(request_id, 503, "AI_DISABLED", "USE_REAL_AI=false，当前仅允许真实AI问答")
+    stream_requested = is_truthy_value(data.get("stream")) or is_truthy_value(request.args.get("stream"))
 
-    result = ask_ai_question(question, user_id)
-    if not result.get("success"):
+    if stream_requested:
+        if not USE_REAL_AI and not LOCAL_DEMO_FALLBACK_ENABLED:
+            return error_response(request_id, 503, "AI_DISABLED", "USE_REAL_AI=false，当前仅允许真实AI问答")
+        if USE_REAL_AI and not LOCAL_DEMO_FALLBACK_ENABLED:
+            cfg = get_ai_runtime_config()
+            if not str(cfg.get("api_key") or "").strip():
+                return error_response(
+                    request_id,
+                    502,
+                    "AI_KEY_MISSING",
+                    f"未配置 {cfg['provider']} API Key",
+                    source=cfg.get("provider", "unknown"),
+                    ai_used=False,
+                )
+
+        def stream_qa_response():
+            yield f"data: {json.dumps({'type': 'start', 'content': '正在生成回答...'}, ensure_ascii=False)}\n\n"
+
+            answer_parts = []
+            source = ""
+            ai_used = False
+            offline_fallback_used = False
+
+            try:
+                if USE_REAL_AI:
+                    try:
+                        cfg = get_ai_runtime_config()
+                        if not cfg["api_key"]:
+                            raise ValueError(f"未配置 {cfg['provider']} API Key")
+
+                        for fragment in iter_real_ai_answer_fragments(question):
+                            answer_parts.append(fragment)
+                            yield f"data: {json.dumps({'type': 'token', 'content': fragment}, ensure_ascii=False)}\n\n"
+
+                        answer = "".join(answer_parts).strip()
+                        if not answer:
+                            raise ValueError("AI_EMPTY_RESPONSE")
+
+                        source = cfg["provider"]
+                        ai_used = True
+                        offline_fallback_used = False
+                    except Exception as exc:
+                        if not LOCAL_DEMO_FALLBACK_ENABLED:
+                            yield f"data: {json.dumps({'type': 'error', 'content': str(exc)}, ensure_ascii=False)}\n\n"
+                            return
+
+                        logger.warning("qa stream falling back to local rules: %s", exc)
+                        yield f"data: {json.dumps({'type': 'retry', 'tool': 'local_rule_fallback', 'content': '真实AI暂不可用，正在切换本地规则回答。'}, ensure_ascii=False)}\n\n"
+                        fallback = build_rule_based_tutor_response(
+                            student_id=user_id,
+                            question=question,
+                            route_type="graph_rag",
+                            persist_plan=True,
+                        )
+                        answer = str(fallback.get("answer", "") or "")
+                        source = "local_rule_fallback"
+                        ai_used = False
+                        offline_fallback_used = True
+                        for fragment in chunk_text_for_stream(answer):
+                            answer_parts.append(fragment)
+                            yield f"data: {json.dumps({'type': 'token', 'content': fragment}, ensure_ascii=False)}\n\n"
+                else:
+                    fallback = build_rule_based_tutor_response(
+                        student_id=user_id,
+                        question=question,
+                        route_type="graph_rag",
+                        persist_plan=True,
+                    )
+                    answer = str(fallback.get("answer", "") or "")
+                    source = "local_rule_fallback"
+                    ai_used = False
+                    offline_fallback_used = True
+                    yield f"data: {json.dumps({'type': 'retry', 'tool': 'local_rule_fallback', 'content': 'USE_REAL_AI=false，正在使用本地规则回答。'}, ensure_ascii=False)}\n\n"
+                    for fragment in chunk_text_for_stream(answer):
+                        answer_parts.append(fragment)
+                        yield f"data: {json.dumps({'type': 'token', 'content': fragment}, ensure_ascii=False)}\n\n"
+
+                answer = "".join(answer_parts).strip()
+                if not answer:
+                    raise ValueError("AI_EMPTY_RESPONSE")
+
+                try:
+                    payload = build_qa_response_payload(
+                        request_id=request_id,
+                        user_id=user_id,
+                        question=question,
+                        answer=answer,
+                        source=source,
+                        ai_used=ai_used,
+                        offline_fallback_used=offline_fallback_used,
+                    )
+                except Exception as exc:
+                    logger.warning("qa stream post process skipped: %s", exc)
+                    payload = success_payload(
+                        request_id,
+                        message="问答成功",
+                        answer=answer,
+                        source=source,
+                        offline_fallback_used=offline_fallback_used,
+                        knowledge_extract={},
+                        diagnosis=None,
+                        learning_advice=None,
+                        ai_used=ai_used,
+                        error_code="",
+                        error_message="",
+                    )
+
+                yield f"data: {json.dumps({'type': 'final', 'payload': payload}, ensure_ascii=False)}\n\n"
+            except Exception as exc:
+                logger.error("stream ask failed: %s", exc)
+                yield f"data: {json.dumps({'type': 'error', 'content': str(exc)}, ensure_ascii=False)}\n\n"
+            finally:
+                yield f"data: {json.dumps({'type': 'done'}, ensure_ascii=False)}\n\n"
+
+        return Response(
+            stream_with_context(stream_qa_response()),
+            mimetype='text/event-stream',
+            headers={
+                "Cache-Control": "no-cache, no-transform",
+                "X-Accel-Buffering": "no",
+            },
+        )
+
+    use_local_fallback = False
+    result = {}
+    if USE_REAL_AI:
+        result = ask_ai_question(question, user_id)
+        use_local_fallback = not result.get("success")
+    else:
+        use_local_fallback = True
+
+    if use_local_fallback and not LOCAL_DEMO_FALLBACK_ENABLED:
+        if not USE_REAL_AI:
+            return error_response(request_id, 503, "AI_DISABLED", "USE_REAL_AI=false，当前仅允许真实AI问答")
         return error_response(
             request_id,
             502,
@@ -4538,28 +5484,32 @@ def ask_question():
             source=result.get("provider", "unknown"),
             ai_used=False,
         )
-    answer = result.get("answer", "")
-    source = result.get("provider", "unknown")
-    post_process = post_process_qa_interaction(
+
+    if use_local_fallback:
+        fallback = build_rule_based_tutor_response(
+            student_id=user_id,
+            question=question,
+            route_type="graph_rag",
+            persist_plan=True,
+        )
+        answer = fallback.get("answer", "")
+        source = "local_rule_fallback"
+        ai_used = False
+        offline_fallback_used = True
+    else:
+        answer = result.get("answer", "")
+        source = result.get("provider", "unknown")
+        ai_used = True
+        offline_fallback_used = False
+
+    return jsonify(build_qa_response_payload(
+        request_id=request_id,
         user_id=user_id,
         question=question,
         answer=answer,
-        source=f"qa_{source}",
-        include_wrong_question=True,
-        suggested_advice_text=extract_learning_advice_from_answer(answer),
-    )
-    
-    return jsonify(success_payload(
-        request_id,
-        message="问答成功",
-        answer=answer,
         source=source,
-        knowledge_extract=(post_process or {}).get("knowledge_extract", {}),
-        diagnosis=(post_process or {}).get("diagnosis"),
-        learning_advice=(post_process or {}).get("learning_advice"),
-        ai_used=True,
-        error_code="",
-        error_message="",
+        ai_used=ai_used,
+        offline_fallback_used=offline_fallback_used,
     ))
 
 
@@ -4868,9 +5818,29 @@ def answer_question_bank_question_api():
         "user_answer": user_answer,
         "is_correct": bool(evaluation.get("is_correct", False)),
         "score": float(evaluation.get("score", 0.0) or 0.0),
+        "evaluation_method": evaluation.get("evaluation_method", "rule"),
+        "scoring_type": evaluation.get("scoring_type", question_item.get("question_type") or "short_answer"),
+        "evaluation_summary": evaluation.get("summary", ""),
+        "evaluation_breakdown": evaluation.get("breakdown", []),
+        "evaluation_evidence": evaluation.get("evidence", {}),
     }
     if duration_seconds is not None:
         event_payload["duration_seconds"] = round(float(duration_seconds), 3)
+    event_payload["answer_signature"] = build_evaluation_answer_signature(
+        question=question_item.get("question"),
+        correct_answer=evaluation.get("expected_answer", ""),
+        user_answer=user_answer,
+        concept=question_item.get("concept"),
+        question_id=question_id,
+    )
+    event_payload["fact_source"] = build_evaluation_fact_source(
+        primary_source="question_answer",
+        fact_id=event_payload["id"],
+        source_key=f"question_answer::{event_payload['id']}",
+        question_id=question_id,
+        concept=question_item.get("concept"),
+        timestamp=event_payload["timestamp"],
+    )
 
     concept = normalize_concept_name(question_item.get("concept") or "")
     concept_history_before = collect_concept_question_history(
@@ -4907,6 +5877,8 @@ def answer_question_bank_question_api():
 
     diagnosis = None
     learning_advice = None
+    diagnosis_recorded = False
+    diagnosis_fact_source = event_payload.get("fact_source", {})
     if (not bool(evaluation.get("is_correct", False))) or contains_confusion_signal(user_answer):
         diagnosis = diagnosis_engine.analyze_error(
             question=question_item.get("question"),
@@ -4954,10 +5926,12 @@ def answer_question_bank_question_api():
                 "score": float(evaluation.get("score", 0.0) or 0.0),
                 "is_correct": bool(evaluation.get("is_correct", False)),
                 "error_type": diagnosis.get("error_type", ""),
+                "fact_source": diagnosis_fact_source,
             },
         )
         append_user_event(user_id, "wrong_question", wrong_item)
-        append_user_event(user_id, "diagnosis", {
+
+        diagnosis_record = {
             "id": str(uuid.uuid4()),
             "timestamp": now_dt.isoformat(),
             "question": str(question_item.get("question") or ""),
@@ -4967,7 +5941,33 @@ def answer_question_bank_question_api():
             "diagnosis": diagnosis,
             "learning_advice": learning_advice,
             "mastery_assessment": mastery_assessment,
-        })
+            "fact_source": diagnosis_fact_source,
+            "source_key": build_diagnosis_source_key(
+                fact_source=diagnosis_fact_source,
+                question=question_item.get("question"),
+                correct_answer=evaluation.get("expected_answer", ""),
+                user_answer=user_answer,
+                concept=concept,
+            ),
+            "source": "question_answer",
+            "is_explanation_layer": True,
+        }
+        diagnosis_recorded, _ = append_diagnosis_event_once(user_id, diagnosis_record)
+
+    runtime_refresh = refresh_learning_runtime_cache(
+        user_id=user_id,
+        reason="question_answer",
+        focus_concept=concept,
+        recommendation_limit=4,
+        context={
+            "source": "question_answer",
+            "question_id": question_id,
+            "concept": concept,
+            "score": float(evaluation.get("score", 0.0) or 0.0),
+            "is_correct": bool(evaluation.get("is_correct", False)),
+            "task_timestamp": event_payload["timestamp"],
+        },
+    )
 
     return jsonify(success_payload(
         request_id,
@@ -4980,11 +5980,20 @@ def answer_question_bank_question_api():
         expected_answer=evaluation.get("expected_answer", ""),
         feedback=evaluation.get("feedback", ""),
         evaluation_method=evaluation.get("evaluation_method", "rule"),
+        scoring_type=evaluation.get("scoring_type", question_item.get("question_type") or "short_answer"),
+        evaluation_breakdown=evaluation.get("breakdown", []),
+        evaluation_evidence=evaluation.get("evidence", {}),
+        evaluation_summary=evaluation.get("summary", ""),
         duration_seconds=event_payload.get("duration_seconds"),
         mastery_assessment=mastery_assessment,
         graph_sync=(mastery_snapshot.get("graph_sync", {}) if isinstance(mastery_snapshot, dict) else {}),
         diagnosis=diagnosis,
+        diagnosis_recorded=diagnosis_recorded,
+        fact_source=diagnosis_fact_source,
         learning_advice=learning_advice,
+        profile=(runtime_refresh.get("profile", {}) if isinstance(runtime_refresh, dict) else {}),
+        recommendations=(runtime_refresh.get("recommendations", []) if isinstance(runtime_refresh, dict) else []),
+        review_reminders=(runtime_refresh.get("review_reminders", {}) if isinstance(runtime_refresh, dict) else {}),
         next_action="继续点击题库抽题进行下一题",
         error_code="",
         error_message="",
@@ -4998,7 +6007,9 @@ def upload_image():
         return error_response(request_id, 400, "INVALID_INPUT", "没有上传图片")
     
     file = request.files['image']
-    user_id = request.form.get('user_id', 'default_user')
+    user_id, auth_error = resolve_request_user_id_from_form()
+    if auth_error:
+        return auth_error
 
     ocr_result = extract_text_from_image(file)
     if not ocr_result.get("success"):
@@ -5015,29 +6026,33 @@ def upload_image():
     extract_result = extract_knowledge_from_text_api_inner(user_id, extracted_text, "image_ocr")
     concepts = extract_result.get("detected_concepts", []) or []
 
-    append_user_event(user_id, "content", {
-        "id": str(uuid.uuid4()),
-        "timestamp": datetime.now().isoformat(),
-        "content_type": "image",
-        "title": file.filename or "学习图片",
-        "content": extracted_text[:500],
-        "source": "upload_image",
-        "topics": concepts,
-    })
+    append_learning_content_event(
+        user_id,
+        content_type="image",
+        title=file.filename or "学习图片",
+        content=extracted_text,
+        source="upload_image",
+        topics=concepts,
+        extra={
+            "ocr_provider": ocr_result.get("provider", OCR_PROVIDER),
+            "ocr_mode": "success" if ocr_result.get("success") else "fallback",
+        },
+    )
 
     build_learning_profile(user_id)
     
     return jsonify(success_payload(
         request_id,
-        message="图片上传成功",
+        message="图片上传成功" if not ocr_result.get("fallback_used") else "图片上传成功（已走离线OCR兜底）",
         detected_concepts=concepts,
         ocr_text=extracted_text,
         analysis="已完成OCR并更新知识图谱",
         graph_sync=extract_result.get("graph_sync", {}),
-        ai_used=True,
+        ai_used=bool(ocr_result.get("ai_used", False)),
         provider=ocr_result.get("provider", "qwen_vl"),
-        error_code="",
-        error_message="",
+        fallback_used=bool(ocr_result.get("fallback_used", False)),
+        error_code=ocr_result.get("error_code", ""),
+        error_message=ocr_result.get("error_message", ""),
     ))
 
 
@@ -5050,6 +6065,7 @@ def get_knowledge_graph_api():
     user_id, auth_error = resolve_request_user_id_from_args()
     if auth_error:
         return auth_error
+    include_documents = str(request.args.get('include_documents', 'false')).strip().lower() in {'1', 'true', 'yes', 'on'}
     min_relation_score_raw = request.args.get('min_relation_score', '')
     min_relation_score = None
     if str(min_relation_score_raw).strip() != '':
@@ -5058,7 +6074,7 @@ def get_knowledge_graph_api():
         except Exception:
             return error_response(request_id, 400, "INVALID_INPUT", "min_relation_score 必须是 0~1 之间的数字")
 
-    result = build_graph_response(user_id, min_relation_score=min_relation_score)
+    result = build_graph_response(user_id, min_relation_score=min_relation_score, include_documents=include_documents)
     if not isinstance(result, dict):
         return error_response(request_id, 500, "INTERNAL_ERROR", "图谱构建失败")
     result["request_id"] = request_id
@@ -5517,16 +6533,14 @@ def process_content_ingest_sync(user_id, content_type, content, title, source):
     if not topics:
         topics = extract_topics_from_text(content)
 
-    event = {
-        "id": str(uuid.uuid4()),
-        "timestamp": datetime.now().isoformat(),
-        "content_type": content_type,
-        "title": title,
-        "content": content[:500],
-        "source": source,
-        "topics": topics,
-    }
-    append_user_event(user_id, "content", event)
+    event = append_learning_content_event(
+        user_id,
+        content_type=content_type,
+        title=title or "学习资料录入",
+        content=content,
+        source=source,
+        topics=topics,
+    )
     profile = build_learning_profile(user_id)
 
     return {
@@ -5541,10 +6555,18 @@ def process_content_ingest_sync(user_id, content_type, content, title, source):
 if celery_client:
     @celery_client.task(name="tasks.sync_user_graph")
     def sync_user_graph_task(payload):
-        user_id = payload.get("user_id", "default_user")
+        user_id = normalize_request_user_id(payload.get("user_id"), fallback="")
         concept_list = payload.get("concepts", []) or []
         relation_list = payload.get("relations", []) or []
         deleted = payload.get("deleted", []) or []
+        if not user_id:
+            return {
+                "success": False,
+                "user_id": "",
+                "synced": False,
+                "mode": "async",
+                "error_code": "MISSING_USER_ID",
+            }
 
         # 先行删除云端已标记为删除的概念，避免被后续 upsert 重建（带重试与日志）
         for d in deleted:
@@ -5566,17 +6588,31 @@ if celery_client:
 
     @celery_client.task(name="tasks.process_content_ingest")
     def process_content_ingest_task(payload):
-        user_id = payload.get("user_id", "default_user")
+        user_id = normalize_request_user_id(payload.get("user_id"), fallback="")
         content_type = payload.get("content_type", "note")
         content = payload.get("content", "")
         title = payload.get("title", "")
         source = payload.get("source", "manual_async")
+        if not user_id:
+            return {
+                "success": False,
+                "message": "缺少 user_id，已拒绝写入匿名共享账号",
+                "error_code": "MISSING_USER_ID",
+            }
         return process_content_ingest_sync(user_id, content_type, content, title, source)
 
     @celery_client.task(name="tasks.sync_mastery_update")
     def sync_mastery_update_task(payload):
+        user_id = normalize_request_user_id(payload.get("user_id"), fallback="")
+        if not user_id:
+            return {
+                "success": False,
+                "synced": False,
+                "mode": "async",
+                "error_code": "MISSING_USER_ID",
+            }
         ok = neo4j_store.update_mastery(
-            user_id=payload.get("user_id", "default_user"),
+            user_id=user_id,
             concept=payload.get("concept", ""),
             mastery=float(payload.get("mastery", 0.0)),
             review_count=int(payload.get("review_count", 0)),
@@ -5590,8 +6626,16 @@ if celery_client:
 
     @celery_client.task(name="tasks.sync_delete_concept")
     def sync_delete_concept_task(payload):
+        user_id = normalize_request_user_id(payload.get("user_id"), fallback="")
+        if not user_id:
+            return {
+                "success": False,
+                "synced": False,
+                "mode": "async",
+                "error_code": "MISSING_USER_ID",
+            }
         ok = neo4j_store.delete_concept(
-            user_id=payload.get("user_id", "default_user"),
+            user_id=user_id,
             concept=payload.get("concept", ""),
         )
         return {
@@ -5837,6 +6881,31 @@ def cognitive_diagnosis_api():
         "reason": (learning_advice or {}).get("原因") or (diagnosis or {}).get("reason", ""),
         "recommended_actions": (learning_advice or {}).get("推荐行动") or (diagnosis or {}).get("recommended_actions", []),
     }
+
+    request_fact_source = data.get("fact_source") if isinstance(data.get("fact_source"), dict) else {}
+    primary_fact = find_primary_question_answer_fact(
+        user_id=user_id,
+        question=question,
+        correct_answer=correct_answer,
+        user_answer=user_answer,
+        concept=concept,
+        question_id=data.get("question_id"),
+    )
+    fact_source = request_fact_source or (
+        primary_fact.get("fact_source")
+        if isinstance(primary_fact, dict) and isinstance(primary_fact.get("fact_source"), dict)
+        else {}
+    )
+    if not fact_source:
+        fact_source = build_evaluation_fact_source(
+            primary_source="diagnosis_input",
+            fact_id=str(uuid.uuid4()),
+            source_key="",
+            question_id=data.get("question_id"),
+            concept=concept,
+            timestamp=datetime.now().isoformat(),
+        )
+
     record = {
         "id": str(uuid.uuid4()),
         "timestamp": datetime.now().isoformat(),
@@ -5847,29 +6916,47 @@ def cognitive_diagnosis_api():
         "diagnosis": diagnosis,
         "learning_advice": learning_advice,
         "mastery_assessment": mastery_assessment,
-    }
-    append_user_event(user_id, "diagnosis", record)
-
-    # 错题内容进入多源数据与图谱抽取
-    append_user_event(user_id, "content", {
-        "id": str(uuid.uuid4()),
-        "timestamp": datetime.now().isoformat(),
-        "content_type": "qa",
-        "title": "错题记录",
-        "content": question,
+        "fact_source": fact_source,
+        "source_key": build_diagnosis_source_key(
+            fact_source=fact_source,
+            question=question,
+            correct_answer=correct_answer,
+            user_answer=user_answer,
+            concept=concept,
+        ),
         "source": "diagnosis",
-        "topics": extract_topics_from_text(question)
-    })
-    extract_result = extract_knowledge_from_text_api_inner(user_id, question, "diagnosis")
-    profile = build_learning_profile(user_id)
+        "is_explanation_layer": True,
+    }
+    diagnosis_recorded, diagnosis_record = append_diagnosis_event_once(user_id, record)
+    runtime_refresh = refresh_learning_runtime_cache(
+        user_id=user_id,
+        reason="diagnosis",
+        focus_concept=concept,
+        recommendation_limit=4,
+        context={
+            "source": "diagnosis",
+            "concept": concept,
+            "question_id": str(data.get("question_id") or "").strip(),
+            "fact_source": fact_source,
+        },
+    )
 
     return jsonify(success_payload(
         request_id,
         diagnosis=diagnosis,
         learning_advice=learning_advice,
         mastery_assessment=mastery_assessment,
-        profile=profile,
-        graph_sync=extract_result.get("graph_sync", {}),
+        profile=(runtime_refresh.get("profile", {}) if isinstance(runtime_refresh, dict) else {}),
+        recommendations=(runtime_refresh.get("recommendations", []) if isinstance(runtime_refresh, dict) else []),
+        fact_source=fact_source,
+        diagnosis_recorded=diagnosis_recorded,
+        diagnosis_record=(diagnosis_record if isinstance(diagnosis_record, dict) else record),
+        graph_sync={
+            "enabled": False,
+            "mode": "explanation_only",
+            "synced": False,
+            "reason": "diagnosis_is_explanation_layer",
+        },
         error_code="",
         error_message="",
     ))
@@ -6031,7 +7118,7 @@ def get_task_status_api(task_id):
 def cognitive_diagnosis_report_api():
     """获取用户诊断统计报告。"""
     request_id = get_request_id()
-    user_id, auth_error = resolve_request_user_id_from_args()
+    user_id, auth_error = resolve_current_request_user_id_from_args()
     if auth_error:
         return auth_error
     result = build_diagnosis_report_response(user_id)
@@ -6044,7 +7131,7 @@ def cognitive_diagnosis_report_api():
 def profile_api():
     """获取用户学习画像。"""
     request_id = get_request_id()
-    user_id, auth_error = resolve_request_user_id_from_args()
+    user_id, auth_error = resolve_current_request_user_id_from_args()
     if auth_error:
         return auth_error
     profile = build_learning_profile(user_id)
@@ -6060,12 +7147,26 @@ def profile_api():
 def recommendations_api():
     """获取个性化学习资源推荐。"""
     request_id = get_request_id()
-    user_id, auth_error = resolve_request_user_id_from_args()
+    user_id, auth_error = resolve_current_request_user_id_from_args()
     if auth_error:
         return auth_error
     limit = int(request.args.get('limit', 6))
-    items = build_recommendations(user_id, limit=max(1, min(limit, 12)))
+    safe_limit = max(1, min(limit, 12))
     profile = get_user_profile(user_id) or {}
+    cache = profile.get("recommendation_cache") if isinstance(profile, dict) else {}
+    cached_items = cache.get("items", []) if isinstance(cache, dict) else []
+    cache_hit = bool(cached_items)
+    if cache_hit:
+        items = cached_items[:safe_limit]
+    else:
+        items = build_recommendations(user_id, limit=safe_limit)
+        profile["recommendation_cache"] = {
+            "updated_at": datetime.now().isoformat(),
+            "reason": "recommendations_api",
+            "focus_concept": "",
+            "items": items,
+        }
+        set_user_profile(user_id, profile)
     diagnosis_logs = load_user_event_list(user_id, "diagnosis")
     recent_diagnosis = diagnosis_logs[-10:] if isinstance(diagnosis_logs, list) else []
     diagnosis_count = len(recent_diagnosis)
@@ -6074,6 +7175,7 @@ def recommendations_api():
         user_id=user_id,
         count=len(items),
         items=items,
+        cache_hit=cache_hit,
         recommendation_context=build_recommendation_context(profile, diagnosis_count),
         error_code="",
         error_message="",
@@ -6084,11 +7186,11 @@ def recommendations_api():
 def dashboard_summary_api():
     """仪表盘聚合数据接口。"""
     request_id = get_request_id()
-    user_id, auth_error = resolve_request_user_id_from_args()
+    user_id, auth_error = resolve_current_request_user_id_from_args()
     if auth_error:
         return auth_error
 
-    graph = build_graph_response(user_id)
+    graph = build_graph_response(user_id, include_documents=True)
     reminders = build_review_reminders_response(user_id)
     profile = build_learning_profile(user_id)
     diagnosis_report = build_diagnosis_report_response(user_id)
@@ -6147,9 +7249,13 @@ def dashboard_summary_api():
     )
 
     nodes = graph.get("graph", {}).get("nodes", [])
+    concept_nodes = [
+        n for n in nodes
+        if isinstance(n, dict) and str(n.get("node_type") or "concept") == "concept"
+    ]
     overall_mastery = 0
-    if nodes:
-        overall_mastery = round(sum(float(n.get("mastery", 0)) for n in nodes) / len(nodes), 3)
+    if concept_nodes:
+        overall_mastery = round(sum(float(n.get("mastery", 0) or 0) for n in concept_nodes) / len(concept_nodes), 3)
 
     return jsonify(success_payload(
         request_id,
@@ -6182,6 +7288,32 @@ def dashboard_summary_api():
             "ai_enabled": USE_REAL_AI,
             "ai_provider": cfg.get("provider", "mock") if USE_REAL_AI else "mock",
         },
+        error_code="",
+        error_message="",
+    ))
+
+
+@app.route('/api/dashboard/streak', methods=['GET'])
+def dashboard_streak_api():
+    """右上角连续登录组件使用的轻量接口。"""
+    request_id = get_request_id()
+    user_id, auth_error = resolve_current_request_user_id_from_args()
+    if auth_error:
+        return auth_error
+
+    streak = build_streak_widget_summary(
+        content_logs=load_user_event_list(user_id, "content"),
+        qa_logs=load_user_event_list(user_id, "qa"),
+        behavior_logs=load_user_event_list(user_id, "behavior"),
+        question_draw_logs=load_user_event_list(user_id, "question_draw"),
+        question_answer_logs=load_user_event_list(user_id, "question_answer"),
+        diagnosis_logs=load_user_event_list(user_id, "diagnosis"),
+    )
+
+    return jsonify(success_payload(
+        request_id,
+        user_id=user_id,
+        streak=streak,
         error_code="",
         error_message="",
     ))
@@ -6229,6 +7361,8 @@ def register_auth_user_api():
         return error_response(request_id, 400, "INVALID_INPUT", "密码长度至少需要 6 位")
     if get_auth_user(username):
         return error_response(request_id, 409, "AUTH_USER_EXISTS", "该账号已存在，请直接登录")
+    if get_auth_user_by_display_name(display_name):
+        return error_response(request_id, 409, "AUTH_DISPLAY_NAME_EXISTS", "该昵称已被使用，请更换一个昵称")
 
     now = iso_now()
     user = {
@@ -6393,11 +7527,13 @@ def record_learning_behavior(user_id, question, analysis):
 def record_qa_behavior(user_id, question, answer):
     """记录问答行为"""
     topics = normalize_topic_list(detect_concepts_from_text(question))[:6]
+    answer_text = clamp_text(answer or "", LEARNING_CONTENT_MAX_CHARS)
     behavior = {
         "user_id": user_id,
         "timestamp": datetime.now().isoformat(),
         "question": question,
-        "answer": answer[:200],  # 只存储前200字符
+        "answer": answer_text,
+        "answer_preview": normalize_text_preview(answer_text, 200),
         "topics": topics,
         "is_confusion_request": contains_confusion_signal(question),
         "type": "qa_interaction"
@@ -6470,15 +7606,19 @@ def post_process_qa_interaction(
     extracted_concepts = normalize_topic_list((extract_result or {}).get("detected_concepts"))[:6]
     merged_topics = normalize_topic_list(topics + extracted_concepts)[:6]
 
-    append_user_event(user_id, "content", {
-        "id": str(uuid.uuid4()),
-        "timestamp": now_iso,
-        "content_type": "qa",
-        "title": content_title,
-        "content": str(question or "")[:500],
-        "source": str(source or "qa"),
-        "topics": merged_topics,
-    })
+    append_learning_content_event(
+        user_id,
+        content_type="qa",
+        title=content_title,
+        content=f"问题：{str(question or '').strip()}\n回答：{str(answer or '').strip()}",
+        source=str(source or "qa"),
+        topics=merged_topics,
+        extra={
+            "question_text": clamp_text(question or "", LEARNING_CONTENT_MAX_CHARS),
+            "answer_text": clamp_text(answer or "", LEARNING_CONTENT_MAX_CHARS),
+            "timestamp": now_iso,
+        },
+    )
 
     diagnosis = None
     learning_advice = None
@@ -6604,12 +7744,16 @@ def health():
     neo4j_available = neo4j_store.ensure_connected()
     neo4j_error = getattr(neo4j_store, "last_error", "")
     storage_info = get_storage_info()
+    kb_readiness = get_kb_readiness_report()
+    kb_summary = kb_readiness.get("summary", {}) if isinstance(kb_readiness, dict) else {}
+    offline_chain = kb_readiness.get("offline_chain", {}) if isinstance(kb_readiness, dict) else {}
     return jsonify({
         "status": "ok",
         "provider": cfg["provider"] if USE_REAL_AI else "mock",
         "model": cfg["model"] if USE_REAL_AI else "mock",
         "ai_key_configured": bool(cfg.get("api_key")),
         "ai_enabled": USE_REAL_AI,
+        "local_demo_fallback_enabled": LOCAL_DEMO_FALLBACK_ENABLED,
         "ocr_provider": OCR_PROVIDER,
         "neo4j_enabled": neo4j_available,
         "neo4j_error": neo4j_error,
@@ -6619,6 +7763,13 @@ def health():
         "celery_worker_available": is_celery_worker_available(),
         "storage_backend": storage_info.get("storage_backend", "json"),
         "database_scheme": storage_info.get("database_scheme", ""),
+        "kb_status": kb_readiness.get("status"),
+        "kb_ready": kb_readiness.get("ready"),
+        "kb_mode": kb_summary.get("mode", ""),
+        "kb_demo_mode": kb_summary.get("mode") == "demo_fallback",
+        "offline_core_chain_ready": bool(offline_chain.get("ready", False)),
+        "kb_recommendations": (kb_readiness.get("recommended_actions", []) if isinstance(kb_readiness, dict) else [])[:4],
+        "kb_readiness": kb_readiness,
         "message": "智能学习伴侣服务运行正常"
     })
 

@@ -191,7 +191,7 @@
 
   function ensureGuestUserId(value) {
     const normalized = sanitizeUserId(value);
-    if (normalized && normalized !== DEFAULT_USER_ID) {
+    if (normalized && isGeneratedGuestUserId(normalized)) {
       localStorage.setItem(GUEST_USER_STORAGE_KEY, normalized);
       return normalized;
     }
@@ -202,12 +202,6 @@
   }
 
   function getGuestUserId() {
-    const url = new URL(window.location.href);
-    const urlUser = url.searchParams.get('user_id');
-    if (urlUser) {
-      return ensureGuestUserId(urlUser);
-    }
-
     const stored = localStorage.getItem(GUEST_USER_STORAGE_KEY);
     return ensureGuestUserId(stored);
   }

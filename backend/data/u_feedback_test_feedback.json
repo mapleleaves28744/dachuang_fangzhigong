@@ -108,5 +108,25 @@
     "total_count": 10,
     "duration_seconds": 300,
     "timestamp": "2026-04-14T15:51:25.627211"
+  },
+  {
+    "task_id": "task_001",
+    "task_type": "quiz",
+    "concept": "导数基础",
+    "accuracy": 0.8,
+    "correct_count": 8,
+    "total_count": 10,
+    "duration_seconds": 300,
+    "timestamp": "2026-04-14T19:03:23.852409"
+  },
+  {
+    "task_id": "task_001",
+    "task_type": "quiz",
+    "concept": "导数基础",
+    "accuracy": 0.8,
+    "correct_count": 8,
+    "total_count": 10,
+    "duration_seconds": 300,
+    "timestamp": "2026-04-14T20:23:20.879121"
   }
 ]

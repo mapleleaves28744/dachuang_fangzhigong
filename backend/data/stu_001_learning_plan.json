@@ -1,0 +1,262 @@
+[
+  {
+    "id": "4120574c-6817-45a3-8f19-79d46ce93703",
+    "timestamp": "2026-04-14T23:04:55.122115",
+    "student_id": "stu_001",
+    "topic": "智能体构建与知识库搭建",
+    "style": "visual",
+    "mastery": 0.5,
+    "best_time_range": "22:00-00:00",
+    "focus_minutes": 40,
+    "plan_items": [
+      {
+        "id": "8cf3f00b-315c-4382-843a-252aefe9de08",
+        "time": "2026-04-14",
+        "task": "D1(2026-04-14)：夯实基础 - 回顾 智能体构建与知识库搭建 的易错点并做针对性修正，配思维导图和图例",
+        "completed": false,
+        "topic": "智能体构建与知识库搭建",
+        "mastery": 0.5,
+        "style": "visual",
+        "focus_minutes": 40,
+        "source": "agent_learning_plan",
+        "generated_at": "2026-04-14T23:04:55.121505",
+        "priority": 5
+      },
+      {
+        "id": "77f2f3ab-dc33-408e-a369-2d66ceb3de06",
+        "time": "2026-04-15",
+        "task": "D2(2026-04-15)：强化训练 - 完成 智能体构建与知识库搭建 变式训练 4 题，用 15 分钟口头/书面复述关键步骤",
+        "completed": false,
+        "topic": "智能体构建与知识库搭建",
+        "mastery": 0.5,
+        "style": "visual",
+        "focus_minutes": 40,
+        "source": "agent_learning_plan",
+        "generated_at": "2026-04-14T23:04:55.121505",
+        "priority": 4
+      },
+      {
+        "id": "e971776c-4aaf-4e20-8620-2d8331bcebf3",
+        "time": "2026-04-16",
+        "task": "D3(2026-04-16)：验收复盘 - 限时整理 智能体构建与知识库搭建 的解题模板与检查清单，最后用 1 次自测检验掌握情况",
+        "completed": false,
+        "topic": "智能体构建与知识库搭建",
+        "mastery": 0.5,
+        "style": "visual",
+        "focus_minutes": 40,
+        "source": "agent_learning_plan",
+        "generated_at": "2026-04-14T23:04:55.121505",
+        "priority": 3
+      }
+    ],
+    "source": "agent"
+  },
+  {
+    "id": "b9b016f7-e48e-4f78-84cf-3502ea42a50e",
+    "timestamp": "2026-05-19T00:36:04.929085",
+    "student_id": "stu_001",
+    "topic": "导数的定义与基本求导法则",
+    "style": "visual",
+    "mastery": 0.35,
+    "best_time_range": "00:00-02:00",
+    "focus_minutes": 45,
+    "plan_items": [
+      {
+        "id": "f5223f56-d68c-4553-a7de-51d351f6cfdb",
+        "time": "2026-05-19",
+        "task": "D1(2026-05-19)：夯实基础 - 重建 导数的定义与基本求导法则 的基础定义与关键词，配思维导图和图例",
+        "completed": false,
+        "topic": "导数的定义与基本求导法则",
+        "mastery": 0.35,
+        "style": "visual",
+        "focus_minutes": 45,
+        "source": "agent_learning_plan",
+        "generated_at": "2026-05-19T00:36:04.927626",
+        "priority": 5
+      },
+      {
+        "id": "67b3e395-d5ce-4013-bfa4-f8ea3adc8165",
+        "time": "2026-05-20",
+        "task": "D2(2026-05-20)：强化训练 - 用 1 道例题拆解 导数的定义与基本求导法则 的关键步骤，用 15 分钟口头/书面复述关键步骤",
+        "completed": false,
+        "topic": "导数的定义与基本求导法则",
+        "mastery": 0.35,
+        "style": "visual",
+        "focus_minutes": 45,
+        "source": "agent_learning_plan",
+        "generated_at": "2026-05-19T00:36:04.927626",
+        "priority": 4
+      },
+      {
+        "id": "10f2d3b9-c86e-4a2f-bdf6-873462c50d88",
+        "time": "2026-05-21",
+        "task": "D3(2026-05-21)：验收复盘 - 完成 导数的定义与基本求导法则 同类题 5 题并复盘错因，最后用 1 次自测检验掌握情况",
+        "completed": false,
+        "topic": "导数的定义与基本求导法则",
+        "mastery": 0.35,
+        "style": "visual",
+        "focus_minutes": 45,
+        "source": "agent_learning_plan",
+        "generated_at": "2026-05-19T00:36:04.927626",
+        "priority": 3
+      }
+    ],
+    "source": "agent"
+  },
+  {
+    "id": "b22c26e8-da04-4453-b4e1-827b1e6acee5",
+    "timestamp": "2026-05-20T11:50:00.942395",
+    "student_id": "stu_001",
+    "topic": "智能体构建与知识库搭建",
+    "style": "visual",
+    "mastery": 0.35,
+    "best_time_range": "23:00-01:00",
+    "focus_minutes": 45,
+    "plan_items": [
+      {
+        "id": "700dcf2b-149a-42ff-b496-33ddf5cac109",
+        "time": "2026-05-20",
+        "task": "D1(2026-05-20)：夯实基础 - 重建 智能体构建与知识库搭建 的基础定义与关键词，配思维导图和图例",
+        "completed": false,
+        "topic": "智能体构建与知识库搭建",
+        "mastery": 0.35,
+        "style": "visual",
+        "focus_minutes": 45,
+        "source": "agent_learning_plan",
+        "generated_at": "2026-05-20T11:50:00.941113",
+        "priority": 5
+      },
+      {
+        "id": "cd0e82ae-00fe-4123-b772-8cb42878a53a",
+        "time": "2026-05-21",
+        "task": "D2(2026-05-21)：强化训练 - 用 1 道例题拆解 智能体构建与知识库搭建 的关键步骤，用 15 分钟口头/书面复述关键步骤",
+        "completed": false,
+        "topic": "智能体构建与知识库搭建",
+        "mastery": 0.35,
+        "style": "visual",
+        "focus_minutes": 45,
+        "source": "agent_learning_plan",
+        "generated_at": "2026-05-20T11:50:00.941113",
+        "priority": 4
+      },
+      {
+        "id": "dca87f19-b54f-4791-9ec5-aa05b7e184cc",
+        "time": "2026-05-22",
+        "task": "D3(2026-05-22)：验收复盘 - 完成 智能体构建与知识库搭建 同类题 5 题并复盘错因，最后用 1 次自测检验掌握情况",
+        "completed": false,
+        "topic": "智能体构建与知识库搭建",
+        "mastery": 0.35,
+        "style": "visual",
+        "focus_minutes": 45,
+        "source": "agent_learning_plan",
+        "generated_at": "2026-05-20T11:50:00.941113",
+        "priority": 3
+      }
+    ],
+    "source": "agent"
+  },
+  {
+    "id": "48160e32-4a67-41b0-abd7-5721555c14b4",
+    "timestamp": "2026-05-20T11:50:50.642803",
+    "student_id": "stu_001",
+    "topic": "智能体构建与知识库搭建",
+    "style": "visual",
+    "mastery": 0.35,
+    "best_time_range": "23:00-01:00",
+    "focus_minutes": 45,
+    "plan_items": [
+      {
+        "id": "df3f24bd-220f-49a0-be36-abc5a14fe22e",
+        "time": "2026-05-20",
+        "task": "D1(2026-05-20)：夯实基础 - 重建 智能体构建与知识库搭建 的基础定义与关键词，配思维导图和图例",
+        "completed": false,
+        "topic": "智能体构建与知识库搭建",
+        "mastery": 0.35,
+        "style": "visual",
+        "focus_minutes": 45,
+        "source": "agent_learning_plan",
+        "generated_at": "2026-05-20T11:50:50.641530",
+        "priority": 5
+      },
+      {
+        "id": "580aec0f-9a7f-47c3-8896-84e896370ef7",
+        "time": "2026-05-21",
+        "task": "D2(2026-05-21)：强化训练 - 用 1 道例题拆解 智能体构建与知识库搭建 的关键步骤，用 15 分钟口头/书面复述关键步骤",
+        "completed": false,
+        "topic": "智能体构建与知识库搭建",
+        "mastery": 0.35,
+        "style": "visual",
+        "focus_minutes": 45,
+        "source": "agent_learning_plan",
+        "generated_at": "2026-05-20T11:50:50.641530",
+        "priority": 4
+      },
+      {
+        "id": "60f1cb16-9a23-4bec-9b21-594b20a51cbc",
+        "time": "2026-05-22",
+        "task": "D3(2026-05-22)：验收复盘 - 完成 智能体构建与知识库搭建 同类题 5 题并复盘错因，最后用 1 次自测检验掌握情况",
+        "completed": false,
+        "topic": "智能体构建与知识库搭建",
+        "mastery": 0.35,
+        "style": "visual",
+        "focus_minutes": 45,
+        "source": "agent_learning_plan",
+        "generated_at": "2026-05-20T11:50:50.641530",
+        "priority": 3
+      }
+    ],
+    "source": "agent"
+  },
+  {
+    "id": "780a025b-218a-4162-9e39-42a2efab51f8",
+    "timestamp": "2026-05-20T11:51:41.730496",
+    "student_id": "stu_001",
+    "topic": "搭建知识库",
+    "style": "visual",
+    "mastery": 0.5,
+    "best_time_range": "23:00-01:00",
+    "focus_minutes": 45,
+    "plan_items": [
+      {
+        "id": "a815a377-f8fa-4f1f-a75a-be8cd5ec4ee3",
+        "time": "2026-05-20",
+        "task": "D1(2026-05-20)：夯实基础 - 回顾 搭建知识库 的易错点并做针对性修正，配思维导图和图例",
+        "completed": false,
+        "topic": "搭建知识库",
+        "mastery": 0.5,
+        "style": "visual",
+        "focus_minutes": 45,
+        "source": "agent_learning_plan",
+        "generated_at": "2026-05-20T11:51:41.729074",
+        "priority": 5
+      },
+      {
+        "id": "01c9b6fd-3be6-4df2-84a7-7c61255adeb6",
+        "time": "2026-05-21",
+        "task": "D2(2026-05-21)：强化训练 - 完成 搭建知识库 变式训练 4 题，用 15 分钟口头/书面复述关键步骤",
+        "completed": false,
+        "topic": "搭建知识库",
+        "mastery": 0.5,
+        "style": "visual",
+        "focus_minutes": 45,
+        "source": "agent_learning_plan",
+        "generated_at": "2026-05-20T11:51:41.729074",
+        "priority": 4
+      },
+      {
+        "id": "79e39d5b-2896-47ca-ad90-070b24f3827d",
+        "time": "2026-05-22",
+        "task": "D3(2026-05-22)：验收复盘 - 限时整理 搭建知识库 的解题模板与检查清单，最后用 1 次自测检验掌握情况",
+        "completed": false,
+        "topic": "搭建知识库",
+        "mastery": 0.5,
+        "style": "visual",
+        "focus_minutes": 45,
+        "source": "agent_learning_plan",
+        "generated_at": "2026-05-20T11:51:41.729074",
+        "priority": 3
+      }
+    ],
+    "source": "local_rule_fallback"
+  }
+]

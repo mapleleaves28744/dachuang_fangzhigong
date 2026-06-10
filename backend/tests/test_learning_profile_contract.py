@@ -9,6 +9,7 @@ from app.services.learning_profile import (
     collect_concept_diagnosis_evidence,
     build_weak_recommendation_item,
     build_interest_recommendation_item,
+    normalize_recommendation_resource_type,
 )
 
 
@@ -217,6 +218,24 @@ class TestLearningProfileContract(unittest.TestCase):
         )
         self.assertEqual(interest_item["concept"], "函数")
         self.assertIn("source_evidence", interest_item)
+
+    def test_recommendation_resource_type_is_merged_to_broad_buckets(self):
+        self.assertEqual(
+            normalize_recommendation_resource_type("知识导图+图解微课", dominant_category="knowledge", action_mode="基础回补"),
+            "概念梳理",
+        )
+        self.assertEqual(
+            normalize_recommendation_resource_type("图解示例+互动练习", dominant_category="skill", action_mode="结构修复"),
+            "流程拆解",
+        )
+        self.assertEqual(
+            normalize_recommendation_resource_type("图解微课+审题核对卡", dominant_category="habit", action_mode="稳定强化"),
+            "复盘巩固",
+        )
+        self.assertEqual(
+            normalize_recommendation_resource_type("专题精选", dominant_category="unknown", action_mode="概念拓展"),
+            "拓展应用",
+        )
 
     def test_build_recommendations_delegated_flow(self):
         def fake_build_learning_profile(_):

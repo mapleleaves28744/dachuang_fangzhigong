@@ -1,0 +1,15 @@
+[
+  {
+    "id": "a2e34f14-f19e-4a05-80a4-1096768201d0",
+    "timestamp": "2026-04-14T19:49:44",
+    "content_type": "kb_note",
+    "title": "t",
+    "content": "abc",
+    "source": "agent_kb",
+    "tags": [],
+    "topics": [
+      "t abc",
+      "abc"
+    ]
+  }
+]

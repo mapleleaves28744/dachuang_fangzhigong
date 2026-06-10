@@ -1,20 +1,20 @@
 {
   "user_id": "2874463136@qq.com",
-  "updated_at": "2026-04-11T13:47:28.431480",
+  "updated_at": "2026-05-19T00:37:37.571369",
   "learning_style": "visual",
   "style_scores": {
-    "visual": 0.308,
-    "auditory": 0.378,
-    "kinesthetic": 0.378
+    "visual": 0.298,
+    "auditory": 0.356,
+    "kinesthetic": 0.356
   },
   "style_method": "kmeans",
   "style_features": {
     "image_count": 0,
     "link_count": 0,
-    "qa_content_count": 5,
+    "qa_content_count": 15,
     "note_count": 0,
     "other_count": 0,
-    "qa_log_count": 20,
+    "qa_log_count": 30,
     "concept_count": 34
   },
   "interests": [
@@ -24,17 +24,17 @@
     "Node.js",
     "V8引擎"
   ],
-  "best_time_range": "13:00-15:00",
+  "best_time_range": "22:00-00:00",
   "focus_minutes": 45,
   "content_type_counter": {
     "note": 0,
     "link": 0,
     "image": 0,
-    "qa": 5,
+    "qa": 15,
     "other": 0
   },
   "dashboard_hidden": {
-    "updated_at": "2026-04-11T13:39:32.048644",
+    "updated_at": "2026-05-19T00:37:37.592228",
     "topic_daily_table": [
       {
         "date": "2026-04-10",
@@ -53,10 +53,6 @@
           },
           {
             "topic": "正在学通信原理",
-            "count": 1
-          },
-          {
-            "topic": "自学",
             "count": 1
           },
           {
@@ -249,10 +245,6 @@
         "count": 1
       },
       {
-        "topic": "自学",
-        "count": 1
-      },
-      {
         "topic": "没有任何基础",
         "count": 1
       },
@@ -371,8 +363,14 @@
       {
         "date": "2026-04-11",
         "label": "13:00-15:00",
-        "count": 81,
-        "duration_seconds": 2399.113
+        "count": 91,
+        "duration_seconds": 3101.105
+      },
+      {
+        "date": "2026-05-19",
+        "label": "00:00-02:00",
+        "count": 20,
+        "duration_seconds": 0.0
       }
     ],
     "study_window_total_table": [
@@ -383,8 +381,8 @@
       },
       {
         "label": "13:00-15:00",
-        "count": 81,
-        "duration_seconds": 2399.113
+        "count": 91,
+        "duration_seconds": 3101.105
       },
       {
         "label": "12:00-14:00",
@@ -419,6 +417,11 @@
       {
         "label": "11:00-13:00",
         "count": 23,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "00:00-02:00",
+        "count": 20,
         "duration_seconds": 0.0
       },
       {
@@ -471,5 +474,348 @@
       "count": 109,
       "duration_seconds": 34.676
     }
+  },
+  "recommendation_cache": {
+    "updated_at": "2026-05-19T00:18:27.372160",
+    "reason": "recommendations_api",
+    "focus_concept": "",
+    "items": [
+      {
+        "concept": "链式法则",
+        "mastery": 0.35,
+        "resource_type": "图解示例+互动练习",
+        "title": "链式法则 - 结构修复(图解示例+互动练习)",
+        "reason": "基于视觉型偏好与最近诊断信号，建议把 链式法则 放到今日高效时段做结构修复，目标是分层练习+错因复盘。",
+        "priority": 52.95,
+        "recommend_time": "22:00-00:00",
+        "strategy_tags": [
+          "style:visual",
+          "channel:kinesthetic",
+          "method:kmeans",
+          "focus:knowledge",
+          "mode:结构修复"
+        ],
+        "evidence_brief": "画像:视觉型(kmeans) | 图谱:掌握度35%",
+        "source_evidence": {
+          "profile": {
+            "learning_style": "visual",
+            "style_method": "kmeans",
+            "style_confidence": 0.298,
+            "behavior_channel": "kinesthetic"
+          },
+          "knowledge_graph": {
+            "concept": "链式法则",
+            "mastery": 0.35,
+            "weak_threshold": 0.6
+          },
+          "diagnosis": {
+            "matched_count": 0,
+            "recent_category_count": {
+              "knowledge": 4,
+              "skill": 3,
+              "habit": 0,
+              "unknown": 0
+            },
+            "dominant_category": "knowledge",
+            "dominant_count": 4,
+            "examples": []
+          }
+        }
+      },
+      {
+        "concept": "傅里叶变换",
+        "mastery": 0.35,
+        "resource_type": "图解示例+互动练习",
+        "title": "傅里叶变换 - 结构修复(图解示例+互动练习)",
+        "reason": "基于视觉型偏好与最近诊断信号，建议把 傅里叶变换 放到今日高效时段做结构修复，目标是分层练习+错因复盘。",
+        "priority": 52.95,
+        "recommend_time": "22:00-00:00",
+        "strategy_tags": [
+          "style:visual",
+          "channel:kinesthetic",
+          "method:kmeans",
+          "focus:knowledge",
+          "mode:结构修复"
+        ],
+        "evidence_brief": "画像:视觉型(kmeans) | 图谱:掌握度35%",
+        "source_evidence": {
+          "profile": {
+            "learning_style": "visual",
+            "style_method": "kmeans",
+            "style_confidence": 0.298,
+            "behavior_channel": "kinesthetic"
+          },
+          "knowledge_graph": {
+            "concept": "傅里叶变换",
+            "mastery": 0.35,
+            "weak_threshold": 0.6
+          },
+          "diagnosis": {
+            "matched_count": 0,
+            "recent_category_count": {
+              "knowledge": 4,
+              "skill": 3,
+              "habit": 0,
+              "unknown": 0
+            },
+            "dominant_category": "knowledge",
+            "dominant_count": 4,
+            "examples": []
+          }
+        }
+      },
+      {
+        "concept": "信号处理",
+        "mastery": 0.35,
+        "resource_type": "图解示例+互动练习",
+        "title": "信号处理 - 结构修复(图解示例+互动练习)",
+        "reason": "结合你在知识建模维度的近期表现，信号处理 需要优先安排一轮结构修复，先做小步快跑练习再回看概念。",
+        "priority": 52.95,
+        "recommend_time": "22:00-00:00",
+        "strategy_tags": [
+          "style:visual",
+          "channel:kinesthetic",
+          "method:kmeans",
+          "focus:knowledge",
+          "mode:结构修复"
+        ],
+        "evidence_brief": "画像:视觉型(kmeans) | 图谱:掌握度35%",
+        "source_evidence": {
+          "profile": {
+            "learning_style": "visual",
+            "style_method": "kmeans",
+            "style_confidence": 0.298,
+            "behavior_channel": "kinesthetic"
+          },
+          "knowledge_graph": {
+            "concept": "信号处理",
+            "mastery": 0.35,
+            "weak_threshold": 0.6
+          },
+          "diagnosis": {
+            "matched_count": 0,
+            "recent_category_count": {
+              "knowledge": 4,
+              "skill": 3,
+              "habit": 0,
+              "unknown": 0
+            },
+            "dominant_category": "knowledge",
+            "dominant_count": 4,
+            "examples": []
+          }
+        }
+      },
+      {
+        "concept": "通信原理",
+        "mastery": 0.35,
+        "resource_type": "图解示例+互动练习",
+        "title": "通信原理 - 结构修复(图解示例+互动练习)",
+        "reason": "基于视觉型偏好与最近诊断信号，建议把 通信原理 放到今日高效时段做结构修复，目标是分层练习+错因复盘。",
+        "priority": 52.95,
+        "recommend_time": "22:00-00:00",
+        "strategy_tags": [
+          "style:visual",
+          "channel:kinesthetic",
+          "method:kmeans",
+          "focus:knowledge",
+          "mode:结构修复"
+        ],
+        "evidence_brief": "画像:视觉型(kmeans) | 图谱:掌握度35%",
+        "source_evidence": {
+          "profile": {
+            "learning_style": "visual",
+            "style_method": "kmeans",
+            "style_confidence": 0.298,
+            "behavior_channel": "kinesthetic"
+          },
+          "knowledge_graph": {
+            "concept": "通信原理",
+            "mastery": 0.35,
+            "weak_threshold": 0.6
+          },
+          "diagnosis": {
+            "matched_count": 0,
+            "recent_category_count": {
+              "knowledge": 4,
+              "skill": 3,
+              "habit": 0,
+              "unknown": 0
+            },
+            "dominant_category": "knowledge",
+            "dominant_count": 4,
+            "examples": []
+          }
+        }
+      },
+      {
+        "concept": "上下文记忆",
+        "mastery": 0.35,
+        "resource_type": "图解示例+互动练习",
+        "title": "上下文记忆 - 结构修复(图解示例+互动练习)",
+        "reason": "基于视觉型偏好与最近诊断信号，建议把 上下文记忆 放到今日高效时段做结构修复，目标是分层练习+错因复盘。",
+        "priority": 52.95,
+        "recommend_time": "22:00-00:00",
+        "strategy_tags": [
+          "style:visual",
+          "channel:kinesthetic",
+          "method:kmeans",
+          "focus:knowledge",
+          "mode:结构修复"
+        ],
+        "evidence_brief": "画像:视觉型(kmeans) | 图谱:掌握度35%",
+        "source_evidence": {
+          "profile": {
+            "learning_style": "visual",
+            "style_method": "kmeans",
+            "style_confidence": 0.298,
+            "behavior_channel": "kinesthetic"
+          },
+          "knowledge_graph": {
+            "concept": "上下文记忆",
+            "mastery": 0.35,
+            "weak_threshold": 0.6
+          },
+          "diagnosis": {
+            "matched_count": 0,
+            "recent_category_count": {
+              "knowledge": 4,
+              "skill": 3,
+              "habit": 0,
+              "unknown": 0
+            },
+            "dominant_category": "knowledge",
+            "dominant_count": 4,
+            "examples": []
+          }
+        }
+      },
+      {
+        "concept": "具体函数",
+        "mastery": 0.35,
+        "resource_type": "图解示例+互动练习",
+        "title": "具体函数 - 结构修复(图解示例+互动练习)",
+        "reason": "结合你在知识建模维度的近期表现，具体函数 需要优先安排一轮结构修复，先做小步快跑练习再回看概念。",
+        "priority": 52.95,
+        "recommend_time": "22:00-00:00",
+        "strategy_tags": [
+          "style:visual",
+          "channel:kinesthetic",
+          "method:kmeans",
+          "focus:knowledge",
+          "mode:结构修复"
+        ],
+        "evidence_brief": "画像:视觉型(kmeans) | 图谱:掌握度35%",
+        "source_evidence": {
+          "profile": {
+            "learning_style": "visual",
+            "style_method": "kmeans",
+            "style_confidence": 0.298,
+            "behavior_channel": "kinesthetic"
+          },
+          "knowledge_graph": {
+            "concept": "具体函数",
+            "mastery": 0.35,
+            "weak_threshold": 0.6
+          },
+          "diagnosis": {
+            "matched_count": 0,
+            "recent_category_count": {
+              "knowledge": 4,
+              "skill": 3,
+              "habit": 0,
+              "unknown": 0
+            },
+            "dominant_category": "knowledge",
+            "dominant_count": 4,
+            "examples": []
+          }
+        }
+      },
+      {
+        "concept": "导数推导",
+        "mastery": 0.35,
+        "resource_type": "图解示例+互动练习",
+        "title": "导数推导 - 结构修复(图解示例+互动练习)",
+        "reason": "导数推导 当前掌握度 35%，建议采用视觉型路径做结构修复，重点放在分层练习+错因复盘。",
+        "priority": 52.95,
+        "recommend_time": "22:00-00:00",
+        "strategy_tags": [
+          "style:visual",
+          "channel:kinesthetic",
+          "method:kmeans",
+          "focus:knowledge",
+          "mode:结构修复"
+        ],
+        "evidence_brief": "画像:视觉型(kmeans) | 图谱:掌握度35%",
+        "source_evidence": {
+          "profile": {
+            "learning_style": "visual",
+            "style_method": "kmeans",
+            "style_confidence": 0.298,
+            "behavior_channel": "kinesthetic"
+          },
+          "knowledge_graph": {
+            "concept": "导数推导",
+            "mastery": 0.35,
+            "weak_threshold": 0.6
+          },
+          "diagnosis": {
+            "matched_count": 0,
+            "recent_category_count": {
+              "knowledge": 4,
+              "skill": 3,
+              "habit": 0,
+              "unknown": 0
+            },
+            "dominant_category": "knowledge",
+            "dominant_count": 4,
+            "examples": []
+          }
+        }
+      },
+      {
+        "concept": "智能体",
+        "mastery": 0.35,
+        "resource_type": "图解示例+互动练习",
+        "title": "智能体 - 结构修复(图解示例+互动练习)",
+        "reason": "智能体 当前掌握度 35%，建议采用视觉型路径做结构修复，重点放在分层练习+错因复盘。",
+        "priority": 52.95,
+        "recommend_time": "22:00-00:00",
+        "strategy_tags": [
+          "style:visual",
+          "channel:kinesthetic",
+          "method:kmeans",
+          "focus:knowledge",
+          "mode:结构修复"
+        ],
+        "evidence_brief": "画像:视觉型(kmeans) | 图谱:掌握度35%",
+        "source_evidence": {
+          "profile": {
+            "learning_style": "visual",
+            "style_method": "kmeans",
+            "style_confidence": 0.298,
+            "behavior_channel": "kinesthetic"
+          },
+          "knowledge_graph": {
+            "concept": "智能体",
+            "mastery": 0.35,
+            "weak_threshold": 0.6
+          },
+          "diagnosis": {
+            "matched_count": 0,
+            "recent_category_count": {
+              "knowledge": 4,
+              "skill": 3,
+              "habit": 0,
+              "unknown": 0
+            },
+            "dominant_category": "knowledge",
+            "dominant_count": 4,
+            "examples": []
+          }
+        }
+      }
+    ]
   }
 }

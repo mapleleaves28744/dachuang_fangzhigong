@@ -1,36 +1,36 @@
 {
   "user_id": "u2",
-  "updated_at": "2026-04-11T03:20:48.008471",
+  "updated_at": "2026-04-14T21:55:11.305776",
   "learning_style": "visual",
   "style_scores": {
-    "visual": 0.359,
-    "auditory": 0.427,
-    "kinesthetic": 0.427
+    "visual": 0.322,
+    "auditory": 0.43,
+    "kinesthetic": 0.43
   },
   "style_method": "kmeans",
   "style_features": {
     "image_count": 0,
     "link_count": 0,
-    "qa_content_count": 3,
+    "qa_content_count": 9,
     "note_count": 0,
     "other_count": 0,
-    "qa_log_count": 3,
+    "qa_log_count": 9,
     "concept_count": 5
   },
   "interests": [
     "文本",
     "OCR文本",
+    "图像题已解答",
     "图像题",
-    "回答",
-    "图像题已解答"
+    "回答"
   ],
-  "best_time_range": "02:00-04:00",
+  "best_time_range": "21:00-23:00",
   "focus_minutes": 45,
   "content_type_counter": {
     "note": 0,
     "link": 0,
     "image": 0,
-    "qa": 3,
+    "qa": 9,
     "other": 0
   }
 }

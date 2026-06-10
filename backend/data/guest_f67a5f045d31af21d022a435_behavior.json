@@ -1,0 +1,34 @@
+[
+  {
+    "id": "6da42533-8574-488e-b5fe-3b4cd7cc1bd0",
+    "user_id": "guest_f67a5f045d31af21d022a435",
+    "timestamp": "2026-05-29T12:49:07.699584",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "index",
+    "target": "",
+    "label": "page_view",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "8ada0020-afa0-4eae-9d72-28c829fa44cb",
+    "user_id": "guest_f67a5f045d31af21d022a435",
+    "timestamp": "2026-05-29T12:49:12.753431",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 5.803,
+    "meta": {
+      "referrer": ""
+    }
+  }
+]

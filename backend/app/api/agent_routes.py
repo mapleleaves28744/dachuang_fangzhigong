@@ -31,19 +31,50 @@ def get_tutor_agent():
         return None
 
 
+def resolve_agent_identity(touch_session=True):
+    from ..server import resolve_current_request_identity
+
+    return resolve_current_request_identity(
+        touch_session=touch_session,
+        allow_guest=True,
+    )
+
+
+def build_agent_session_id(identity, raw_session_id=None):
+    from ..server import build_scoped_agent_session_id
+
+    return build_scoped_agent_session_id(identity, raw_session_id)
+
+
+def resolve_agent_request_context(data=None):
+    body = data if isinstance(data, dict) else {}
+    identity, auth_error = resolve_agent_identity(touch_session=True)
+    if auth_error:
+        return None, auth_error
+
+    student_id = str((identity or {}).get("user_id") or "").strip()
+    session_id = build_agent_session_id(
+        identity,
+        body.get("session_id") or request.form.get("session_id"),
+    )
+    return {
+        "identity": identity,
+        "student_id": student_id,
+        "session_id": session_id,
+    }, None
+
+
 @agent_bp.route('/api/agent/ocr-tutor', methods=['POST'])
 def handle_ocr_tutor():
     """多模态教育辅导入口：优先接收图片，再回退 ocr_text。"""
     try:
         data = request.get_json(silent=True) or {}
+        agent_context, auth_error = resolve_agent_request_context(data)
+        if auth_error:
+            return auth_error
 
-        student_id = str(
-            data.get("student_id")
-            or request.form.get("student_id")
-            or request.form.get("user_id")
-            or "default_student"
-        ).strip()
-        session_id = str(data.get("session_id") or request.form.get("session_id") or student_id).strip()
+        student_id = str((agent_context or {}).get("student_id") or "").strip()
+        session_id = str((agent_context or {}).get("session_id") or "").strip()
         question = str(data.get("question") or request.form.get("question") or "").strip()
 
         # 1) 图片优先
@@ -147,7 +178,11 @@ def handle_ocr_tutor():
 
             return Response(
                 stream_with_context(stream_with_post_process()),
-                mimetype='text/event-stream'
+                mimetype='text/event-stream',
+                headers={
+                    "Cache-Control": "no-cache, no-transform",
+                    "X-Accel-Buffering": "no",
+                },
             )
 
         result = agent.solve_problem(
@@ -365,7 +400,11 @@ def run_agent_eval_ab():
 def ingest_agent_kb_note():
     """知识库入库：将学习资料写入个人内容库，供 Agent 检索引用。"""
     data = request.get_json(silent=True) or {}
-    student_id = str(data.get("student_id") or data.get("user_id") or "default_user").strip()
+    identity, auth_error = resolve_agent_identity(touch_session=True)
+    if auth_error:
+        return auth_error
+
+    student_id = str((identity or {}).get("user_id") or "").strip()
     title = str(data.get("title") or "知识笔记").strip()
     content = str(data.get("content") or "").strip()
     source = str(data.get("source") or "agent_kb").strip()
@@ -382,7 +421,14 @@ def ingest_agent_kb_note():
             source=source,
             tags=tags if isinstance(tags, list) else [],
         )
-        return jsonify({"success": True, "student_id": student_id, "item": item})
+        return jsonify(
+            {
+                "success": True,
+                "student_id": student_id,
+                "item": item,
+                "graph_sync": (item.get("graph_sync", {}) if isinstance(item, dict) else {}),
+            }
+        )
     except Exception as e:
         logger.error("ingest_agent_kb_note error: %s", e)
         return jsonify({"success": False, "error_code": "KB_INGEST_ERROR", "error_message": str(e)}), 500
@@ -392,7 +438,11 @@ def ingest_agent_kb_note():
 def search_agent_kb():
     """知识库检索：按查询词返回个人学习资料中的证据片段。"""
     data = request.get_json(silent=True) or {}
-    student_id = str(data.get("student_id") or data.get("user_id") or "default_user").strip()
+    identity, auth_error = resolve_agent_identity(touch_session=True)
+    if auth_error:
+        return auth_error
+
+    student_id = str((identity or {}).get("user_id") or "").strip()
     query = str(data.get("query") or "").strip()
     top_k = int(data.get("top_k") or 3)
     search_mode = str(data.get("search_mode") or "hybrid").strip().lower()
@@ -411,26 +461,48 @@ def search_agent_kb():
 def handle_learning_feedback():
     """学习反馈接口（P2 改造新增）：记录任务完成度、正确率、耗时，并回写掌握度。"""
     try:
-        from ..services.database import get_user_knowledge, set_user_knowledge, append_user_event
+        from uuid import uuid4
         from datetime import datetime
-        
+        from ..services.database import append_user_event, get_user_knowledge
+        from ..services.learning_feedback import build_feedback_mastery_assessment
+        from ..server import (
+            build_evaluation_fact_source,
+            load_user_event_list,
+            normalize_concept_name,
+            normalize_user_knowledge,
+            refresh_learning_runtime_cache,
+            update_concept_mastery_snapshot,
+        )
+
         data = request.get_json(silent=True) or {}
-        student_id = str(data.get("student_id") or data.get("user_id") or "default_student").strip()
+        identity, auth_error = resolve_agent_identity(touch_session=True)
+        if auth_error:
+            return auth_error
+
+        student_id = str((identity or {}).get("user_id") or "").strip()
         task_id = str(data.get("task_id") or "").strip()
         task_type = str(data.get("task_type") or "unknown").strip()  # 类型：quiz/practice/review
-        correct_count = int(data.get("correct_count") or 0)
-        total_count = int(data.get("total_count") or 1)
-        duration_seconds = int(data.get("duration_seconds") or 0)
-        concept = str(data.get("concept") or "").strip()
-        
-        if not student_id or not concept:
-            return jsonify({"success": False, "error_code": "INVALID_INPUT", "error_message": "student_id 和 concept 不能为空"}), 400
-        
-        # 计算正确率
+        total_count = max(1, int(data.get("total_count") or 1))
+        correct_count = max(0, min(total_count, int(data.get("correct_count") or 0)))
+        duration_seconds = max(0, int(data.get("duration_seconds") or 0))
+        concept = normalize_concept_name(data.get("concept") or "")
+
+        if not concept:
+            return jsonify({"success": False, "error_code": "INVALID_INPUT", "error_message": "concept 不能为空"}), 400
+
         accuracy = round(correct_count / max(1, total_count), 3)
-        
-        # 记录反馈事件
+        now_iso = datetime.now().isoformat()
+        feedback_id = str(uuid4())
+        fact_source = build_evaluation_fact_source(
+            primary_source="learning_feedback",
+            fact_id=feedback_id,
+            task_id=task_id,
+            concept=concept,
+            timestamp=now_iso,
+        )
+
         feedback_record = {
+            "id": feedback_id,
             "task_id": task_id,
             "task_type": task_type,
             "concept": concept,
@@ -438,32 +510,54 @@ def handle_learning_feedback():
             "correct_count": correct_count,
             "total_count": total_count,
             "duration_seconds": duration_seconds,
-            "timestamp": datetime.now().isoformat(),
+            "timestamp": now_iso,
+            "fact_source": fact_source,
         }
         append_user_event(student_id, "feedback", feedback_record)
-        
-        # 更新掌握度（简单规则：accuracy > 0.8 时增加，< 0.5 时降低）
-        user_knowledge = get_user_knowledge(student_id) or {"concepts": [], "relations": []}
-        concepts_list = user_knowledge.get("concepts", [])
-        updated = False
-        
-        for item in concepts_list:
-            if isinstance(item, dict) and str(item.get("concept", "")).strip() == concept:
-                old_mastery = float(item.get("mastery", 0.5) or 0.5)
-                # P2 改造：掌握度动态更新
-                if accuracy > 0.8:
-                    new_mastery = min(1.0, old_mastery + 0.15)  # 正确率高时加分
-                elif accuracy < 0.5:
-                    new_mastery = max(0.0, old_mastery - 0.10)  # 正确率低时减分
-                else:
-                    new_mastery = old_mastery  # 中等则不变
-                item["mastery"] = round(new_mastery, 3)
-                updated = True
-                break
-        
-        if updated:
-            set_user_knowledge(student_id, user_knowledge)
-        
+
+        user_knowledge = normalize_user_knowledge(get_user_knowledge(student_id))
+        concept_snapshot = next(
+            (
+                item for item in user_knowledge.get("concepts", [])
+                if isinstance(item, dict) and str(item.get("concept") or "").strip() == concept
+            ),
+            None,
+        )
+        feedback_history = [
+            item
+            for item in load_user_event_list(student_id, "feedback")
+            if isinstance(item, dict) and normalize_concept_name(item.get("concept") or "") == concept
+        ]
+        mastery_assessment = build_feedback_mastery_assessment(
+            concept=concept,
+            feedback_history=feedback_history,
+            existing_snapshot=concept_snapshot,
+            now=now_iso,
+        )
+        mastery_snapshot = update_concept_mastery_snapshot(
+            user_id=student_id,
+            concept=concept,
+            mastery_assessment=mastery_assessment,
+            answered_at=now_iso,
+        )
+        runtime_refresh = refresh_learning_runtime_cache(
+            user_id=student_id,
+            reason="learning_feedback",
+            focus_concept=concept,
+            recommendation_limit=4,
+            context={
+                "source": "learning_feedback",
+                "task_id": task_id,
+                "task_type": task_type,
+                "concept": concept,
+                "accuracy": accuracy,
+                "correct_count": correct_count,
+                "total_count": total_count,
+                "duration_seconds": duration_seconds,
+                "fact_source": fact_source,
+            },
+        )
+
         return jsonify({
             "success": True,
             "student_id": student_id,
@@ -471,7 +565,15 @@ def handle_learning_feedback():
             "task_type": task_type,
             "accuracy": accuracy,
             "concept": concept,
-            "mastery_updated": updated,
+            "mastery_updated": bool(mastery_snapshot),
+            "mastery_assessment": mastery_assessment,
+            "mastery_snapshot": mastery_snapshot,
+            "graph_sync": (mastery_snapshot.get("graph_sync", {}) if isinstance(mastery_snapshot, dict) else {}),
+            "fact_source": fact_source,
+            "recommendation_cache_refreshed": True,
+            "profile": (runtime_refresh.get("profile", {}) if isinstance(runtime_refresh, dict) else {}),
+            "recommendations": (runtime_refresh.get("recommendations", []) if isinstance(runtime_refresh, dict) else []),
+            "review_reminders": (runtime_refresh.get("review_reminders", {}) if isinstance(runtime_refresh, dict) else {}),
         })
     except Exception as e:
         logger.error("handle_learning_feedback error: %s", e)

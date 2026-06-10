@@ -654,6 +654,11 @@ body.sidebar-open .global-sidebar-toggle {
   margin-bottom: 0;
 }
 
+.message-text.streaming-answer {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
 .message-text ul,
 .message-text ol {
   margin: 0.45em 0 0.55em 1.2em;
@@ -680,6 +685,13 @@ body.sidebar-open .global-sidebar-toggle {
   margin: 8px 0;
   font-size: 12px;
   line-height: 1.55;
+}
+
+.typing-status {
+  margin-top: 8px;
+  font-size: 12px;
+  line-height: 1.45;
+  color: #64748b;
 }
 
 .message-meta {
@@ -843,6 +855,33 @@ body.sidebar-open .global-sidebar-toggle {
   display: inline-flex;
   align-items: center;
   gap: 4px;
+}
+
+.typing-status {
+  margin-top: 10px;
+  font-weight: 700;
+  color: #1f2f46;
+}
+
+.typing-subtle {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--chat-muted);
+}
+
+.typing-preview {
+  margin-top: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid #dbeafe;
+  background: #f7fbff;
+  color: #1e293b;
+  font-size: 13px;
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
+  max-height: 220px;
+  overflow: auto;
 }
 
 .typing-dots span {

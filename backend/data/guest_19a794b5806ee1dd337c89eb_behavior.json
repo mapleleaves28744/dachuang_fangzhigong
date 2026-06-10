@@ -1,0 +1,226 @@
+[
+  {
+    "id": "6b336f87-774c-4c89-82c3-236291b42c2e",
+    "user_id": "guest_19a794b5806ee1dd337c89eb",
+    "timestamp": "2026-05-11T22:11:32.101926",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "index",
+    "target": "",
+    "label": "page_view",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "ee57b349-7b6c-423e-89f2-d11c93413d69",
+    "user_id": "guest_19a794b5806ee1dd337c89eb",
+    "timestamp": "2026-05-11T22:11:34.795173",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 1738.332,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "6c766ca0-1b1c-4597-94d4-a70bc58a79c9",
+    "user_id": "guest_19a794b5806ee1dd337c89eb",
+    "timestamp": "2026-05-11T22:19:19.249147",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 467.308,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "2d4c40fc-7fb1-445f-ae55-7f39733273ef",
+    "user_id": "guest_19a794b5806ee1dd337c89eb",
+    "timestamp": "2026-05-11T22:19:19.719383",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "index",
+    "target": "",
+    "label": "page_view",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "45d34303-d62d-43af-97bd-271f2309e07e",
+    "user_id": "guest_19a794b5806ee1dd337c89eb",
+    "timestamp": "2026-05-11T22:35:38.736567",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 979.141,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "8a21b161-3f17-4058-8713-1f5c4042b588",
+    "user_id": "guest_19a794b5806ee1dd337c89eb",
+    "timestamp": "2026-05-11T22:35:39.411104",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "index",
+    "target": "",
+    "label": "page_view",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "a793028f-85aa-4530-9b82-5ae4c7881874",
+    "user_id": "guest_19a794b5806ee1dd337c89eb",
+    "timestamp": "2026-05-11T22:52:47.158135",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 1027.908,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "ab21b97f-42af-4c7c-a3eb-9255eead705c",
+    "user_id": "guest_19a794b5806ee1dd337c89eb",
+    "timestamp": "2026-05-11T22:52:47.711115",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "index",
+    "target": "",
+    "label": "page_view",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "651f8b2f-f6c8-45af-8a03-8e06672933cb",
+    "user_id": "guest_19a794b5806ee1dd337c89eb",
+    "timestamp": "2026-05-11T23:08:37.790824",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 950.148,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "d97651a8-5682-48a5-af4b-01a0a9e8d4c6",
+    "user_id": "guest_19a794b5806ee1dd337c89eb",
+    "timestamp": "2026-05-11T23:08:38.332965",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "index",
+    "target": "",
+    "label": "page_view",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "7425747d-48e1-4d92-9d6d-e836fd14b48e",
+    "user_id": "guest_19a794b5806ee1dd337c89eb",
+    "timestamp": "2026-05-11T23:23:02.702499",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 864.442,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "29ff7627-30a1-4aca-abfe-48d7bf1322ec",
+    "user_id": "guest_19a794b5806ee1dd337c89eb",
+    "timestamp": "2026-05-11T23:23:03.351561",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "index",
+    "target": "",
+    "label": "page_view",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "2e5826a5-fb95-4003-b8fb-0e0f7e98da01",
+    "user_id": "guest_19a794b5806ee1dd337c89eb",
+    "timestamp": "2026-05-11T23:38:38.827843",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 935.485,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "bf9e79a3-083b-4cce-b388-a1407b67a60a",
+    "user_id": "guest_19a794b5806ee1dd337c89eb",
+    "timestamp": "2026-05-11T23:38:39.372162",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "index",
+    "target": "",
+    "label": "page_view",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": ""
+    }
+  }
+]

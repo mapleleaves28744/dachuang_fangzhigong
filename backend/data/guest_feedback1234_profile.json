@@ -1,0 +1,116 @@
+{
+  "user_id": "guest_feedback1234",
+  "updated_at": "2026-05-12T10:19:11.229986",
+  "learning_style": "visual",
+  "style_scores": {
+    "visual": 0.323,
+    "auditory": 0.414,
+    "kinesthetic": 0.414
+  },
+  "style_method": "kmeans",
+  "style_features": {
+    "image_count": 0,
+    "link_count": 0,
+    "qa_content_count": 7,
+    "note_count": 0,
+    "other_count": 0,
+    "qa_log_count": 7,
+    "concept_count": 1
+  },
+  "interests": [
+    "纺织材料"
+  ],
+  "best_time_range": "16:00-18:00",
+  "focus_minutes": 45,
+  "content_type_counter": {
+    "note": 0,
+    "link": 0,
+    "image": 0,
+    "qa": 7,
+    "other": 0
+  },
+  "recommendation_cache": {
+    "updated_at": "2026-05-12T10:19:11.209869",
+    "reason": "learning_feedback",
+    "focus_concept": "纺织材料",
+    "items": [
+      {
+        "concept": "纺织材料",
+        "mastery": 0.75,
+        "resource_type": "流程拆解",
+        "title": "纺织材料 · 综合提升",
+        "reason": "按视觉型学习风格，把 纺织材料 作为本周进阶主题，采用“输入+输出”双环节巩固。",
+        "priority": 21.6,
+        "recommend_time": "16:00-18:00",
+        "strategy_tags": [
+          "style:visual",
+          "channel:kinesthetic",
+          "method:kmeans",
+          "mode:综合提升"
+        ],
+        "evidence_brief": "画像:视觉型(kmeans) | 图谱:暂无薄弱点",
+        "source_evidence": {
+          "profile": {
+            "learning_style": "visual",
+            "style_method": "kmeans",
+            "style_confidence": 0.323,
+            "behavior_channel": "kinesthetic"
+          },
+          "knowledge_graph": {
+            "concept": "纺织材料",
+            "mastery": null,
+            "weak_threshold": 0.6
+          },
+          "diagnosis": {
+            "matched_count": 0,
+            "recent_category_count": {
+              "knowledge": 0,
+              "skill": 0,
+              "habit": 0,
+              "unknown": 0
+            },
+            "examples": []
+          }
+        }
+      }
+    ]
+  },
+  "review_reminder_cache": {
+    "updated_at": "2026-05-12T10:19:11.209869",
+    "due_count": 0,
+    "upcoming_count": 1,
+    "due_items": [],
+    "upcoming_items": [
+      {
+        "concept": "纺织材料",
+        "mastery": 0.689,
+        "review_count": 70,
+        "interval_days": 8,
+        "next_review": "2026-05-20T10:19:10.525897",
+        "due": false,
+        "overdue_days": 0,
+        "priority": 31.1
+      }
+    ]
+  },
+  "last_learning_feedback": {
+    "source": "learning_feedback",
+    "task_id": "task_secure_001",
+    "task_type": "quiz",
+    "concept": "纺织材料",
+    "accuracy": 0.9,
+    "correct_count": 9,
+    "total_count": 10,
+    "duration_seconds": 120,
+    "fact_source": {
+      "primary_source": "learning_feedback",
+      "fact_id": "eb280f9e-d4a2-40c7-8187-9301bdc8afb1",
+      "source_key": "",
+      "question_id": "",
+      "task_id": "task_secure_001",
+      "concept": "纺织材料",
+      "timestamp": "2026-05-12T10:19:10.525897"
+    },
+    "refreshed_at": "2026-05-12T10:19:11.209869"
+  }
+}

@@ -22,9 +22,7 @@
   padding: 14px;
   border: 1px solid #e4eaf4;
   border-radius: 18px;
-  background:
-    linear-gradient(180deg, rgba(245, 249, 255, 0.86) 0%, rgba(255, 255, 255, 0.96) 24%),
-    #ffffff;
+  background: #ffffff;
   box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
 }
 
@@ -51,8 +49,8 @@
   padding: 7px 10px;
   border: 1px solid #d7e6fb;
   border-radius: 999px;
-  background: #f4f8ff;
-  color: #1d4ed8;
+  background: #ffffff;
+  color: #111111;
   font-size: 12px;
   font-weight: 700;
   white-space: nowrap;
@@ -62,7 +60,7 @@
   padding: 11px 12px;
   border: 1px solid #e3ebf7;
   border-radius: 14px;
-  background: #f8fbff;
+  background: #ffffff;
   color: #475569;
   font-size: 13px;
   line-height: 1.6;
@@ -95,16 +93,16 @@
 
 .entry-plan-board .add-plan button {
   padding: 10px 16px;
-  border: none;
+  border: 1px solid #1d4ed8;
   border-radius: 12px;
-  background: linear-gradient(135deg, #175cd3 0%, #1d4ed8 100%);
-  color: #ffffff;
+  background: #ffffff;
+  color: #111111;
   cursor: pointer;
   font-size: 14px;
   font-weight: 700;
   white-space: nowrap;
   transition: transform 0.16s ease, box-shadow 0.16s ease, opacity 0.16s ease;
-  box-shadow: 0 8px 18px rgba(29, 78, 216, 0.22);
+  box-shadow: 0 8px 18px rgba(29, 78, 216, 0.12);
 }
 
 .entry-plan-board .add-plan button:hover {
@@ -132,7 +130,30 @@
   min-height: 220px;
   max-height: 336px;
   overflow-y: auto;
-  padding-right: 4px;
+  padding-right: 0;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+.entry-plan-list::-webkit-scrollbar {
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent;
+}
+
+.entry-plan-list::-webkit-scrollbar-thumb {
+  background: transparent;
+  border: none;
+}
+
+.entry-plan-list::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.entry-plan-list::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
 }
 
 .entry-plan-board .plan-item {
@@ -177,7 +198,7 @@
   padding: 5px 8px;
   border: 1px solid #dbeafe;
   border-radius: 999px;
-  background: #eff6ff;
+  background: #ffffff;
   color: #1d4ed8;
   text-align: center;
   font-size: 12px;
@@ -198,9 +219,9 @@
 .entry-plan-board .delete-btn {
   width: 30px;
   height: 30px;
-  border: none;
+  border: 1px solid #fecaca;
   border-radius: 999px;
-  background: #fee2e2;
+  background: #ffffff;
   color: #b91c1c;
   cursor: pointer;
   font-size: 18px;
@@ -214,16 +235,16 @@
 
 .entry-plan-board .delete-btn:hover {
   transform: scale(1.06);
-  background: #fecaca;
+  background: #ffffff;
 }
 
 .entry-plan-board .plan-item.completed {
-  background: #f8fafc;
+  background: #ffffff;
   border-color: #e2e8f0;
 }
 
 .entry-plan-board .plan-item.completed .plan-time {
-  background: #f1f5f9;
+  background: #ffffff;
   border-color: #e2e8f0;
   color: #94a3b8;
   text-decoration: line-through;
@@ -244,7 +265,7 @@
   text-align: center;
   color: #64748b;
   font-size: 15px;
-  background: #f8fafc;
+  background: #ffffff;
   border: 1px dashed #d7e2ef;
   border-radius: 14px;
 }
@@ -257,7 +278,7 @@
 
 .entry-plan-board .empty-state.is-error {
   color: #9f1239;
-  background: #fff1f2;
+  background: #ffffff;
   border-color: #fecdd3;
 }
 
@@ -266,7 +287,7 @@
   padding: 12px;
   border: 1px dashed #d8e3f0;
   border-radius: 14px;
-  background: #fafcff;
+  background: #ffffff;
 }
 
 .entry-plan-reminders-subtitle {
@@ -316,7 +337,7 @@
 .review-reminder-error {
   color: #9f1239;
   border-color: #fecdd3;
-  background: #fff1f2;
+  background: #ffffff;
 }
 
 @media (max-width: 980px) {

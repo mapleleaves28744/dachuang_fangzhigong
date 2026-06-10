@@ -1,0 +1,105 @@
+{
+  "concepts": [
+    {
+      "concept": "纤维定义",
+      "first_seen": "2026-05-19T23:47:14.286688",
+      "last_seen": "2026-05-19T23:47:14.286688",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "天然纤维",
+      "first_seen": "2026-05-19T23:47:14.286705",
+      "last_seen": "2026-05-19T23:47:14.286705",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "化学纤维",
+      "first_seen": "2026-05-19T23:47:14.286708",
+      "last_seen": "2026-05-19T23:47:14.286708",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "断裂强度",
+      "first_seen": "2026-05-19T23:47:14.286710",
+      "last_seen": "2026-05-19T23:47:14.286710",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "结晶度",
+      "first_seen": "2026-05-19T23:47:14.286713",
+      "last_seen": "2026-05-19T23:47:14.286713",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "回潮率",
+      "first_seen": "2026-05-19T23:47:14.286715",
+      "last_seen": "2026-05-19T23:47:14.286715",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    }
+  ],
+  "relations": [
+    {
+      "source": "纤维定义",
+      "target": "天然纤维",
+      "type": "并列",
+      "score": 0.92,
+      "evidence": "同属纤维分类",
+      "source_text": "问题：纤维材料基础\n回答：# 分析\n\n当前学生ID为 `guest_fbf1b110b22de8ae39720575`，针对知识点「纤维材料基础」：  \n- **掌握度未知**：工具 `tool_get_student_mastery` 未",
+      "created_at": "2026-05-19T23:47:14.286723",
+      "from": "agent_ocr_tutor_stream"
+    },
+    {
+      "source": "纤维定义",
+      "target": "化学纤维",
+      "type": "并列",
+      "score": 0.92,
+      "evidence": "同属纤维分类",
+      "source_text": "问题：纤维材料基础\n回答：# 分析\n\n当前学生ID为 `guest_fbf1b110b22de8ae39720575`，针对知识点「纤维材料基础」：  \n- **掌握度未知**：工具 `tool_get_student_mastery` 未",
+      "created_at": "2026-05-19T23:47:14.286727",
+      "from": "agent_ocr_tutor_stream"
+    },
+    {
+      "source": "天然纤维",
+      "target": "结晶度",
+      "type": "相关",
+      "score": 0.85,
+      "evidence": "含结晶区/无定形区",
+      "source_text": "问题：纤维材料基础\n回答：# 分析\n\n当前学生ID为 `guest_fbf1b110b22de8ae39720575`，针对知识点「纤维材料基础」：  \n- **掌握度未知**：工具 `tool_get_student_mastery` 未",
+      "created_at": "2026-05-19T23:47:14.286731",
+      "from": "agent_ocr_tutor_stream"
+    },
+    {
+      "source": "化学纤维",
+      "target": "结晶度",
+      "type": "相关",
+      "score": 0.87,
+      "evidence": "分子链高度取向",
+      "source_text": "问题：纤维材料基础\n回答：# 分析\n\n当前学生ID为 `guest_fbf1b110b22de8ae39720575`，针对知识点「纤维材料基础」：  \n- **掌握度未知**：工具 `tool_get_student_mastery` 未",
+      "created_at": "2026-05-19T23:47:14.286734",
+      "from": "agent_ocr_tutor_stream"
+    },
+    {
+      "source": "结晶度",
+      "target": "断裂强度",
+      "type": "因果",
+      "score": 0.88,
+      "evidence": "结晶度↑→强度↑",
+      "source_text": "问题：纤维材料基础\n回答：# 分析\n\n当前学生ID为 `guest_fbf1b110b22de8ae39720575`，针对知识点「纤维材料基础」：  \n- **掌握度未知**：工具 `tool_get_student_mastery` 未",
+      "created_at": "2026-05-19T23:47:14.286737",
+      "from": "agent_ocr_tutor_stream"
+    }
+  ],
+  "deleted_concepts": []
+}

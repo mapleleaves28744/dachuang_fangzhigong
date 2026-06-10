@@ -7804,5 +7804,301 @@
     "meta": {
       "referrer": "http://127.0.0.1:5000/index.html"
     }
+  },
+  {
+    "id": "48493366-a720-4f3d-aea2-7b292c296b63",
+    "user_id": "2874463136@qq.com",
+    "timestamp": "2026-05-19T00:18:26.894511",
+    "type": "auth_login",
+    "behavior_type": "auth_login",
+    "page": "auth",
+    "target": "",
+    "label": "账号登录",
+    "title": "auth_login",
+    "source": "auth_login",
+    "duration_seconds": 0.0,
+    "meta": {}
+  },
+  {
+    "id": "3b397c3c-d0cb-4362-b524-fcef928f8d2e",
+    "user_id": "2874463136@qq.com",
+    "timestamp": "2026-05-19T00:18:33.346864",
+    "type": "navigation_click",
+    "behavior_type": "navigation_click",
+    "page": "index",
+    "target": "dashboard",
+    "label": "◧ 学习仪表盘",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {}
+  },
+  {
+    "id": "2302f706-2270-4db1-bfc0-d8876d294fff",
+    "user_id": "2874463136@qq.com",
+    "timestamp": "2026-05-19T00:18:34.370081",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "dashboard",
+    "target": "",
+    "label": "page_view",
+    "title": "学习仪表盘 - 智能学习伴侣",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/"
+    }
+  },
+  {
+    "id": "303d3831-a510-424d-94aa-e41e2d7c0b6c",
+    "user_id": "2874463136@qq.com",
+    "timestamp": "2026-05-19T00:19:28.960501",
+    "type": "auth_login",
+    "behavior_type": "auth_login",
+    "page": "auth",
+    "target": "",
+    "label": "账号登录",
+    "title": "auth_login",
+    "source": "auth_login",
+    "duration_seconds": 0.0,
+    "meta": {}
+  },
+  {
+    "id": "3e769d60-17a8-4340-938c-ea300cc70c7b",
+    "user_id": "2874463136@qq.com",
+    "timestamp": "2026-05-19T00:19:31.292580",
+    "type": "navigation_click",
+    "behavior_type": "navigation_click",
+    "page": "index",
+    "target": "dashboard",
+    "label": "◧ 学习仪表盘",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {}
+  },
+  {
+    "id": "a9880726-de73-40db-8c6f-46ef9389173d",
+    "user_id": "2874463136@qq.com",
+    "timestamp": "2026-05-19T00:19:32.196356",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "dashboard",
+    "target": "",
+    "label": "page_view",
+    "title": "学习仪表盘 - 智能学习伴侣",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/"
+    }
+  },
+  {
+    "id": "6e055346-b340-4aae-99c9-5dcefa14f7a4",
+    "user_id": "2874463136@qq.com",
+    "timestamp": "2026-05-19T00:19:40.241699",
+    "type": "navigation_click",
+    "behavior_type": "navigation_click",
+    "page": "dashboard",
+    "target": "knowledge-map",
+    "label": "◇ 知识图谱",
+    "title": "学习仪表盘 - 智能学习伴侣",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {}
+  },
+  {
+    "id": "6fff6353-a26c-4481-9473-f8dea64e9ff9",
+    "user_id": "2874463136@qq.com",
+    "timestamp": "2026-05-19T00:19:41.094227",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "knowledge-map",
+    "target": "",
+    "label": "page_view",
+    "title": "知识图谱 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/dashboard.html"
+    }
+  },
+  {
+    "id": "1577d59b-a723-48ac-869c-c1b98be20db2",
+    "user_id": "2874463136@qq.com",
+    "timestamp": "2026-05-19T00:19:45.706815",
+    "type": "navigation_click",
+    "behavior_type": "navigation_click",
+    "page": "knowledge-map",
+    "target": "index",
+    "label": "+ 添加内容",
+    "title": "知识图谱 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {}
+  },
+  {
+    "id": "3cbd4da0-d7f1-4e27-b97d-cc11bd3030ed",
+    "user_id": "2874463136@qq.com",
+    "timestamp": "2026-05-19T00:19:46.614990",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "index",
+    "target": "",
+    "label": "page_view",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/knowledge-map.html"
+    }
+  },
+  {
+    "id": "8034ba93-3c38-4222-a148-c8bbaf774b04",
+    "user_id": "2874463136@qq.com",
+    "timestamp": "2026-05-19T00:19:59.884948",
+    "type": "navigation_click",
+    "behavior_type": "navigation_click",
+    "page": "index",
+    "target": "chat",
+    "label": "◎ 智能问答",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {}
+  },
+  {
+    "id": "aabead53-18fc-4f63-bac7-be4e22dfc930",
+    "user_id": "2874463136@qq.com",
+    "timestamp": "2026-05-19T00:20:00.748560",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "chat",
+    "target": "",
+    "label": "page_view",
+    "title": "智能问答 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/index.html"
+    }
+  },
+  {
+    "id": "91fc21e2-1ca7-4e81-a618-61006bd18e83",
+    "user_id": "2874463136@qq.com",
+    "timestamp": "2026-05-19T00:20:54.336899",
+    "type": "auth_login",
+    "behavior_type": "auth_login",
+    "page": "auth",
+    "target": "",
+    "label": "账号登录",
+    "title": "auth_login",
+    "source": "auth_login",
+    "duration_seconds": 0.0,
+    "meta": {}
+  },
+  {
+    "id": "b0b9ee84-3ea5-4fd3-879a-738f3586a854",
+    "user_id": "2874463136@qq.com",
+    "timestamp": "2026-05-19T00:20:57.346373",
+    "type": "navigation_click",
+    "behavior_type": "navigation_click",
+    "page": "index",
+    "target": "dashboard",
+    "label": "◧ 学习仪表盘",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {}
+  },
+  {
+    "id": "4de0bb03-3301-483b-8658-465e65e950fd",
+    "user_id": "2874463136@qq.com",
+    "timestamp": "2026-05-19T00:20:58.230405",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "dashboard",
+    "target": "",
+    "label": "page_view",
+    "title": "学习仪表盘 - 智能学习伴侣",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/"
+    }
+  },
+  {
+    "id": "ab45e421-5062-4631-a52b-0a226e1202fc",
+    "user_id": "2874463136@qq.com",
+    "timestamp": "2026-05-19T00:21:03.099393",
+    "type": "navigation_click",
+    "behavior_type": "navigation_click",
+    "page": "dashboard",
+    "target": "index",
+    "label": "返回主界面",
+    "title": "学习仪表盘 - 智能学习伴侣",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {}
+  },
+  {
+    "id": "785289d7-cb32-4752-b697-6f8a65c9f053",
+    "user_id": "2874463136@qq.com",
+    "timestamp": "2026-05-19T00:21:04.109934",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "index",
+    "target": "",
+    "label": "page_view",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/dashboard.html"
+    }
+  },
+  {
+    "id": "4a52c89c-c024-453c-ad6f-e2d883d63de9",
+    "user_id": "2874463136@qq.com",
+    "timestamp": "2026-05-19T00:22:22.143110",
+    "type": "auth_login",
+    "behavior_type": "auth_login",
+    "page": "auth",
+    "target": "",
+    "label": "账号登录",
+    "title": "auth_login",
+    "source": "auth_login",
+    "duration_seconds": 0.0,
+    "meta": {}
+  },
+  {
+    "id": "52400f1f-42f6-41bf-b200-838f8103d055",
+    "user_id": "2874463136@qq.com",
+    "timestamp": "2026-05-19T00:22:24.709310",
+    "type": "navigation_click",
+    "behavior_type": "navigation_click",
+    "page": "index",
+    "target": "dashboard",
+    "label": "◧ 学习仪表盘",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {}
+  },
+  {
+    "id": "dacef918-7cd3-4210-93d4-1e8aee89118a",
+    "user_id": "2874463136@qq.com",
+    "timestamp": "2026-05-19T00:22:25.527502",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "dashboard",
+    "target": "",
+    "label": "page_view",
+    "title": "学习仪表盘 - 智能学习伴侣",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/"
+    }
   }
 ]

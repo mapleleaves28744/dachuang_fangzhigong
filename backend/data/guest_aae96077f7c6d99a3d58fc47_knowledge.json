@@ -1,0 +1,27 @@
+{
+  "concepts": [
+    {
+      "concept": "纱线结构",
+      "first_seen": "2026-05-11T22:04:54.009500",
+      "mastery": 0.382,
+      "mastery_status": "薄弱",
+      "accuracy": 0.667,
+      "raw_accuracy": 0.667,
+      "recent_accuracy": 0.667,
+      "practice_count": 6,
+      "time_score": 1.0,
+      "practice_score": 0.802,
+      "forgetting_factor": 0.9,
+      "base_mastery": 0.725,
+      "median_answer_seconds": 40.0,
+      "standard_answer_seconds": 45.0,
+      "time_ratio": 0.889,
+      "last_seen": "2026-05-11T22:04:54.009500",
+      "last_practiced": "2026-05-11T22:04:54.009500",
+      "last_reviewed": "2026-05-11T22:04:54.009500",
+      "review_count": 6
+    }
+  ],
+  "relations": [],
+  "deleted_concepts": []
+}

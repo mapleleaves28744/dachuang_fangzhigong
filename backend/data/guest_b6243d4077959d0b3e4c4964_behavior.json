@@ -1,0 +1,242 @@
+[
+  {
+    "id": "e7e833d8-463d-4071-9b87-af436bc9119f",
+    "user_id": "guest_b6243d4077959d0b3e4c4964",
+    "timestamp": "2026-05-23T21:33:29.291562",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 71.008,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "690cc9f2-a832-477f-b14d-28ef9b5377f6",
+    "user_id": "guest_b6243d4077959d0b3e4c4964",
+    "timestamp": "2026-05-23T21:33:40.450274",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "dashboard",
+    "target": "",
+    "label": "pagehide",
+    "title": "学习仪表盘 - 智能学习伴侣",
+    "source": "page_shell",
+    "duration_seconds": 11.027,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/index.html"
+    }
+  },
+  {
+    "id": "d008fcef-23a4-4c7d-b286-3067daadbe09",
+    "user_id": "guest_b6243d4077959d0b3e4c4964",
+    "timestamp": "2026-05-23T21:36:11.370273",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "knowledge-map",
+    "target": "",
+    "label": "pagehide",
+    "title": "知识图谱 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 150.839,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/dashboard.html"
+    }
+  },
+  {
+    "id": "25efdeee-98dd-4350-9b14-8ffb38034271",
+    "user_id": "guest_b6243d4077959d0b3e4c4964",
+    "timestamp": "2026-05-23T21:36:13.247397",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "question-bank",
+    "target": "",
+    "label": "pagehide",
+    "title": "题库练习 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 1.717,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/knowledge-map.html"
+    }
+  },
+  {
+    "id": "38ef16d6-08d8-4bfb-b536-519b3d6ddd31",
+    "user_id": "guest_b6243d4077959d0b3e4c4964",
+    "timestamp": "2026-05-23T21:37:57.198763",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "knowledge-map",
+    "target": "",
+    "label": "pagehide",
+    "title": "知识图谱 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 103.888,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/question-bank.html"
+    }
+  },
+  {
+    "id": "bd60cf66-12da-47e4-a294-3d319c144126",
+    "user_id": "guest_b6243d4077959d0b3e4c4964",
+    "timestamp": "2026-05-23T21:38:21.990736",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "dashboard",
+    "target": "",
+    "label": "pagehide",
+    "title": "学习仪表盘 - 智能学习伴侣",
+    "source": "page_shell",
+    "duration_seconds": 24.693,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/knowledge-map.html"
+    }
+  },
+  {
+    "id": "bbde2390-b322-47e6-97ef-5371f432b231",
+    "user_id": "guest_b6243d4077959d0b3e4c4964",
+    "timestamp": "2026-05-23T21:38:59.192719",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "knowledge-map",
+    "target": "",
+    "label": "pagehide",
+    "title": "知识图谱 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 37.128,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/dashboard.html"
+    }
+  },
+  {
+    "id": "cadb84f0-017c-4170-8c00-c64a0407f1b3",
+    "user_id": "guest_b6243d4077959d0b3e4c4964",
+    "timestamp": "2026-05-23T21:41:12.530678",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "dashboard",
+    "target": "",
+    "label": "pagehide",
+    "title": "学习仪表盘 - 智能学习伴侣",
+    "source": "page_shell",
+    "duration_seconds": 133.213,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/knowledge-map.html"
+    }
+  },
+  {
+    "id": "b6b5260d-08a8-4766-91af-9b21495e6bd5",
+    "user_id": "guest_b6243d4077959d0b3e4c4964",
+    "timestamp": "2026-05-23T21:48:44.637223",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "chat",
+    "target": "",
+    "label": "pagehide",
+    "title": "智能问答 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 451.924,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/dashboard.html"
+    }
+  },
+  {
+    "id": "c69ba3c6-bc0b-4ae7-a8ab-277f96002e2e",
+    "user_id": "guest_b6243d4077959d0b3e4c4964",
+    "timestamp": "2026-05-23T21:50:08.092565",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "question-bank",
+    "target": "",
+    "label": "pagehide",
+    "title": "题库练习 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 83.295,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/chat.html"
+    }
+  },
+  {
+    "id": "f25968c4-f4d1-4ed4-9ef6-511e6d3c1684",
+    "user_id": "guest_b6243d4077959d0b3e4c4964",
+    "timestamp": "2026-05-23T21:51:00.500225",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "spaces",
+    "target": "",
+    "label": "pagehide",
+    "title": "新空间 4 - 空间",
+    "source": "page_shell",
+    "duration_seconds": 30.7,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/question-bank.html"
+    }
+  },
+  {
+    "id": "c6811230-ad79-4f6f-b30a-305c7f694092",
+    "user_id": "guest_b6243d4077959d0b3e4c4964",
+    "timestamp": "2026-05-23T21:51:46.365772",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "spaces",
+    "target": "",
+    "label": "pagehide",
+    "title": "神经网络 - 空间",
+    "source": "page_shell",
+    "duration_seconds": 24.171,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/spaces.html?space_id=space_1779348191660_16483a"
+    }
+  },
+  {
+    "id": "6828a696-4650-478e-8057-0b149831c4f3",
+    "user_id": "guest_b6243d4077959d0b3e4c4964",
+    "timestamp": "2026-05-23T21:52:32.511398",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "spaces",
+    "target": "",
+    "label": "pagehide",
+    "title": "屏幕截图 2026-04-03 134040.png - 神经网络",
+    "source": "page_shell",
+    "duration_seconds": 24.309,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/spaces.html?space_id=space_1775165988590_e351b6"
+    }
+  },
+  {
+    "id": "e0e4dd1a-ce0d-4e53-a248-ff861db7020e",
+    "user_id": "guest_b6243d4077959d0b3e4c4964",
+    "timestamp": "2026-05-23T21:53:01.091574",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "spaces",
+    "target": "",
+    "label": "pagehide",
+    "title": "屏幕截图 2026-04-03 134040.png - 神经网络",
+    "source": "page_shell",
+    "duration_seconds": 3.974,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/spaces.html?space_id=space_1775165988590_e351b6"
+    }
+  },
+  {
+    "id": "8b3381d6-f54e-4e55-89ab-24a0ae03cfe1",
+    "user_id": "guest_b6243d4077959d0b3e4c4964",
+    "timestamp": "2026-05-23T22:05:39.968353",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "spaces",
+    "target": "",
+    "label": "pagehide",
+    "title": "新空间 - 空间",
+    "source": "page_shell",
+    "duration_seconds": 733.398,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/spaces.html?space_id=space_1775165988590_e351b6"
+    }
+  }
+]

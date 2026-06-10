@@ -1,0 +1,131 @@
+{
+  "concepts": [
+    {
+      "concept": "染整工艺路线图",
+      "first_seen": "2026-04-14T23:27:59.301720",
+      "last_seen": "2026-04-14T23:27:59.301720",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "工序逻辑性",
+      "first_seen": "2026-04-14T23:27:59.301733",
+      "last_seen": "2026-04-14T23:27:59.301733",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "参数约束性",
+      "first_seen": "2026-04-14T23:27:59.301737",
+      "last_seen": "2026-04-14T23:27:59.301737",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "质量反馈闭环性",
+      "first_seen": "2026-04-14T23:27:59.301739",
+      "last_seen": "2026-04-14T23:27:59.301739",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "退浆",
+      "first_seen": "2026-04-14T23:27:59.301742",
+      "last_seen": "2026-04-14T23:27:59.301742",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "煮练",
+      "first_seen": "2026-04-14T23:27:59.301745",
+      "last_seen": "2026-04-14T23:27:59.301745",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "漂白",
+      "first_seen": "2026-04-14T23:27:59.301747",
+      "last_seen": "2026-04-14T23:27:59.301747",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "活性染料染色",
+      "first_seen": "2026-04-14T23:27:59.301750",
+      "last_seen": "2026-04-14T23:27:59.301750",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    }
+  ],
+  "relations": [
+    {
+      "source": "染整工艺路线图",
+      "target": "工序逻辑性",
+      "type": "相关",
+      "score": 0.95,
+      "evidence": "具备三重属性之一",
+      "source_text": "问题：染整工艺路线图\n回答：# 分析  \n学生ID `guest_1978f14dcaa43cd1` 为**访客身份，无历史掌握度数据**；知识图谱中「染整工艺路线图」**无结构化节点与关联路径**；知识库与图谱增强检索均未命中任何纺织/染",
+      "created_at": "2026-04-14T23:27:59.301759",
+      "from": "agent_ocr_tutor_stream"
+    },
+    {
+      "source": "染整工艺路线图",
+      "target": "参数约束性",
+      "type": "相关",
+      "score": 0.95,
+      "evidence": "具备三重属性之一",
+      "source_text": "问题：染整工艺路线图\n回答：# 分析  \n学生ID `guest_1978f14dcaa43cd1` 为**访客身份，无历史掌握度数据**；知识图谱中「染整工艺路线图」**无结构化节点与关联路径**；知识库与图谱增强检索均未命中任何纺织/染",
+      "created_at": "2026-04-14T23:27:59.301764",
+      "from": "agent_ocr_tutor_stream"
+    },
+    {
+      "source": "染整工艺路线图",
+      "target": "质量反馈闭环性",
+      "type": "相关",
+      "score": 0.95,
+      "evidence": "具备三重属性之一",
+      "source_text": "问题：染整工艺路线图\n回答：# 分析  \n学生ID `guest_1978f14dcaa43cd1` 为**访客身份，无历史掌握度数据**；知识图谱中「染整工艺路线图」**无结构化节点与关联路径**；知识库与图谱增强检索均未命中任何纺织/染",
+      "created_at": "2026-04-14T23:27:59.301767",
+      "from": "agent_ocr_tutor_stream"
+    },
+    {
+      "source": "退浆",
+      "target": "煮练",
+      "type": "前置",
+      "score": 0.92,
+      "evidence": "必须退浆→煮练→漂白",
+      "source_text": "问题：染整工艺路线图\n回答：# 分析  \n学生ID `guest_1978f14dcaa43cd1` 为**访客身份，无历史掌握度数据**；知识图谱中「染整工艺路线图」**无结构化节点与关联路径**；知识库与图谱增强检索均未命中任何纺织/染",
+      "created_at": "2026-04-14T23:27:59.301770",
+      "from": "agent_ocr_tutor_stream"
+    },
+    {
+      "source": "煮练",
+      "target": "漂白",
+      "type": "前置",
+      "score": 0.92,
+      "evidence": "必须退浆→煮练→漂白",
+      "source_text": "问题：染整工艺路线图\n回答：# 分析  \n学生ID `guest_1978f14dcaa43cd1` 为**访客身份，无历史掌握度数据**；知识图谱中「染整工艺路线图」**无结构化节点与关联路径**；知识库与图谱增强检索均未命中任何纺织/染",
+      "created_at": "2026-04-14T23:27:59.301773",
+      "from": "agent_ocr_tutor_stream"
+    },
+    {
+      "source": "活性染料染色",
+      "target": "参数约束性",
+      "type": "相关",
+      "score": 0.88,
+      "evidence": "需标注温度/pH/时间",
+      "source_text": "问题：染整工艺路线图\n回答：# 分析  \n学生ID `guest_1978f14dcaa43cd1` 为**访客身份，无历史掌握度数据**；知识图谱中「染整工艺路线图」**无结构化节点与关联路径**；知识库与图谱增强检索均未命中任何纺织/染",
+      "created_at": "2026-04-14T23:27:59.301776",
+      "from": "agent_ocr_tutor_stream"
+    }
+  ],
+  "deleted_concepts": []
+}

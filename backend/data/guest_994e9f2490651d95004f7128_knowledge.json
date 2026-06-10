@@ -1,0 +1,51 @@
+{
+  "concepts": [
+    {
+      "concept": "文本",
+      "first_seen": "2026-05-11T21:41:08.540089",
+      "last_seen": "2026-05-11T21:41:08.540089",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "回答",
+      "first_seen": "2026-05-11T21:41:08.540103",
+      "last_seen": "2026-05-11T21:41:08.540103",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    },
+    {
+      "concept": "图像题已解答",
+      "first_seen": "2026-05-11T21:41:08.540107",
+      "last_seen": "2026-05-11T21:41:08.540107",
+      "mastery": 0.35,
+      "review_count": 0,
+      "last_reviewed": null
+    }
+  ],
+  "relations": [
+    {
+      "source": "回答",
+      "target": "图像题已解答",
+      "type": "相关",
+      "score": 0.52,
+      "evidence": "文本顺序弱关联",
+      "source_text": "问题：OCR文本\n回答：图像题已解答",
+      "created_at": "2026-05-11T21:41:08.540113",
+      "from": "agent_ocr_tutor"
+    },
+    {
+      "source": "文本",
+      "target": "回答",
+      "type": "相关",
+      "score": 0.52,
+      "evidence": "文本顺序弱关联",
+      "source_text": "问题：OCR文本\n回答：图像题已解答",
+      "created_at": "2026-05-11T21:41:08.540117",
+      "from": "agent_ocr_tutor"
+    }
+  ],
+  "deleted_concepts": []
+}

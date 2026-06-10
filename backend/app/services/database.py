@@ -1,5 +1,7 @@
 import json
 import os
+import tempfile
+import threading
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 from urllib.parse import urlparse
@@ -8,31 +10,46 @@ from ..models.db import ENGINE, Base, get_database_url, get_session
 from ..models.entities import AuthSession, AuthUser, UserEvent, UserKnowledge, UserPlan, UserProfile, UserSpaceState
 
 
-DATA_DIR = "data"
+BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+DATA_DIR = os.path.join(BACKEND_DIR, "data")
 STORAGE_BACKEND = os.getenv("STORAGE_BACKEND", "json").strip().lower()
 SPACE_STORAGE_BACKEND = os.getenv("SPACE_STORAGE_BACKEND", "sql").strip().lower()
 SPACE_FILE_SUFFIX = "_spaces.json"
+_JSON_LOCK = threading.RLock()
 
 
 def ensure_data_dir():
-    if not os.path.exists(DATA_DIR):
-        os.makedirs(DATA_DIR)
+    os.makedirs(DATA_DIR, exist_ok=True)
 
 
 def load_json(filename, default=None):
     ensure_data_dir()
     path = os.path.join(DATA_DIR, filename)
-    if not os.path.exists(path):
-        return default if default is not None else {}
-    with open(path, "r", encoding="utf-8") as f:
-        return json.load(f)
+    with _JSON_LOCK:
+        if not os.path.exists(path):
+            return default if default is not None else {}
+        with open(path, "r", encoding="utf-8") as f:
+            return json.load(f)
 
 
 def save_json(filename, data):
     ensure_data_dir()
     path = os.path.join(DATA_DIR, filename)
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
+    with _JSON_LOCK:
+        tmp_name = None
+        try:
+            with tempfile.NamedTemporaryFile("w", encoding="utf-8", dir=DATA_DIR, prefix=f".{filename}.", suffix=".tmp", delete=False) as f:
+                tmp_name = f.name
+                json.dump(data, f, ensure_ascii=False, indent=2)
+                f.flush()
+                os.fsync(f.fileno())
+            os.replace(tmp_name, path)
+        finally:
+            if tmp_name and os.path.exists(tmp_name):
+                try:
+                    os.remove(tmp_name)
+                except Exception:
+                    pass
 
 
 def _safe_json_load_text(text: Optional[str], default):
@@ -145,17 +162,19 @@ class JsonSpaceRepository:
 
     def set_user_space_payload(self, user_id: str, payload: Dict[str, Any]) -> None:
         filename = self._filename(user_id)
-        save_json(filename, _normalize_space_payload(payload))
+        with _JSON_LOCK:
+            save_json(filename, _normalize_space_payload(payload))
 
     def delete_user_space_payload(self, user_id: str) -> Dict[str, Any]:
         filename = self._filename(user_id)
-        payload = self.get_user_space_payload(user_id)
-        deleted = JsonRepository._delete_file(filename)
-        return {
-            "deleted": deleted,
-            "spaces_deleted": len(payload.get("spaces", [])),
-            "space_items_deleted": _count_space_items(payload),
-        }
+        with _JSON_LOCK:
+            payload = self.get_user_space_payload(user_id)
+            deleted = JsonRepository._delete_file(filename)
+            return {
+                "deleted": deleted,
+                "spaces_deleted": len(payload.get("spaces", [])),
+                "space_items_deleted": _count_space_items(payload),
+            }
 
 
 class SqlSpaceRepository:
@@ -213,29 +232,33 @@ class JsonRepository:
         return plans.get(user_id, [])
 
     def set_user_plans(self, user_id: str, plan_list: List[Dict[str, Any]]) -> None:
-        plans = load_json("user_plans.json", {})
-        plans[user_id] = plan_list
-        save_json("user_plans.json", plans)
+        with _JSON_LOCK:
+            plans = load_json("user_plans.json", {})
+            plans[user_id] = plan_list
+            save_json("user_plans.json", plans)
 
     def get_user_knowledge(self, user_id: str) -> Dict[str, Any]:
         return load_json(f"{user_id}_knowledge.json", {"concepts": []})
 
     def set_user_knowledge(self, user_id: str, knowledge: Dict[str, Any]) -> None:
-        save_json(f"{user_id}_knowledge.json", knowledge)
+        with _JSON_LOCK:
+            save_json(f"{user_id}_knowledge.json", knowledge)
 
     def get_user_profile(self, user_id: str) -> Dict[str, Any]:
         return load_json(f"{user_id}_profile.json", {})
 
     def set_user_profile(self, user_id: str, profile: Dict[str, Any]) -> None:
-        save_json(f"{user_id}_profile.json", profile)
+        with _JSON_LOCK:
+            save_json(f"{user_id}_profile.json", profile)
 
     def get_user_events(self, user_id: str, suffix: str) -> List[Dict[str, Any]]:
         return load_json(f"{user_id}_{suffix}.json", [])
 
     def append_user_event(self, user_id: str, suffix: str, item: Dict[str, Any]) -> None:
-        events = self.get_user_events(user_id, suffix)
-        events.append(item)
-        save_json(f"{user_id}_{suffix}.json", events)
+        with _JSON_LOCK:
+            events = self.get_user_events(user_id, suffix)
+            events.append(item)
+            save_json(f"{user_id}_{suffix}.json", events)
 
     def get_auth_user(self, username: str) -> Optional[Dict[str, Any]]:
         username = str(username or "").strip()
@@ -247,19 +270,32 @@ class JsonRepository:
                 return dict(item)
         return None
 
+    def get_auth_user_by_display_name(self, display_name: str) -> Optional[Dict[str, Any]]:
+        lookup = str(display_name or "").strip()
+        if not lookup:
+            return None
+
+        lookup_key = lookup.casefold()
+        for item in self._load_items("auth_users.json"):
+            item_display_name = str(item.get("display_name", "")).strip()
+            if item_display_name.casefold() == lookup_key:
+                return dict(item)
+        return None
+
     def upsert_auth_user(self, user: Dict[str, Any]) -> Dict[str, Any]:
-        items = self._load_items("auth_users.json")
-        username = str(user.get("username", "")).strip()
-        updated = False
-        for idx, item in enumerate(items):
-            if str(item.get("username", "")).strip() == username:
-                items[idx] = dict(user)
-                updated = True
-                break
-        if not updated:
-            items.append(dict(user))
-        self._save_items("auth_users.json", items)
-        return dict(user)
+        with _JSON_LOCK:
+            items = self._load_items("auth_users.json")
+            username = str(user.get("username", "")).strip()
+            updated = False
+            for idx, item in enumerate(items):
+                if str(item.get("username", "")).strip() == username:
+                    items[idx] = dict(user)
+                    updated = True
+                    break
+            if not updated:
+                items.append(dict(user))
+            self._save_items("auth_users.json", items)
+            return dict(user)
 
     def get_auth_session_by_token_hash(self, token_hash: str) -> Optional[Dict[str, Any]]:
         token_hash = str(token_hash or "").strip()
@@ -272,104 +308,108 @@ class JsonRepository:
         return None
 
     def upsert_auth_session(self, session_data: Dict[str, Any]) -> Dict[str, Any]:
-        items = self._load_items("auth_sessions.json")
-        session_id = str(session_data.get("session_id", "")).strip()
-        updated = False
-        for idx, item in enumerate(items):
-            if str(item.get("session_id", "")).strip() == session_id:
-                items[idx] = dict(session_data)
-                updated = True
-                break
-        if not updated:
-            items.append(dict(session_data))
-        self._save_items("auth_sessions.json", items)
-        return dict(session_data)
+        with _JSON_LOCK:
+            items = self._load_items("auth_sessions.json")
+            session_id = str(session_data.get("session_id", "")).strip()
+            updated = False
+            for idx, item in enumerate(items):
+                if str(item.get("session_id", "")).strip() == session_id:
+                    items[idx] = dict(session_data)
+                    updated = True
+                    break
+            if not updated:
+                items.append(dict(session_data))
+            self._save_items("auth_sessions.json", items)
+            return dict(session_data)
 
     def revoke_auth_session(self, token_hash: str, revoked_at: str) -> bool:
-        items = self._load_items("auth_sessions.json")
-        token_hash = str(token_hash or "").strip()
-        changed = False
-        for item in items:
-            if str(item.get("token_hash", "")).strip() == token_hash:
-                item["revoked_at"] = revoked_at
-                changed = True
-                break
-        if changed:
-            self._save_items("auth_sessions.json", items)
-        return changed
+        with _JSON_LOCK:
+            items = self._load_items("auth_sessions.json")
+            token_hash = str(token_hash or "").strip()
+            changed = False
+            for item in items:
+                if str(item.get("token_hash", "")).strip() == token_hash:
+                    item["revoked_at"] = revoked_at
+                    changed = True
+                    break
+            if changed:
+                self._save_items("auth_sessions.json", items)
+            return changed
 
     def touch_auth_session(self, token_hash: str, last_seen_at: str) -> bool:
-        items = self._load_items("auth_sessions.json")
-        token_hash = str(token_hash or "").strip()
-        changed = False
-        for item in items:
-            if str(item.get("token_hash", "")).strip() == token_hash:
-                item["last_seen_at"] = last_seen_at
-                changed = True
-                break
-        if changed:
-            self._save_items("auth_sessions.json", items)
-        return changed
+        with _JSON_LOCK:
+            items = self._load_items("auth_sessions.json")
+            token_hash = str(token_hash or "").strip()
+            changed = False
+            for item in items:
+                if str(item.get("token_hash", "")).strip() == token_hash:
+                    item["last_seen_at"] = last_seen_at
+                    changed = True
+                    break
+            if changed:
+                self._save_items("auth_sessions.json", items)
+            return changed
 
     def delete_auth_user_account(self, username: str) -> Dict[str, Any]:
-        username = str(username or "").strip()
-        summary = {
-            "user_id": username,
-            "auth_user_deleted": False,
-            "sessions_deleted": 0,
-            "plans_deleted": 0,
-            "knowledge_deleted": 0,
-            "profile_deleted": 0,
-            "events_deleted": 0,
-        }
-        if not username:
+        with _JSON_LOCK:
+            username = str(username or "").strip()
+            summary = {
+                "user_id": username,
+                "auth_user_deleted": False,
+                "sessions_deleted": 0,
+                "plans_deleted": 0,
+                "knowledge_deleted": 0,
+                "profile_deleted": 0,
+                "events_deleted": 0,
+            }
+            if not username:
+                return summary
+
+            auth_users = self._load_items("auth_users.json")
+            remaining_users = [
+                item for item in auth_users
+                if str(item.get("username", "")).strip() != username
+            ]
+            if len(remaining_users) != len(auth_users):
+                self._save_items("auth_users.json", remaining_users)
+                summary["auth_user_deleted"] = True
+
+            auth_sessions = self._load_items("auth_sessions.json")
+            remaining_sessions = [
+                item for item in auth_sessions
+                if str(item.get("username", "")).strip() != username
+            ]
+            summary["sessions_deleted"] = len(auth_sessions) - len(remaining_sessions)
+            if summary["sessions_deleted"] > 0:
+                self._save_items("auth_sessions.json", remaining_sessions)
+
+            plans = load_json("user_plans.json", {})
+            if isinstance(plans, dict) and username in plans:
+                plans.pop(username, None)
+                save_json("user_plans.json", plans)
+                summary["plans_deleted"] = 1
+
+            if self._delete_file(f"{username}_knowledge.json"):
+                summary["knowledge_deleted"] = 1
+            if self._delete_file(f"{username}_profile.json"):
+                summary["profile_deleted"] = 1
+
+            event_file_count = 0
+            prefix = f"{username}_"
+            skip_names = {
+                f"{username}_knowledge.json",
+                f"{username}_profile.json",
+            }
+            for filename in os.listdir(DATA_DIR):
+                if filename in skip_names:
+                    continue
+                if not filename.startswith(prefix) or not filename.endswith(".json"):
+                    continue
+                os.remove(os.path.join(DATA_DIR, filename))
+                event_file_count += 1
+            summary["events_deleted"] = event_file_count
+
             return summary
-
-        auth_users = self._load_items("auth_users.json")
-        remaining_users = [
-            item for item in auth_users
-            if str(item.get("username", "")).strip() != username
-        ]
-        if len(remaining_users) != len(auth_users):
-            self._save_items("auth_users.json", remaining_users)
-            summary["auth_user_deleted"] = True
-
-        auth_sessions = self._load_items("auth_sessions.json")
-        remaining_sessions = [
-            item for item in auth_sessions
-            if str(item.get("username", "")).strip() != username
-        ]
-        summary["sessions_deleted"] = len(auth_sessions) - len(remaining_sessions)
-        if summary["sessions_deleted"] > 0:
-            self._save_items("auth_sessions.json", remaining_sessions)
-
-        plans = load_json("user_plans.json", {})
-        if isinstance(plans, dict) and username in plans:
-            plans.pop(username, None)
-            save_json("user_plans.json", plans)
-            summary["plans_deleted"] = 1
-
-        if self._delete_file(f"{username}_knowledge.json"):
-            summary["knowledge_deleted"] = 1
-        if self._delete_file(f"{username}_profile.json"):
-            summary["profile_deleted"] = 1
-
-        event_file_count = 0
-        prefix = f"{username}_"
-        skip_names = {
-            f"{username}_knowledge.json",
-            f"{username}_profile.json",
-        }
-        for filename in os.listdir(DATA_DIR):
-            if filename in skip_names:
-                continue
-            if not filename.startswith(prefix) or not filename.endswith(".json"):
-                continue
-            os.remove(os.path.join(DATA_DIR, filename))
-            event_file_count += 1
-        summary["events_deleted"] = event_file_count
-
-        return summary
 
 
 class SqlRepository:
@@ -455,6 +495,29 @@ class SqlRepository:
                 "updated_at": row.updated_at.isoformat() if row.updated_at else None,
                 "last_login_at": row.last_login_at.isoformat() if row.last_login_at else None,
             }
+
+    def get_auth_user_by_display_name(self, display_name: str) -> Optional[Dict[str, Any]]:
+        lookup = str(display_name or "").strip()
+        if not lookup:
+            return None
+
+        lookup_key = lookup.casefold()
+        with get_session() as session:
+            rows = session.query(AuthUser).all()
+            for row in rows:
+                row_display_name = str(row.display_name or "").strip()
+                if row_display_name.casefold() != lookup_key:
+                    continue
+                return {
+                    "username": row.username,
+                    "display_name": row.display_name,
+                    "password_hash": row.password_hash,
+                    "locale": row.locale,
+                    "created_at": row.created_at.isoformat() if row.created_at else None,
+                    "updated_at": row.updated_at.isoformat() if row.updated_at else None,
+                    "last_login_at": row.last_login_at.isoformat() if row.last_login_at else None,
+                }
+        return None
 
     def upsert_auth_user(self, user: Dict[str, Any]) -> Dict[str, Any]:
         with get_session() as session:
@@ -631,6 +694,10 @@ def append_user_event(user_id, suffix, item):
 
 def get_auth_user(username):
     return repo.get_auth_user(username)
+
+
+def get_auth_user_by_display_name(display_name):
+    return repo.get_auth_user_by_display_name(display_name)
 
 
 def upsert_auth_user(user):

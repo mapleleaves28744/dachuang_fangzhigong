@@ -1,0 +1,36 @@
+{
+  "user_id": "u_check2",
+  "updated_at": "2026-04-14T21:18:38.017608",
+  "learning_style": "visual",
+  "style_scores": {
+    "visual": 0.36,
+    "auditory": 0.389,
+    "kinesthetic": 0.389
+  },
+  "style_method": "kmeans",
+  "style_features": {
+    "image_count": 0,
+    "link_count": 0,
+    "qa_content_count": 1,
+    "note_count": 0,
+    "other_count": 0,
+    "qa_log_count": 1,
+    "concept_count": 6
+  },
+  "interests": [
+    "链式法则",
+    "隐函数求导",
+    "求导法则",
+    "易错点",
+    "变式训练"
+  ],
+  "best_time_range": "21:00-23:00",
+  "focus_minutes": 45,
+  "content_type_counter": {
+    "note": 0,
+    "link": 0,
+    "image": 0,
+    "qa": 1,
+    "other": 0
+  }
+}

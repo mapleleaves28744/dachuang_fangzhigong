@@ -1,5 +1,6 @@
 import copy
 import unittest
+from urllib.parse import urlsplit
 from unittest.mock import patch
 
 try:
@@ -20,6 +21,10 @@ class TestSpaceContract(unittest.TestCase):
         self.sessions = {}
         self.event_store = {}
 
+    def _set_guest_cookie(self, client, guest_user_id):
+        signed = backend_app.sign_guest_session_cookie_value(guest_user_id)
+        client.set_cookie(backend_app.GUEST_SESSION_COOKIE_NAME, signed, domain="localhost")
+
     def _patch_space_storage(self):
         def get_user_space_payload(user_id):
             payload = self.space_store.get(user_id, {"activeEntrySpaceId": "", "spaces": []})
@@ -38,6 +43,16 @@ class TestSpaceContract(unittest.TestCase):
         def get_auth_user(username):
             item = self.users.get(username)
             return copy.deepcopy(item) if item else None
+
+        def get_auth_user_by_display_name(display_name):
+            lookup = str(display_name or "").strip().casefold()
+            if not lookup:
+                return None
+            for item in self.users.values():
+                item_display_name = str((item or {}).get("display_name") or "").strip().casefold()
+                if item_display_name == lookup:
+                    return copy.deepcopy(item)
+            return None
 
         def upsert_auth_user(user):
             payload = copy.deepcopy(user)
@@ -90,6 +105,7 @@ class TestSpaceContract(unittest.TestCase):
             backend_app,
             delete_auth_user_account=delete_auth_user_account,
             get_auth_user=get_auth_user,
+            get_auth_user_by_display_name=get_auth_user_by_display_name,
             upsert_auth_user=upsert_auth_user,
             get_auth_session_by_token_hash=get_auth_session_by_token_hash,
             upsert_auth_session=upsert_auth_session,
@@ -132,6 +148,10 @@ class TestSpaceContract(unittest.TestCase):
             item = add_data.get("items", [])[0]
             item_id = item.get("id")
             self.assertTrue(item.get("previewUrl"))
+            self.assertIn("preview_signature=", item.get("previewUrl"))
+            self.assertNotIn("preview_token=", item.get("previewUrl"))
+            self.assertNotIn("auth_token=", item.get("previewUrl"))
+            self.assertNotIn("user_id=", item.get("previewUrl"))
 
             list_resp = self.client.get("/api/spaces?user_id=space_user")
             self.assertEqual(list_resp.status_code, 200)
@@ -161,8 +181,11 @@ class TestSpaceContract(unittest.TestCase):
             self.assertEqual(detail_resp.status_code, 200)
             detail_data = detail_resp.get_json()
             self.assertEqual(detail_data.get("item", {}).get("name"), "整理笔记.txt")
+            self.assertIn("hello", detail_data.get("item", {}).get("content", ""))
 
-            preview_resp = self.client.get(f"/api/spaces/items/{item_id}/preview?user_id=space_user")
+            preview_parts = urlsplit(str(item.get("previewUrl") or ""))
+            preview_path = preview_parts.path + (f"?{preview_parts.query}" if preview_parts.query else "")
+            preview_resp = self.client.get(preview_path)
             self.assertEqual(preview_resp.status_code, 200)
             self.assertEqual(preview_resp.mimetype, "text/plain")
             self.assertIn("hello", preview_resp.get_data(as_text=True))
@@ -250,6 +273,123 @@ class TestSpaceContract(unittest.TestCase):
             self.assertEqual(list_data.get("user_id"), "space_auth_user")
             self.assertEqual(list_data.get("count"), 1)
             self.assertEqual(list_data.get("spaces", [])[0].get("name"), "应绑定到登录账号")
+
+    def test_anonymous_space_request_cannot_read_other_user_space_via_query_user_id(self):
+        with self._patch_space_storage():
+            guest_user_id = "guest_spacecase1234"
+            self._set_guest_cookie(self.client, guest_user_id)
+            self.space_store[guest_user_id] = {
+                "activeEntrySpaceId": "space_guest_1",
+                "spaces": [{"id": "space_guest_1", "name": "我的空间", "items": []}],
+            }
+            self.space_store["victim_user"] = {
+                "activeEntrySpaceId": "space_victim_1",
+                "spaces": [{"id": "space_victim_1", "name": "别人的空间", "items": []}],
+            }
+
+            resp = self.client.get("/api/spaces?user_id=victim_user")
+
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+            self.assertTrue(data.get("success"))
+            self.assertEqual(data.get("user_id"), guest_user_id)
+            self.assertEqual(data.get("spaces", [])[0].get("name"), "我的空间")
+
+    def test_first_anonymous_space_request_issues_guest_scope_instead_of_query_user_id(self):
+        with self._patch_space_storage():
+            self.space_store["victim_user"] = {
+                "activeEntrySpaceId": "space_victim_1",
+                "spaces": [{"id": "space_victim_1", "name": "别人的空间", "items": []}],
+            }
+
+            resp = self.client.get("/api/spaces?user_id=victim_user")
+
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+            self.assertTrue(data.get("success"))
+            self.assertNotEqual(data.get("user_id"), "victim_user")
+            self.assertTrue(str(data.get("user_id") or "").startswith("guest_"))
+            self.assertEqual(data.get("count"), 0)
+            self.assertIn(backend_app.GUEST_SESSION_COOKIE_NAME, resp.headers.get("Set-Cookie", ""))
+
+    def test_space_preview_accepts_authorization_header_without_query_signature(self):
+        with self._patch_space_storage(), self._patch_auth_storage():
+            register_resp = self.client.post("/api/auth/register", json={
+                "username": "space_preview_user",
+                "password": "secret123",
+                "display_name": "预览用户",
+                "locale": "CN",
+            })
+            self.assertEqual(register_resp.status_code, 200)
+            token = register_resp.get_json().get("auth", {}).get("token")
+            headers = {"Authorization": f"Bearer {token}"}
+
+            create_resp = self.client.post("/api/spaces", headers=headers, json={"name": "授权预览空间"})
+            self.assertEqual(create_resp.status_code, 200)
+            space_id = create_resp.get_json().get("space", {}).get("id")
+
+            add_resp = self.client.post(
+                f"/api/spaces/{space_id}/items",
+                headers=headers,
+                json={
+                    "items": [{
+                        "name": "授权预览.txt",
+                        "kind": "note",
+                        "mime": "text/plain",
+                        "source": "upload",
+                        "content": "只通过 Authorization 读取。",
+                        "fileDataUrl": "data:text/plain;base64,QXV0aG9yaXphdGlvbiBvbmx5IHByZXZpZXcu",
+                    }]
+                },
+            )
+            self.assertEqual(add_resp.status_code, 200)
+            preview_url = str(add_resp.get_json().get("items", [])[0].get("previewUrl") or "")
+            preview_parts = urlsplit(preview_url)
+
+            preview_resp = self.client.get(preview_parts.path, headers=headers)
+
+            self.assertEqual(preview_resp.status_code, 200)
+            self.assertEqual(preview_resp.mimetype, "text/plain")
+            self.assertIn("Authorization only preview.", preview_resp.get_data(as_text=True))
+
+    def test_space_image_upload_uses_ocr_text_and_exposes_ingest_metadata(self):
+        with self._patch_space_storage(), patch.object(
+            backend_app,
+            "extract_text_from_image_service",
+            return_value={
+                "success": True,
+                "text": "链式法则用于复合函数求导，先求外层导数再乘以内层导数。",
+                "provider": "mock_local_fallback",
+                "fallback_used": True,
+                "error_code": "OCR_PROVIDER_DISABLED",
+            },
+        ):
+            create_resp = self.client.post("/api/spaces", json={
+                "user_id": "space_user",
+                "name": "拍题空间",
+            })
+            self.assertEqual(create_resp.status_code, 200)
+            space_id = create_resp.get_json().get("space", {}).get("id")
+
+            add_resp = self.client.post(f"/api/spaces/{space_id}/items", json={
+                "user_id": "space_user",
+                "items": [{
+                    "name": "链式法则拍题.png",
+                    "kind": "image",
+                    "mime": "image/png",
+                    "source": "camera",
+                    "summary": "",
+                    "fileDataUrl": "data:image/png;base64,aGVsbG8=",
+                }]
+            })
+            self.assertEqual(add_resp.status_code, 200)
+            item = add_resp.get_json().get("items", [])[0]
+            self.assertIn("链式法则", item.get("content", ""))
+            self.assertEqual(item.get("textExtractMethod"), "image_ocr")
+            self.assertGreaterEqual(int(item.get("textChunkCount") or 0), 1)
+            self.assertTrue(item.get("retrievalReady"))
+            self.assertEqual(item.get("ocrProvider"), "mock_local_fallback")
+            self.assertTrue(item.get("ocrFallbackUsed"))
 
 
 if __name__ == "__main__":

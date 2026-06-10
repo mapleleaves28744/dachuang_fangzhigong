@@ -6,8 +6,8 @@
       "password_hash": "scrypt:32768:8:1$MkSyQCuytOFWrtr8$0d230dc52c15d68eca2706b2b8a59ecdf295cb2148257b062fc85ae61f5ceba08686044cfb23a628f1ae602d359fd1d69cf2642baaed3879f3d964689013e9a8",
       "locale": "CN",
       "created_at": "2026-03-30T15:20:10.208895",
-      "updated_at": "2026-04-14T07:53:19.651376",
-      "last_login_at": "2026-04-14T07:53:19.651376"
+      "updated_at": "2026-05-26T09:03:50.646295",
+      "last_login_at": "2026-05-26T09:03:50.646280"
     },
     {
       "username": "2874463136@qq.com",
@@ -15,8 +15,8 @@
       "password_hash": "scrypt:32768:8:1$ifxDUwEOgzq4MoZE$7c4f90ddd644c39bb927c49a152216a4bc0f64a4783a42629ee6d9a9edec6c176c724cb1559b2f0d20993ac06cc627a0483ddd0376b2635ab3e03b43335b2c63",
       "locale": "CN",
       "created_at": "2026-04-10T01:16:02.549534",
-      "updated_at": "2026-04-11T05:03:15.934166",
-      "last_login_at": "2026-04-11T05:03:15.934166"
+      "updated_at": "2026-05-18T16:22:22.141348",
+      "last_login_at": "2026-05-18T16:22:22.141333"
     },
     {
       "username": "stu_001",
@@ -24,8 +24,8 @@
       "password_hash": "scrypt:32768:8:1$H4JnEy60xP0KQJLi$eb52aae8dba6d957ee38a1e1705f1320356219049ebbce0755808d19fcc3b1a09c38198658337eb25cdea35fb83a62a60396f5a4dbd36c8a5da57718d997ac75",
       "locale": "CN",
       "created_at": "2026-04-14T07:57:25.212201",
-      "updated_at": "2026-04-14T07:57:25.212201",
-      "last_login_at": "2026-04-14T07:57:25.212201"
+      "updated_at": "2026-06-10T04:56:50.515597",
+      "last_login_at": "2026-06-10T04:56:50.515580"
     },
     {
       "username": "probe_1776153767",
@@ -35,6 +35,15 @@
       "created_at": "2026-04-14T08:02:49.235041",
       "updated_at": "2026-04-14T08:03:19.519547",
       "last_login_at": "2026-04-14T08:03:19.519547"
+    },
+    {
+      "username": "ccc",
+      "display_name": "d",
+      "password_hash": "scrypt:32768:8:1$UwDLMR3jCmJvdqrf$3ab439ff16887fdf5329c5a94a79325e723527e7477834ee3ee3d1c9c0da3f0493407916a568168c31e2eaabfecadf6eb6162491f90dea66c09268e41119f6cf",
+      "locale": "CN",
+      "created_at": "2026-05-11T14:20:01.983099",
+      "updated_at": "2026-05-26T09:03:36.971913",
+      "last_login_at": "2026-05-26T09:03:36.971898"
     }
   ]
 }

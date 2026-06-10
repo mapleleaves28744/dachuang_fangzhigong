@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>知识图谱 - 坊知工</title>
-    <link rel="stylesheet" href="assets/css/shared/auth-ui.css?v=20260403-space-root-nav">
+    <link rel="stylesheet" href="assets/css/shared/auth-ui.css?v=20260512-auth-modal-scrollbarhide-v3">
     <style>
         :root {
             --bg-1: #f4f7fb;
@@ -444,7 +444,7 @@
         <div class="topbar">
             <div>
                 <div class="title">知识图谱中心</div>
-                <div class="subtitle">查看知识依赖关系，跟踪掌握度，并规划学习路径</div>
+                <div class="subtitle">查看知识依赖关系、文档映射与掌握度变化，并规划学习路径</div>
                 <div class="subtitle" id="mapUserLabel">当前用户：-</div>
             </div>
             <div class="links">
@@ -525,7 +525,15 @@
                     </div>
                     <div style="margin-top:10px; font-size:13px; color:#475569;">到期复习</div>
                     <div class="path-list" id="dueReminderList">加载中...</div>
-                    <div class="footer-note">提示：节点颜色越深表示掌握度越高。连线方向表示“前置知识 -> 目标知识”。</div>
+                    <div class="footer-note">提示：圆形节点表示概念，文档节点表示同步到图谱的资料；连线方向表示“前置知识 -> 目标知识”或“文档 -> 提及概念”。</div>
+                </section>
+
+                <section class="card panel">
+                    <h3>文档映射</h3>
+                    <div class="mini-stack" id="documentMentionList">
+                        <div class="mini-stack-item">加载中...</div>
+                    </div>
+                    <div class="footer-note">这里会显示已经同步到图谱的 Document 节点，以及它们通过 MENTIONS 连接到的概念。</div>
                 </section>
             </aside>
         </div>
@@ -533,11 +541,11 @@
 
     <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
     <script src="assets/js/shared/user-context.js?v=20260330-authfix"></script>
-    <script src="assets/js/shared/api-utils.js?v=20260409-authmsgfix"></script>
+    <script src="assets/js/shared/api-utils.js?v=20260511-auth-dup-check"></script>
     <script src="assets/js/shared/project-local-data.js?v=20260330-authfix"></script>
     <script src="assets/js/shared/space-cloud-store.js?v=20260403-sidebarspaces"></script>
-    <script src="assets/js/shared/auth-ui.js?v=20260409-authentrygate"></script>
-    <script src="assets/js/shared/page-shell.js?v=20260403-space-root-nav"></script>
-    <script src="assets/js/pages/knowledge-map.js"></script>
+    <script src="assets/js/shared/auth-ui.js?v=20260512-auth-register-autofill-fix"></script>
+    <script src="assets/js/shared/page-shell.js?v=20260416-global-streak"></script>
+    <script src="assets/js/pages/knowledge-map.js?v=20260414-kb-sync-fix"></script>
 </body>
 </html>

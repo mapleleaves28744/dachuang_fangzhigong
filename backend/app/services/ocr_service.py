@@ -3,6 +3,8 @@ import os
 
 import requests
 
+from .document_ingest import extract_text_from_learning_asset
+
 
 def _get_ocr_config():
     return {
@@ -13,6 +15,39 @@ def _get_ocr_config():
             "https://dashscope.aliyuncs.com/compatible-mode/v1/chat/completions",
         ),
         "model_name": os.getenv("QWEN_VL_MODEL_NAME", "qwen-vl-plus"),
+        "local_fallback_enabled": str(os.getenv("OCR_LOCAL_FALLBACK_ENABLED", "true")).strip().lower() == "true",
+    }
+
+
+def _build_local_ocr_fallback(file_storage, provider: str, reason_code: str, reason_message: str):
+    file_storage.stream.seek(0)
+    raw = file_storage.read()
+    file_storage.stream.seek(0)
+
+    name = str(getattr(file_storage, "filename", "") or "学习图片").strip() or "学习图片"
+    extracted = extract_text_from_learning_asset(
+        name=name,
+        mime=str(getattr(file_storage, "mimetype", "") or ""),
+        content="",
+        summary="",
+        file_bytes=raw,
+    )
+    text = str(extracted.get("text") or "").strip()
+    if not text:
+        stem = os.path.splitext(name)[0].replace("_", " ").replace("-", " ").strip()
+        if stem:
+            text = f"离线OCR兜底：已接收图片《{name}》。可识别关键词：{stem}。"
+        else:
+            text = f"离线OCR兜底：已接收图片《{name}》，请在提问框补充题干文本。"
+
+    return {
+        "success": True,
+        "text": text,
+        "ai_used": False,
+        "provider": f"{provider}_local_fallback",
+        "error_code": reason_code,
+        "error_message": reason_message,
+        "fallback_used": True,
     }
 
 
@@ -31,6 +66,13 @@ def extract_text_from_image(file_storage):
         }
 
     if cfg["provider"] != "qwen_vl":
+        if cfg["local_fallback_enabled"]:
+            return _build_local_ocr_fallback(
+                file_storage,
+                provider=cfg["provider"],
+                reason_code="OCR_PROVIDER_DISABLED",
+                reason_message="OCR_PROVIDER 不是 qwen_vl，已回退到本地离线OCR兜底",
+            )
         return {
             "success": False,
             "text": "",
@@ -41,6 +83,13 @@ def extract_text_from_image(file_storage):
         }
 
     if not cfg["api_key"]:
+        if cfg["local_fallback_enabled"]:
+            return _build_local_ocr_fallback(
+                file_storage,
+                provider="qwen_vl",
+                reason_code="OCR_KEY_MISSING",
+                reason_message="未配置 QWEN_API_KEY，已回退到本地离线OCR兜底",
+            )
         return {
             "success": False,
             "text": "",
@@ -87,10 +136,10 @@ def extract_text_from_image(file_storage):
                 "success": False,
                 "text": "",
                 "ai_used": False,
-                "provider": "qwen_vl",
-                "error_code": "OCR_EMPTY_RESPONSE",
-                "error_message": "OCR返回内容为空",
-            }
+            "provider": "qwen_vl",
+            "error_code": "OCR_EMPTY_RESPONSE",
+            "error_message": "OCR返回内容为空",
+        }
 
         return {
             "success": True,
@@ -101,6 +150,13 @@ def extract_text_from_image(file_storage):
             "error_message": "",
         }
     except Exception as e:
+        if cfg["local_fallback_enabled"]:
+            return _build_local_ocr_fallback(
+                file_storage,
+                provider="qwen_vl",
+                reason_code="OCR_UPSTREAM_ERROR",
+                reason_message=str(e),
+            )
         return {
             "success": False,
             "text": "",

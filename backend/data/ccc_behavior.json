@@ -1,0 +1,30 @@
+[
+  {
+    "id": "56e13dee-2304-42af-a80c-51ae3da47418",
+    "user_id": "ccc",
+    "timestamp": "2026-05-11T22:20:02.078793",
+    "type": "auth_login",
+    "behavior_type": "auth_login",
+    "page": "auth",
+    "target": "",
+    "label": "账号登录",
+    "title": "auth_login",
+    "source": "auth_register",
+    "duration_seconds": 0.0,
+    "meta": {}
+  },
+  {
+    "id": "b5e15e46-96f2-41bf-95b9-fbfd319c5d46",
+    "user_id": "ccc",
+    "timestamp": "2026-05-26T17:03:36.973908",
+    "type": "auth_login",
+    "behavior_type": "auth_login",
+    "page": "auth",
+    "target": "",
+    "label": "账号登录",
+    "title": "auth_login",
+    "source": "auth_login",
+    "duration_seconds": 0.0,
+    "meta": {}
+  }
+]

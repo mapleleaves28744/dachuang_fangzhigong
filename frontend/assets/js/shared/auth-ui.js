@@ -10,6 +10,16 @@
   let settingsMessage = '';
   let activeMenuAnchorId = '';
   let isDeletingAccount = false;
+  const MODAL_COPY = {
+    login: {
+      title: '欢迎回来',
+      subtitle: '让我们继续您的学习之旅。'
+    },
+    register: {
+      title: '创建账号',
+      subtitle: '创建账号后，学习数据会自动绑定到你的身份。'
+    }
+  };
 
   function getApiBase() {
     if (window.ApiUtils && typeof window.ApiUtils.getApiBase === 'function') {
@@ -196,10 +206,22 @@
 
     document.body.insertAdjacentHTML('beforeend', `
       <div class="auth-modal" id="authModal" aria-hidden="true">
-        <div class="auth-modal-panel" role="dialog" aria-modal="true" aria-labelledby="authModalBrand">
+        <div class="auth-modal-panel" role="dialog" aria-modal="true" aria-labelledby="authModalBrand authModalTitle" aria-describedby="authModalSubtitle">
           <button type="button" class="auth-modal-close" id="authModalClose" aria-label="关闭登录面板">×</button>
-          <div class="auth-modal-brand" id="authModalBrand">坊知工账号</div>
-          <div class="auth-modal-subtitle" id="authModalSubtitle">登录后即可同步你的空间、图谱和学习计划。</div>
+          <div class="auth-modal-header">
+            <div class="auth-modal-brand" id="authModalBrand">
+              <span class="auth-modal-brand-mark" aria-hidden="true">
+                <span></span>
+                <span></span>
+                <span></span>
+              </span>
+              <span class="auth-modal-brand-text">坊知工</span>
+            </div>
+          </div>
+          <div class="auth-modal-copy">
+            <div class="auth-modal-title" id="authModalTitle"></div>
+            <div class="auth-modal-subtitle" id="authModalSubtitle"></div>
+          </div>
 
           <div class="auth-tabs" id="authTabs">
             <button type="button" class="auth-tab active" data-auth-mode="login">登录</button>
@@ -209,25 +231,24 @@
           <form class="auth-form" id="authForm">
             <label class="auth-field">
               <span>账号</span>
-              <input id="authUsernameInput" type="text" placeholder="3-32 位字母、数字或 . _ @ -" autocomplete="username">
+              <input id="authUsernameInput" type="text" placeholder="3-32 位字母、数字或 . _ @ -" autocomplete="section-login username">
             </label>
 
             <label class="auth-field auth-register-only" id="authDisplayNameField" hidden>
               <span>昵称</span>
-              <input id="authDisplayNameInput" type="text" placeholder="用于页面展示，如 小杭" autocomplete="nickname">
+              <input id="authDisplayNameInput" type="text" placeholder="请输入昵称" autocomplete="section-register nickname">
             </label>
 
             <label class="auth-field">
               <span>密码</span>
-              <input id="authPasswordInput" type="password" placeholder="至少 6 位" autocomplete="current-password">
+              <input id="authPasswordInput" type="password" placeholder="至少 6 位" autocomplete="section-login current-password">
             </label>
 
             <div class="auth-actions">
               <button type="submit" class="auth-submit-btn" id="authSubmitBtn">登录</button>
-              <button type="button" class="auth-secondary-btn" id="authSwitchModeBtn">没有账号？去注册</button>
             </div>
             <div class="auth-error" id="authErrorText"></div>
-            <div class="auth-tip" id="authTipText">账号支持 3-32 位字母、数字以及 . _ @ - 。</div>
+            <div class="auth-tip" id="authTipText" aria-live="polite"></div>
           </form>
         </div>
       </div>
@@ -332,9 +353,22 @@
   }
 
   function getDefaultTipText() {
-    return currentMode === 'register'
-      ? '注册成功后会自动登录，新账号默认不会自动继承当前访客数据。'
-      : '登录后会切换到当前账号自己的学习数据。';
+    return '';
+  }
+
+  function getAutocompleteValue(field, mode) {
+    const normalizedMode = mode === 'register' ? 'register' : 'login';
+
+    if (field === 'username') {
+      return normalizedMode === 'register' ? 'section-register username' : 'section-login username';
+    }
+    if (field === 'password') {
+      return normalizedMode === 'register' ? 'section-register new-password' : 'section-login current-password';
+    }
+    if (field === 'displayName') {
+      return 'section-register nickname';
+    }
+    return 'off';
   }
 
   function normalizeAuthUsername(value) {
@@ -352,37 +386,89 @@
 
     if (errorEl) {
       errorEl.textContent = type === 'error' ? nextMessage : '';
+      errorEl.hidden = !(type === 'error' && nextMessage);
     }
 
     if (tipEl) {
-      tipEl.textContent = type === 'error' ? '' : (nextMessage || getDefaultTipText());
+      const tipMessage = type === 'error' ? '' : nextMessage;
+      tipEl.textContent = tipMessage;
+      tipEl.hidden = !tipMessage;
       tipEl.classList.toggle('is-success', type === 'success');
     }
   }
 
   function updateModeUI() {
     const tabs = document.querySelectorAll('[data-auth-mode]');
+    const form = document.getElementById('authForm');
+    const usernameInput = document.getElementById('authUsernameInput');
     const displayNameField = document.getElementById('authDisplayNameField');
+    const displayNameInput = document.getElementById('authDisplayNameInput');
     const passwordInput = document.getElementById('authPasswordInput');
     const submitBtn = document.getElementById('authSubmitBtn');
-    const switchBtn = document.getElementById('authSwitchModeBtn');
-    const subtitle = document.getElementById('authModalSubtitle');
+    const titleEl = document.getElementById('authModalTitle');
+    const subtitleEl = document.getElementById('authModalSubtitle');
+    const copy = MODAL_COPY[currentMode] || MODAL_COPY.login;
 
     tabs.forEach(function (tab) {
       tab.classList.toggle('active', tab.getAttribute('data-auth-mode') === currentMode);
     });
 
     if (displayNameField) displayNameField.hidden = currentMode !== 'register';
-    if (passwordInput) {
-      passwordInput.setAttribute('autocomplete', currentMode === 'register' ? 'new-password' : 'current-password');
+    if (form) {
+      form.setAttribute('autocomplete', currentMode === 'register' ? 'off' : 'on');
     }
-    if (submitBtn) submitBtn.textContent = currentMode === 'register' ? '注册并登录' : '登录';
-    if (switchBtn) switchBtn.textContent = currentMode === 'register' ? '已有账号？去登录' : '没有账号？去注册';
+    if (usernameInput) {
+      usernameInput.setAttribute('autocomplete', getAutocompleteValue('username', currentMode));
+    }
+    if (displayNameInput) {
+      displayNameInput.setAttribute('autocomplete', getAutocompleteValue('displayName', currentMode));
+    }
+    if (passwordInput) {
+      passwordInput.setAttribute('autocomplete', getAutocompleteValue('password', currentMode));
+    }
+    if (submitBtn) submitBtn.textContent = currentMode === 'register' ? '注册' : '登录';
+    if (titleEl) titleEl.textContent = copy.title;
+    if (subtitleEl) subtitleEl.textContent = copy.subtitle;
+  }
 
-    if (subtitle) {
-      subtitle.textContent = currentMode === 'register'
-        ? '注册后会自动建立会话，新账号默认不会自动继承当前访客数据。'
-        : '登录后即可访问当前账号自己的空间、图谱和学习计划。';
+  function clearCredentialFields() {
+    const usernameInput = document.getElementById('authUsernameInput');
+    const passwordInput = document.getElementById('authPasswordInput');
+
+    if (usernameInput) usernameInput.value = '';
+    if (passwordInput) passwordInput.value = '';
+  }
+
+  function resetRegisterCredentials() {
+    if (currentMode !== 'register') return;
+
+    clearCredentialFields();
+
+    window.requestAnimationFrame(function () {
+      if (currentMode !== 'register') return;
+      clearCredentialFields();
+    });
+
+    window.setTimeout(function () {
+      if (currentMode !== 'register') return;
+      clearCredentialFields();
+    }, 80);
+  }
+
+  function switchAuthMode(mode, options) {
+    const opts = options || {};
+    const nextMode = mode === 'register' ? 'register' : 'login';
+    const changed = currentMode !== nextMode;
+
+    currentMode = nextMode;
+    updateModeUI();
+
+    if (nextMode === 'register' && (changed || opts.forceResetCredentials)) {
+      resetRegisterCredentials();
+    }
+
+    if (!opts.keepFeedback) {
+      setFeedback('tip', '');
     }
   }
 
@@ -397,7 +483,10 @@
     const buttonAttrs = auth && auth.authenticated ? 'aria-haspopup="menu" aria-expanded="false"' : '';
 
     slot.innerHTML = `
-      <button type="button" class="${buttonClass}" id="authTopActionBtn" ${buttonAttrs}>${label}</button>
+      <div class="auth-top-slot-cluster">
+        <button type="button" class="${buttonClass}" id="authTopActionBtn" ${buttonAttrs}>${label}</button>
+        <div id="globalStreakDock" class="auth-top-slot-dock"></div>
+      </div>
     `;
 
     const actionBtn = document.getElementById('authTopActionBtn');
@@ -664,8 +753,11 @@
     }
 
     const modal = ensureModal();
-    currentMode = mode === 'register' ? 'register' : 'login';
-    updateModeUI();
+    if (isHomePage()) {
+      document.body.classList.add('auth-home-preview');
+      document.documentElement.classList.add('auth-home-preview-open');
+    }
+    switchAuthMode(mode, { forceResetCredentials: mode === 'register', keepFeedback: true });
     setFeedback('tip', getDefaultTipText());
     closeQuickMenu();
     closeSettingsModal();
@@ -685,6 +777,10 @@
     if (!modal) return;
     modal.classList.remove('show');
     modal.setAttribute('aria-hidden', 'true');
+    if (isHomePage()) {
+      document.body.classList.remove('auth-home-preview');
+      document.documentElement.classList.remove('auth-home-preview-open');
+    }
   }
 
   function positionUserMenu(anchor) {
@@ -851,7 +947,7 @@
 
       const successMessage = currentMode === 'register'
         ? '注册成功，已自动登录。'
-        : '登录成功，当前账号数据已保持独立。';
+        : '登录成功。';
       setFeedback('success', successMessage);
       currentMode = 'login';
       renderAll();
@@ -865,7 +961,7 @@
     } finally {
       if (submitBtn) {
         submitBtn.disabled = false;
-        submitBtn.textContent = currentMode === 'register' ? '注册并登录' : '登录';
+        submitBtn.textContent = currentMode === 'register' ? '注册' : '登录';
       }
     }
   }
@@ -1006,7 +1102,6 @@
     const modal = ensureModal();
     const form = document.getElementById('authForm');
     const closeBtn = document.getElementById('authModalClose');
-    const switchBtn = document.getElementById('authSwitchModeBtn');
     const tabs = document.querySelectorAll('[data-auth-mode]');
 
     if (form) {
@@ -1017,19 +1112,9 @@
       closeBtn.addEventListener('click', closeModal);
     }
 
-    if (switchBtn) {
-      switchBtn.addEventListener('click', function () {
-        currentMode = currentMode === 'register' ? 'login' : 'register';
-        setFeedback('tip', getDefaultTipText());
-        updateModeUI();
-      });
-    }
-
     tabs.forEach(function (tab) {
       tab.addEventListener('click', function () {
-        currentMode = this.getAttribute('data-auth-mode') === 'register' ? 'register' : 'login';
-        setFeedback('tip', getDefaultTipText());
-        updateModeUI();
+        switchAuthMode(this.getAttribute('data-auth-mode'));
       });
     });
 

@@ -17,6 +17,10 @@ class TestAgentOcrTutorContract(unittest.TestCase):
         backend_app.app.testing = True
         self.client = backend_app.app.test_client()
 
+    def _set_guest_cookie(self, client, guest_user_id):
+        signed = backend_app.sign_guest_session_cookie_value(guest_user_id)
+        client.set_cookie(backend_app.GUEST_SESSION_COOKIE_NAME, signed, domain="localhost")
+
     def test_requires_image_or_ocr_text(self):
         resp = self.client.post("/api/agent/ocr-tutor", json={"student_id": "u1"})
         self.assertEqual(resp.status_code, 400)
@@ -171,6 +175,8 @@ class TestAgentOcrTutorContract(unittest.TestCase):
 
         self.assertEqual(resp.status_code, 200)
         self.assertIn("text/event-stream", resp.content_type)
+        self.assertEqual(resp.headers.get("X-Accel-Buffering"), "no")
+        self.assertIn("no-cache", str(resp.headers.get("Cache-Control") or ""))
         body = resp.get_data(as_text=True)
         events = []
         for line in body.splitlines():
@@ -186,3 +192,66 @@ class TestAgentOcrTutorContract(unittest.TestCase):
         self.assertIn("knowledge_extract", payload)
         self.assertIn("diagnosis", payload)
         self.assertIn("learning_advice", payload)
+
+    def test_ocr_tutor_ignores_forged_student_id_and_scopes_session(self):
+        guest_user_id = "guest_ocrcase1234"
+        self._set_guest_cookie(self.client, guest_user_id)
+        fake_result = {
+            "answer": "安全回答",
+            "steps_log": [],
+            "evidence": {"tool_calls": [], "trace_count": 0},
+            "meta": {"latency_ms": 20, "retry_count": 0},
+            "safety": {"guard_enabled": True, "prompt_injection_flags": []},
+        }
+
+        with patch("app.api.agent_routes.tutor_agent") as mock_agent, \
+             patch("app.server.post_process_qa_interaction", return_value={}):
+            mock_agent.solve_problem.return_value = fake_result
+            resp = self.client.post(
+                "/api/agent/ocr-tutor",
+                json={
+                    "student_id": "victim_student",
+                    "session_id": "shared_session",
+                    "ocr_text": "请讲解纺织材料基础",
+                },
+            )
+
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertTrue(data.get("success"))
+        self.assertEqual(data.get("student_id"), guest_user_id)
+        self.assertTrue(str(data.get("session_id") or "").startswith(f"agent:{guest_user_id}:"))
+        solve_kwargs = mock_agent.solve_problem.call_args.kwargs
+        self.assertEqual(solve_kwargs.get("student_id"), guest_user_id)
+        self.assertTrue(str(solve_kwargs.get("session_id") or "").startswith(f"agent:{guest_user_id}:"))
+
+    def test_ocr_tutor_without_cookie_issues_guest_scope_not_body_student_id(self):
+        fake_result = {
+            "answer": "安全回答",
+            "steps_log": [],
+            "evidence": {"tool_calls": [], "trace_count": 0},
+            "meta": {"latency_ms": 20, "retry_count": 0},
+            "safety": {"guard_enabled": True, "prompt_injection_flags": []},
+        }
+
+        with patch("app.api.agent_routes.tutor_agent") as mock_agent, \
+             patch("app.server.post_process_qa_interaction", return_value={}):
+            mock_agent.solve_problem.return_value = fake_result
+            resp = self.client.post(
+                "/api/agent/ocr-tutor",
+                json={
+                    "student_id": "victim_student",
+                    "session_id": "shared_session",
+                    "ocr_text": "请讲解导数定义",
+                },
+            )
+
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        issued_guest_id = str(data.get("student_id") or "")
+        self.assertTrue(issued_guest_id.startswith("guest_"))
+        self.assertNotEqual(issued_guest_id, "victim_student")
+        self.assertTrue(str(data.get("session_id") or "").startswith(f"agent:{issued_guest_id}:"))
+        solve_kwargs = mock_agent.solve_problem.call_args.kwargs
+        self.assertEqual(solve_kwargs.get("student_id"), issued_guest_id)
+        self.assertTrue(str(solve_kwargs.get("session_id") or "").startswith(f"agent:{issued_guest_id}:"))

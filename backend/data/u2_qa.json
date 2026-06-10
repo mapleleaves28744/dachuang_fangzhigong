@@ -31,5 +31,76 @@
     ],
     "is_confusion_request": false,
     "type": "qa_interaction"
+  },
+  {
+    "user_id": "u2",
+    "timestamp": "2026-04-14T20:23:20.267695",
+    "question": "OCR文本",
+    "answer": "图像题已解答",
+    "topics": [
+      "文本"
+    ],
+    "is_confusion_request": false,
+    "type": "qa_interaction"
+  },
+  {
+    "user_id": "u2",
+    "timestamp": "2026-04-14T21:18:52.870284",
+    "question": "OCR文本",
+    "answer": "图像题已解答",
+    "answer_preview": "图像题已解答",
+    "topics": [
+      "文本"
+    ],
+    "is_confusion_request": false,
+    "type": "qa_interaction"
+  },
+  {
+    "user_id": "u2",
+    "timestamp": "2026-04-14T21:19:20.470661",
+    "question": "OCR文本",
+    "answer": "图像题已解答",
+    "answer_preview": "图像题已解答",
+    "topics": [
+      "文本"
+    ],
+    "is_confusion_request": false,
+    "type": "qa_interaction"
+  },
+  {
+    "user_id": "u2",
+    "timestamp": "2026-04-14T21:51:59.575614",
+    "question": "OCR文本",
+    "answer": "图像题已解答",
+    "answer_preview": "图像题已解答",
+    "topics": [
+      "文本"
+    ],
+    "is_confusion_request": false,
+    "type": "qa_interaction"
+  },
+  {
+    "user_id": "u2",
+    "timestamp": "2026-04-14T21:52:43.968443",
+    "question": "OCR文本",
+    "answer": "图像题已解答",
+    "answer_preview": "图像题已解答",
+    "topics": [
+      "文本"
+    ],
+    "is_confusion_request": false,
+    "type": "qa_interaction"
+  },
+  {
+    "user_id": "u2",
+    "timestamp": "2026-04-14T21:55:08.485256",
+    "question": "OCR文本",
+    "answer": "图像题已解答",
+    "answer_preview": "图像题已解答",
+    "topics": [
+      "文本"
+    ],
+    "is_confusion_request": false,
+    "type": "qa_interaction"
   }
 ]

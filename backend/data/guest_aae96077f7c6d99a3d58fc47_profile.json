@@ -1,0 +1,119 @@
+{
+  "user_id": "guest_aae96077f7c6d99a3d58fc47",
+  "updated_at": "2026-05-11T22:04:54.020346",
+  "learning_style": "visual",
+  "style_scores": {
+    "visual": 0.356,
+    "auditory": 0.37,
+    "kinesthetic": 0.37
+  },
+  "style_method": "kmeans",
+  "style_features": {
+    "image_count": 0,
+    "link_count": 0,
+    "qa_content_count": 1,
+    "note_count": 0,
+    "other_count": 0,
+    "qa_log_count": 1,
+    "concept_count": 1
+  },
+  "interests": [
+    "纱线结构"
+  ],
+  "best_time_range": "22:00-00:00",
+  "focus_minutes": 45,
+  "content_type_counter": {
+    "note": 0,
+    "link": 0,
+    "image": 0,
+    "qa": 1,
+    "other": 0
+  },
+  "recommendation_cache": {
+    "updated_at": "2026-05-11T22:04:54.014483",
+    "reason": "learning_feedback",
+    "focus_concept": "纱线结构",
+    "items": [
+      {
+        "concept": "纱线结构",
+        "mastery": 0.382,
+        "resource_type": "流程拆解",
+        "title": "纱线结构 · 结构修复",
+        "reason": "纱线结构 当前掌握度 38%，建议采用视觉型路径做结构修复，重点放在分层练习+错因复盘。",
+        "priority": 51.7,
+        "recommend_time": "22:00-00:00",
+        "strategy_tags": [
+          "style:visual",
+          "channel:kinesthetic",
+          "method:kmeans",
+          "focus:unknown",
+          "mode:结构修复"
+        ],
+        "evidence_brief": "画像:视觉型(kmeans) | 图谱:掌握度38%",
+        "source_evidence": {
+          "profile": {
+            "learning_style": "visual",
+            "style_method": "kmeans",
+            "style_confidence": 0.356,
+            "behavior_channel": "kinesthetic"
+          },
+          "knowledge_graph": {
+            "concept": "纱线结构",
+            "mastery": 0.382,
+            "weak_threshold": 0.6
+          },
+          "diagnosis": {
+            "matched_count": 0,
+            "recent_category_count": {
+              "knowledge": 0,
+              "skill": 0,
+              "habit": 0,
+              "unknown": 0
+            },
+            "dominant_category": "unknown",
+            "dominant_count": 0,
+            "examples": []
+          }
+        }
+      }
+    ]
+  },
+  "review_reminder_cache": {
+    "updated_at": "2026-05-11T22:04:54.014483",
+    "due_count": 0,
+    "upcoming_count": 1,
+    "due_items": [],
+    "upcoming_items": [
+      {
+        "concept": "纱线结构",
+        "mastery": 0.382,
+        "review_count": 6,
+        "interval_days": 7,
+        "next_review": "2026-05-18T22:04:54.009500",
+        "due": false,
+        "overdue_days": 0,
+        "priority": 61.8
+      }
+    ]
+  },
+  "last_learning_feedback": {
+    "source": "learning_feedback",
+    "task_id": "task_refresh_001",
+    "task_type": "practice",
+    "concept": "纱线结构",
+    "accuracy": 0.667,
+    "correct_count": 4,
+    "total_count": 6,
+    "duration_seconds": 240,
+    "fact_source": {
+      "primary_source": "learning_feedback",
+      "fact_id": "acd7b345-469f-4081-aa95-0f50b414e44f",
+      "source_key": "",
+      "question_id": "",
+      "task_id": "task_refresh_001",
+      "concept": "纱线结构",
+      "timestamp": "2026-05-11T22:04:54.009500"
+    },
+    "refreshed_at": "2026-05-11T22:04:54.014483"
+  }
+}

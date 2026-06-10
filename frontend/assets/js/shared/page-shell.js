@@ -1,6 +1,8 @@
 (function () {
   const SIDEBAR_SPACE_SYNC_KEY = 'fangzhigong_space_sync';
   const SIDEBAR_SPACES_COLLAPSED_KEY = 'fangzhigong_sidebar_spaces_collapsed';
+  const STREAK_WIDGET_REFRESH_MS = 60000;
+  const STREAK_WIDGET_WEEK_GOAL = 2;
 
   const telemetrySessionState = {
     pageId: '',
@@ -12,6 +14,9 @@
   let sidebarSpacesCollapsed = readSidebarSpacesCollapsed();
   let sidebarOpenSpaceMenuId = '';
   let sidebarSpacesCache = [];
+  let streakWidgetRequestToken = 0;
+  let streakWidgetRefreshTimer = 0;
+  let streakWidgetSummary = null;
 
   function getCurrentPageId() {
     const path = String(window.location.pathname || '').replace(/\\/g, '/');
@@ -589,7 +594,319 @@
     });
   }
 
+  function formatLocalDate(date) {
+    if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '';
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  }
+
+  function buildDefaultStreakWeekDays() {
+    const labels = ['一', '二', '三', '四', '五', '六', '日'];
+    const now = new Date();
+    if (Number.isNaN(now.getTime())) {
+      return labels.map(function (label) {
+        return { label: label, active: false, today: false, date: '' };
+      });
+    }
+
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const weekdayIndex = (today.getDay() + 6) % 7;
+    const weekStart = new Date(today);
+    weekStart.setDate(today.getDate() - weekdayIndex);
+
+    return labels.map(function (label, offset) {
+      const nextDay = new Date(weekStart);
+      nextDay.setDate(weekStart.getDate() + offset);
+      return {
+        label: label,
+        active: false,
+        today: offset === weekdayIndex,
+        date: formatLocalDate(nextDay)
+      };
+    });
+  }
+
+  function normalizeStreakSummary(raw) {
+    const base = raw && typeof raw === 'object' ? raw : {};
+    const goal = Math.max(1, Number(base.week_goal_days) || STREAK_WIDGET_WEEK_GOAL);
+    const weekActiveDays = Math.max(0, Number(base.week_active_days) || 0);
+    const currentStreak = Math.max(0, Number(base.current_streak) || 0);
+    const progressCurrentRaw = Number(base.progress_current);
+    const progressCurrent = Number.isFinite(progressCurrentRaw)
+      ? Math.max(0, Math.min(goal, Math.round(progressCurrentRaw)))
+      : Math.min(goal, weekActiveDays);
+    const fallbackWeekDays = buildDefaultStreakWeekDays();
+
+    const weekDays = Array.isArray(base.week_days) && base.week_days.length === 7
+      ? base.week_days.map(function (item, index) {
+          const fallback = fallbackWeekDays[index] || {};
+          return {
+            label: String((item && item.label) || fallback.label || '').trim() || fallback.label || '',
+            active: !!(item && item.active),
+            today: !!(item && item.today),
+            date: String((item && item.date) || fallback.date || '').trim()
+          };
+        })
+      : fallbackWeekDays;
+
+    const progressLabel = String(base.progress_label || `${progressCurrent}/${goal}`).trim() || `${progressCurrent}/${goal}`;
+    const status = String(base.status || (progressCurrent >= goal ? 'started' : 'warming')).trim() || 'warming';
+    const message = String(base.message || (progressCurrent >= goal
+      ? '连续登录已开始，继续保持这个节奏。'
+      : `本周登录 ${goal} 天以开始你的连续登录。`)).trim();
+    const helper = String(base.helper || (progressCurrent >= goal
+      ? (currentStreak > 0 ? `已连续登录 ${currentStreak} 天` : `本周已登录 ${weekActiveDays} 天`)
+      : `还差 ${Math.max(0, goal - weekActiveDays)} 天即可点亮连续登录`)).trim();
+
+    return {
+      weekLabel: String(base.week_label || '本周').trim() || '本周',
+      weekGoalDays: goal,
+      weekActiveDays: weekActiveDays,
+      progressCurrent: progressCurrent,
+      progressLabel: progressLabel,
+      currentStreak: currentStreak,
+      status: status,
+      message: message,
+      helper: helper,
+      weekDays: weekDays
+    };
+  }
+
+  function getStreakIconMarkup(extraClassName) {
+    const extra = String(extraClassName || '').trim();
+    const classAttr = extra ? `global-streak-icon ${extra}` : 'global-streak-icon';
+    return `
+      <svg class="${classAttr}" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+        <path d="M10.2 1.7c.4 1.5.1 2.8-.8 3.9-.8 1-1.1 1.9-.9 2.8 2.1-.4 3.6-1.9 4.5-4.4 1.8 2 2.6 4 2.6 5.9 0 3.9-2.9 6.8-6.8 6.8S1.9 13.9 1.9 10.3c0-2.1 1-4.2 2.9-6.3.1 2 .8 3.5 2.1 4.5 0-1 .4-2 1.2-3 .9-1.2 1.6-2.5 2.1-3.8Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+        <path d="M10 9.2c1.7 1 2.6 2.1 2.6 3.3 0 1.5-1.2 2.7-2.7 2.7S7.2 14 7.2 12.5c0-.9.5-1.8 1.6-2.8.1.8.5 1.4 1.2 1.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+      </svg>
+    `;
+  }
+
+  function ensureStreakWidget() {
+    let root = document.getElementById('globalStreakWidget');
+    const dock = document.getElementById('globalStreakDock');
+    const host = dock || document.body;
+
+    if (root) {
+      if (root.parentNode !== host) {
+        host.appendChild(root);
+      }
+      root.classList.toggle('is-inline-anchor', !!dock);
+      return root;
+    }
+
+    root = document.createElement('div');
+    root.id = 'globalStreakWidget';
+    root.className = 'global-streak-widget';
+    root.innerHTML = `
+      <button
+        type="button"
+        class="global-streak-trigger"
+        id="globalStreakTrigger"
+        aria-expanded="false"
+        aria-controls="globalStreakPopover"
+        aria-label="查看连续登录进度"
+      >
+        ${getStreakIconMarkup()}
+        <span class="global-streak-trigger-text">0/2</span>
+      </button>
+      <div class="global-streak-popover" id="globalStreakPopover" hidden></div>
+    `;
+    root.classList.toggle('is-inline-anchor', !!dock);
+    host.appendChild(root);
+
+    const trigger = document.getElementById('globalStreakTrigger');
+    if (trigger && !trigger.dataset.pageShellBound) {
+      trigger.addEventListener('click', function (event) {
+        event.preventDefault();
+        event.stopPropagation();
+        setStreakWidgetOpen(trigger.getAttribute('aria-expanded') !== 'true');
+      });
+      trigger.dataset.pageShellBound = '1';
+    }
+
+    return root;
+  }
+
+  function getStreakWidgetConflictAnchor() {
+    const selectors = [
+      '#authTopSlot',
+      '.dashboard-actions',
+      '.topbar .links',
+      '#spaceUserLabel',
+      '.space-reader-topbar'
+    ];
+
+    for (let index = 0; index < selectors.length; index += 1) {
+      const node = document.querySelector(selectors[index]);
+      if (!node) continue;
+      const rect = node.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0) continue;
+      if (rect.bottom <= 0 || rect.top >= Math.min(window.innerHeight, 180)) continue;
+      return node;
+    }
+
+    return null;
+  }
+
+  function syncStreakWidgetOffset() {
+    const root = document.getElementById('globalStreakWidget');
+    if (!root) return;
+    if (root.classList.contains('is-inline-anchor')) {
+      root.style.top = '';
+      return;
+    }
+
+    let topOffset = window.innerWidth <= 768 ? 12 : 18;
+    const anchor = getStreakWidgetConflictAnchor();
+    if (anchor) {
+      const rect = anchor.getBoundingClientRect();
+      topOffset = Math.max(topOffset, Math.round(rect.bottom + (window.innerWidth <= 768 ? 8 : 12)));
+    }
+
+    root.style.top = `${topOffset}px`;
+  }
+
+  function setStreakWidgetOpen(nextOpen) {
+    const trigger = document.getElementById('globalStreakTrigger');
+    const popover = document.getElementById('globalStreakPopover');
+    if (!trigger || !popover) return;
+
+    const isOpen = !!nextOpen;
+    trigger.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    popover.hidden = !isOpen;
+    syncStreakWidgetOffset();
+  }
+
+  function renderStreakWidget(summary) {
+    const root = ensureStreakWidget();
+    if (!root) return;
+
+    const trigger = document.getElementById('globalStreakTrigger');
+    const label = root.querySelector('.global-streak-trigger-text');
+    const popover = document.getElementById('globalStreakPopover');
+    const normalized = normalizeStreakSummary(summary);
+    streakWidgetSummary = normalized;
+
+    if (label) {
+      label.textContent = normalized.progressLabel;
+    }
+    if (trigger) {
+      trigger.setAttribute('aria-label', `${normalized.weekLabel}连续登录进度 ${normalized.progressLabel}`);
+    }
+    if (popover) {
+      popover.innerHTML = `
+        <div class="global-streak-card-value">
+          ${getStreakIconMarkup()}
+          <span>${esc(normalized.progressLabel)}</span>
+        </div>
+        <div class="global-streak-card-title">${esc(normalized.weekLabel)}</div>
+        <div class="global-streak-card-copy">
+          <div class="global-streak-card-copy-text">${esc(normalized.message)}</div>
+          <span class="global-streak-card-badge">${esc(normalized.progressLabel)}</span>
+        </div>
+        <div class="global-streak-helper">${esc(normalized.helper)}</div>
+        <div class="global-streak-week">
+          ${normalized.weekDays.map(function (item) {
+            const classNames = ['global-streak-day'];
+            if (item.active) classNames.push('active');
+            if (item.today) classNames.push('today');
+            return `
+              <div class="${classNames.join(' ')}" title="${esc(item.date)}">
+                <span class="global-streak-day-dot" aria-hidden="true"></span>
+                <span class="global-streak-day-label">${esc(item.label)}</span>
+              </div>
+            `;
+          }).join('')}
+        </div>
+      `;
+    }
+
+    syncStreakWidgetOffset();
+  }
+
+  async function refreshGlobalStreakWidget() {
+    ensureStreakWidget();
+    if (!streakWidgetSummary) {
+      renderStreakWidget(null);
+    }
+
+    const apiBase = getTelemetryApiBase();
+    if (!apiBase || typeof window.fetch !== 'function') return;
+
+    const requestToken = ++streakWidgetRequestToken;
+    const userId = getTelemetryUserId();
+    const url = `${apiBase}/api/dashboard/streak?user_id=${encodeURIComponent(userId)}&_t=${Date.now()}`;
+
+    try {
+      const response = await window.fetch(url, { method: 'GET' });
+      const payload = window.ApiUtils && typeof window.ApiUtils.parseApiResponse === 'function'
+        ? await window.ApiUtils.parseApiResponse(response)
+        : await response.json();
+      if (requestToken !== streakWidgetRequestToken) return;
+      renderStreakWidget(payload && payload.streak ? payload.streak : null);
+    } catch (error) {
+      if (requestToken !== streakWidgetRequestToken) return;
+      renderStreakWidget(streakWidgetSummary);
+    }
+  }
+
+  function initGlobalStreakWidget() {
+    ensureStreakWidget();
+    syncStreakWidgetOffset();
+
+    if (window.__fangzhigongGlobalStreakWidgetInitialized) {
+      return;
+    }
+    window.__fangzhigongGlobalStreakWidgetInitialized = true;
+
+    document.addEventListener('click', function (event) {
+      const root = document.getElementById('globalStreakWidget');
+      if (!root) return;
+      if (event.target && root.contains(event.target)) return;
+      setStreakWidgetOpen(false);
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') {
+        setStreakWidgetOpen(false);
+      }
+    });
+
+    window.addEventListener('resize', syncStreakWidgetOffset);
+    window.addEventListener('scroll', syncStreakWidgetOffset, { passive: true });
+    window.addEventListener('pageshow', function () {
+      syncStreakWidgetOffset();
+      refreshGlobalStreakWidget();
+    });
+    window.addEventListener('focus', refreshGlobalStreakWidget);
+    document.addEventListener('visibilitychange', function () {
+      if (!document.hidden) {
+        syncStreakWidgetOffset();
+        refreshGlobalStreakWidget();
+      }
+    });
+
+    if (window.UserContext && typeof window.UserContext.onChange === 'function') {
+      window.UserContext.onChange(function () {
+        setStreakWidgetOpen(false);
+        refreshGlobalStreakWidget();
+      });
+    }
+
+    if (!streakWidgetRefreshTimer) {
+      streakWidgetRefreshTimer = window.setInterval(refreshGlobalStreakWidget, STREAK_WIDGET_REFRESH_MS);
+    }
+
+    refreshGlobalStreakWidget();
+  }
+
   function initGlobalSidebar() {
+    initGlobalStreakWidget();
+
     const toggle = document.getElementById('globalSidebarToggle');
     const drawer = document.getElementById('globalSidebar');
     const backdrop = document.getElementById('globalSidebarBackdrop');
@@ -681,6 +998,7 @@
     initGlobalSidebar: initGlobalSidebar,
     markActiveSidebarLink: markActiveSidebarLink,
     refreshSidebarSpaces: refreshSidebarSpaces,
+    refreshGlobalStreakWidget: refreshGlobalStreakWidget,
     trackLearningAction: function (action, payload) {
       postLearningBehavior({
         behavior_type: String(action || '').trim() || 'action_click',
@@ -696,9 +1014,14 @@
     }
   };
 
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initLearningTelemetry, { once: true });
-  } else {
+  function initPageShellRuntime() {
     initLearningTelemetry();
+    initGlobalStreakWidget();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initPageShellRuntime, { once: true });
+  } else {
+    initPageShellRuntime();
   }
 })();

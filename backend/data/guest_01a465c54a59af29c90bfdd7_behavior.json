@@ -1,0 +1,18 @@
+[
+  {
+    "id": "69c25fff-2c1b-45d6-8cde-fc0d51ae37f9",
+    "user_id": "guest_01a465c54a59af29c90bfdd7",
+    "timestamp": "2026-05-24T01:26:10.373411",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "index",
+    "target": "",
+    "label": "page_view",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/knowledge-map.html"
+    }
+  }
+]

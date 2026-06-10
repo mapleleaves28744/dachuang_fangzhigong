@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&family=Noto+Serif+SC:wght@600;700;900&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="assets/css/pages/home-page.css">
-    <link rel="stylesheet" href="assets/css/shared/auth-ui.css?v=20260403-space-root-nav">
+    <link rel="stylesheet" href="assets/css/shared/auth-ui.css?v=20260512-auth-modal-scrollbarhide-v3">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"></script>
@@ -24,6 +24,14 @@
             --danger: #c2410c;
             --chip-bg: #edf4ff;
             --chip-text: #1447a6;
+            --home-shell-width: clamp(980px, 62vw, 1160px);
+            --home-content-width: 920px;
+            --home-auth-inline-width: 210px;
+            --home-auth-right-min: -96px;
+            --home-auth-right-max: -24px;
+            --home-page-max-width: 1440px;
+            --home-entry-max-width: 1220px;
+            --home-explore-max-width: 1180px;
         }
 
         * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -166,7 +174,7 @@
             font-weight: 700;
         }
 
-        .app-container { max-width: 1320px; margin: 0 auto; padding: 24px; }
+        .app-container { max-width: var(--home-page-max-width); margin: 0 auto; padding: 24px; }
 
         .navbar {
             display: grid;
@@ -199,7 +207,7 @@
             border: 1px solid #e6edf6;
             background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
             box-shadow:
-                0 18px 44px rgba(15, 23, 42, 0.08),
+                0 8px 22px rgba(15, 23, 42, 0.05),
                 inset 0 1px 0 rgba(255, 255, 255, 0.96);
         }
 
@@ -236,13 +244,17 @@
         .auth-top-slot {
             position: absolute;
             top: 50%;
-            right: 0;
+            right: clamp(
+                var(--home-auth-right-min),
+                calc((100% - min(100%, var(--home-shell-width))) / 2 - var(--home-auth-inline-width)),
+                var(--home-auth-right-max)
+            );
             transform: translateY(-50%);
             display: flex;
             align-items: center;
             justify-content: flex-end;
             width: auto;
-            min-width: 92px;
+            min-width: 0;
         }
 
         .nav-links {
@@ -281,8 +293,8 @@
         }
 
         .entry-gateway {
-            --entry-content-width: 780px;
-            max-width: 1160px;
+            --entry-content-width: var(--home-content-width);
+            max-width: var(--home-entry-max-width);
             margin: 28px auto 6px;
             padding: 12px 4px 20px;
         }
@@ -302,8 +314,9 @@
         }
 
         #entryUserName {
-            font-weight: 600;
-            color: #334155;
+            font: inherit;
+            color: inherit;
+            letter-spacing: inherit;
         }
 
         .entry-subheading {
@@ -356,21 +369,22 @@
         }
 
         .entry-tool-icon {
-            width: 50px;
-            height: 50px;
-            border-radius: 16px;
-            background: linear-gradient(180deg, #ffffff 0%, #f7fafc 100%);
-            border: 1px solid #e6ebf3;
-            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.05);
-            display: flex;
+            width: 24px;
+            height: 24px;
+            display: inline-flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 12px;
+            margin-bottom: 16px;
+            background: transparent;
+            border: 0;
+            box-shadow: none;
+            border-radius: 0;
+            padding: 0;
         }
 
         .entry-tool-icon svg {
-            width: 22px;
-            height: 22px;
+            width: 24px;
+            height: 24px;
             stroke: #5b6472;
             fill: none;
             stroke-width: 1.85;
@@ -441,7 +455,7 @@
         }
 
         .entry-explore {
-            max-width: 1040px;
+            max-width: var(--home-explore-max-width);
             margin: 36px auto 0;
         }
 
@@ -579,9 +593,7 @@
             margin-top: 16px;
             border: 1px solid #e4eaf4;
             border-radius: 18px;
-            background:
-                linear-gradient(180deg, rgba(248, 250, 252, 0.96) 0%, rgba(255, 255, 255, 1) 22%),
-                #ffffff;
+            background: #ffffff;
             padding: 14px;
             box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
             display: flex;
@@ -1404,12 +1416,18 @@
 
         .entry-action-close {
             border: 1px solid #dbeafe;
-            background: #f8fafc;
+            background: #ffffff;
             color: #334155;
-            border-radius: 8px;
-            padding: 4px 10px;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
             cursor: pointer;
             font-weight: 700;
+            font-size: 20px;
+            line-height: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .entry-action-desc {
@@ -1424,7 +1442,7 @@
             padding: 10px;
             border: 1px solid #d9e6f6;
             border-radius: 12px;
-            background: #f8fbff;
+            background: #ffffff;
         }
 
         .entry-action-space-title {
@@ -1438,6 +1456,182 @@
             display: flex;
             flex-direction: column;
             gap: 8px;
+        }
+
+        .entry-action-space-select {
+            position: relative;
+        }
+
+        .entry-action-space-trigger {
+            width: 100%;
+            border: 1px solid #d7e1ef;
+            border-radius: 14px;
+            background: linear-gradient(180deg, #ffffff 0%, #fbfdff 100%);
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            text-align: left;
+            cursor: pointer;
+            box-shadow: 0 8px 18px rgba(15, 23, 42, 0.04);
+            transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+        }
+
+        .entry-action-space-trigger:hover,
+        .entry-action-space-trigger:focus-visible,
+        .entry-action-space-select.is-open .entry-action-space-trigger {
+            outline: none;
+            border-color: #bfd5f5;
+            box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
+            transform: translateY(-1px);
+        }
+
+        .entry-action-space-trigger-copy {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .entry-action-space-trigger-label {
+            color: #0f172a;
+            font-size: 15px;
+            font-weight: 700;
+            line-height: 1.2;
+            word-break: break-word;
+        }
+
+        .entry-action-space-trigger-meta {
+            color: #64748b;
+            font-size: 12px;
+            line-height: 1.35;
+        }
+
+        .entry-action-space-trigger-caret {
+            width: 18px;
+            height: 18px;
+            color: #94a3b8;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            transition: transform 0.18s ease, color 0.18s ease;
+        }
+
+        .entry-action-space-trigger-caret svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .entry-action-space-select.is-open .entry-action-space-trigger-caret {
+            transform: rotate(180deg);
+            color: #475569;
+        }
+
+        .entry-action-space-menu {
+            position: absolute;
+            top: calc(100% + 10px);
+            left: 0;
+            right: 0;
+            z-index: 14;
+            display: none;
+            flex-direction: column;
+            gap: 6px;
+            padding: 8px;
+            border: 1px solid #e2e8f0;
+            border-radius: 18px;
+            background: #ffffff;
+            box-shadow: 0 22px 40px rgba(15, 23, 42, 0.16);
+            max-height: 264px;
+            overflow-y: auto;
+        }
+
+        .entry-action-space-select.is-open .entry-action-space-menu {
+            display: flex;
+        }
+
+        .entry-action-space-option {
+            width: 100%;
+            border: 1px solid transparent;
+            border-radius: 14px;
+            background: #ffffff;
+            padding: 11px 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            text-align: left;
+            cursor: pointer;
+            transition: background 0.16s ease, border-color 0.16s ease, box-shadow 0.16s ease;
+        }
+
+        .entry-action-space-option:hover,
+        .entry-action-space-option:focus-visible {
+            outline: none;
+            background: #f8fafc;
+            border-color: #e2e8f0;
+        }
+
+        .entry-action-space-option.is-selected {
+            background: #f5f8ff;
+            border-color: #bfd5f5;
+            box-shadow: inset 0 0 0 1px rgba(15, 91, 216, 0.06);
+        }
+
+        .entry-action-space-option.is-create {
+            background: #fcfdff;
+            border-style: dashed;
+            border-color: #d5e1f3;
+        }
+
+        .entry-action-space-option.is-create.is-selected {
+            background: #f4f8ff;
+            border-color: #a9c7f1;
+        }
+
+        .entry-action-space-option-copy {
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .entry-action-space-option-label {
+            color: #0f172a;
+            font-size: 14px;
+            font-weight: 700;
+            line-height: 1.2;
+            word-break: break-word;
+        }
+
+        .entry-action-space-option-meta {
+            color: #64748b;
+            font-size: 12px;
+            line-height: 1.35;
+        }
+
+        .entry-action-space-option-indicator {
+            flex-shrink: 0;
+            border-radius: 999px;
+            padding: 5px 9px;
+            background: #eef4ff;
+            color: #0f5bd8;
+            font-size: 11px;
+            font-weight: 800;
+            line-height: 1;
+            opacity: 0;
+            transition: opacity 0.16s ease;
+        }
+
+        .entry-action-space-option.is-selected .entry-action-space-option-indicator,
+        .entry-action-space-option.is-create .entry-action-space-option-indicator {
+            opacity: 1;
+        }
+
+        .entry-action-native-select {
+            display: none;
         }
 
         .entry-action-space-hint {
@@ -1486,7 +1680,7 @@
         .entry-record-controls {
             margin-top: 8px;
             border: 1px dashed #c9d9f3;
-            background: #f8fbff;
+            background: #ffffff;
             border-radius: 10px;
             padding: 10px;
             display: none;
@@ -1512,8 +1706,8 @@
 
         .entry-record-btn.primary {
             border-color: #0f9b6b;
-            background: #0f9b6b;
-            color: #ffffff;
+            background: #ffffff;
+            color: #0f9b6b;
         }
 
         .entry-record-status {
@@ -1553,9 +1747,9 @@
         }
 
         .entry-action-btn.primary {
-            background: #0f5bd8;
+            background: #ffffff;
             border-color: #0f5bd8;
-            color: #ffffff;
+            color: #0f5bd8;
         }
 
         .entry-action-btn:disabled {
@@ -2188,14 +2382,14 @@
         }
 
         .app-container {
-            max-width: 1360px;
+            max-width: var(--home-page-max-width);
             padding: 26px;
         }
 
         .navbar {
             margin-bottom: 20px;
             min-height: auto;
-            padding: 0 132px 0 0;
+            padding: 0;
             border: none;
             border-radius: 0;
             background: transparent;
@@ -2204,6 +2398,8 @@
         }
 
         .logo-panel {
+            width: min(100%, var(--home-shell-width));
+            margin: 0 auto;
             background: linear-gradient(180deg, rgba(255, 255, 255, 0.98), rgba(252, 253, 255, 0.98));
             box-shadow:
                 0 22px 48px rgba(11, 38, 77, 0.09),
@@ -2228,6 +2424,40 @@
             color: #0c3a78;
             border-color: #9ec6f5;
             background: linear-gradient(145deg, #ffffff, #e7f1ff);
+        }
+
+        @media (max-width: 1320px) {
+            .navbar {
+                grid-template-columns: 1fr;
+                gap: 12px;
+                min-height: auto;
+                padding: 12px 0;
+            }
+
+            .navbar-brand-shell {
+                grid-column: auto;
+                width: 100%;
+            }
+
+            .logo-panel {
+                width: 100%;
+                min-height: 78px;
+                padding: 18px 22px;
+                border-radius: 22px;
+            }
+
+            .auth-top-slot {
+                grid-column: auto;
+                position: static;
+                top: auto;
+                right: auto;
+                transform: none;
+                width: 100%;
+                min-width: 0;
+                justify-content: center;
+                justify-self: center;
+                margin-top: 12px;
+            }
         }
 
         .chat-section,
@@ -2451,7 +2681,7 @@
         }
 
         body.guest-home-layout .global-sidebar-scroll {
-            overflow-y: auto;
+            overflow-y: hidden;
             padding-right: 0;
             display: flex;
             flex-direction: column;
@@ -2462,7 +2692,8 @@
             display: flex;
             flex-direction: column;
             gap: 28px;
-            min-height: 100%;
+            flex: 1 1 auto;
+            min-height: 0;
         }
 
         body.guest-home-layout .global-sidebar-logo,
@@ -2482,14 +2713,14 @@
         }
 
         body.guest-home-layout .app-container {
-            max-width: 1320px;
+            max-width: var(--home-page-max-width);
             margin: 0 auto;
             padding: 22px 24px 40px;
         }
 
         body.guest-home-layout .navbar {
             min-height: auto;
-            padding: 0 132px 0 0;
+            padding: 0;
             margin-bottom: 0;
             border: none;
             border-radius: 0;
@@ -2504,7 +2735,7 @@
         }
 
         body.guest-home-layout .logo-panel {
-            width: 100%;
+            width: min(100%, var(--home-shell-width));
             max-width: none;
             min-height: 96px;
             padding: 22px 80px;
@@ -2518,14 +2749,19 @@
         body.guest-home-layout .auth-top-slot {
             position: absolute;
             top: 50%;
-            right: 0;
+            right: clamp(
+                var(--home-auth-right-min),
+                calc((100% - min(100%, var(--home-shell-width))) / 2 - var(--home-auth-inline-width)),
+                var(--home-auth-right-max)
+            );
             transform: translateY(-50%);
             width: auto;
             justify-content: flex-end;
         }
 
         body.guest-home-layout .entry-gateway {
-            max-width: 1120px;
+            --entry-content-width: var(--home-content-width);
+            max-width: var(--home-entry-max-width);
             margin: 30px auto 0;
             padding: 0 0 24px;
         }
@@ -2553,15 +2789,19 @@
         }
 
         body.guest-home-layout .entry-tool-icon {
-            width: 50px;
-            height: 50px;
-            margin-bottom: 12px;
-            border-radius: 16px;
+            width: 24px;
+            height: 24px;
+            margin-bottom: 16px;
+            border-radius: 0;
+            background: transparent;
+            border: 0;
+            box-shadow: none;
+            padding: 0;
         }
 
         body.guest-home-layout .entry-tool-icon svg {
-            width: 22px;
-            height: 22px;
+            width: 24px;
+            height: 24px;
         }
 
         body.guest-home-layout .entry-tool-title {
@@ -2593,6 +2833,7 @@
         }
 
         body.guest-home-layout .entry-explore {
+            max-width: var(--home-explore-max-width);
             margin-top: 36px;
         }
 
@@ -2892,9 +3133,9 @@
                         <div class="entry-plan-chip">今日安排</div>
                     </div>
 
-                    <div class="entry-plan-note">
+                    <!-- <div class="entry-plan-note">
                         建议先排 2 到 4 个最重要的小任务，做完后直接勾选，右下方会同步提示需要优先复习的知识点。
-                    </div>
+                    </div> -->
 
                     <div class="add-plan entry-plan-form">
                         <input id="new-plan-time" type="time" aria-label="计划时间">
@@ -3063,13 +3304,34 @@
         <div class="entry-action-card">
             <div class="entry-action-head">
                 <div class="entry-action-title" id="entryActionTitle">入口操作</div>
-                <button type="button" class="entry-action-close" id="entryActionCloseBtn">关闭</button>
+                <button type="button" class="entry-action-close" id="entryActionCloseBtn" aria-label="关闭">&times;</button>
             </div>
             <div class="entry-action-desc" id="entryActionDesc">请输入内容后提交。</div>
             <div class="entry-action-space-box">
-                <div class="entry-action-space-title">保存到空间</div>
+                <div class="entry-action-space-title">选择空间</div>
                 <div class="entry-action-space-row">
-                    <select id="entryActionSpaceSelect" class="entry-action-input" aria-label="保存到空间"></select>
+                    <div class="entry-action-space-select" id="entryActionSpaceSelectWrap">
+                        <button
+                            type="button"
+                            class="entry-action-space-trigger"
+                            id="entryActionSpaceTrigger"
+                            aria-haspopup="listbox"
+                            aria-expanded="false"
+                            aria-controls="entryActionSpaceMenu"
+                        >
+                            <span class="entry-action-space-trigger-copy">
+                                <span class="entry-action-space-trigger-label" id="entryActionSpaceTriggerLabel">请选择空间</span>
+                                <span class="entry-action-space-trigger-meta" id="entryActionSpaceTriggerMeta">可直接保存到已有空间，或新建一个空间。</span>
+                            </span>
+                            <span class="entry-action-space-trigger-caret" aria-hidden="true">
+                                <svg viewBox="0 0 16 16" fill="none">
+                                    <path d="M4 6.5L8 10L12 6.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"></path>
+                                </svg>
+                            </span>
+                        </button>
+                        <div class="entry-action-space-menu" id="entryActionSpaceMenu" role="listbox" aria-label="选择空间"></div>
+                        <select id="entryActionSpaceSelect" class="entry-action-input entry-action-native-select" aria-label="保存到空间"></select>
+                    </div>
                     <input id="entryActionNewSpaceInput" class="entry-action-input" type="text" placeholder="输入新空间名称，例如 高数期末复习" style="display:none;">
                 </div>
                 <div class="entry-action-space-hint" id="entryActionSpaceHint">可直接保存到已有空间，或在本次提交时新建空间。</div>
@@ -3085,7 +3347,7 @@
                 <audio id="entryRecordAudio" class="entry-record-audio" controls></audio>
             </div>
             <input id="entryActionFile" class="entry-action-file" type="file" accept="image/*,video/*,application/pdf,.pdf,.doc,.docx,.txt,.md,.markdown,.json,.csv,.tsv,.ppt,.pptx,.xls,.xlsx,audio/*" multiple>
-            <div class="entry-action-file-hint" id="entryActionFileHint">支持图片、文本、文档、PDF、音频、视频。文本会尽量保留正文，音视频会保留可预览文件。</div>
+            <div class="entry-action-file-hint" id="entryActionFileHint"></div>
             <div class="entry-action-result" id="entryActionResult"></div>
             <div class="entry-action-footer">
                 <button type="button" class="entry-action-btn" id="entryActionCancelBtn">取消</button>
@@ -3114,16 +3376,21 @@
     </div>
 
     <script src="assets/js/shared/user-context.js?v=20260330-authfix"></script>
-    <script src="assets/js/shared/api-utils.js?v=20260409-authmsgfix"></script>
+    <script src="assets/js/shared/api-utils.js?v=20260511-auth-dup-check"></script>
     <script src="assets/js/shared/project-local-data.js?v=20260330-authfix"></script>
     <script src="assets/js/shared/space-cloud-store.js?v=20260403-sidebarspaces"></script>
-    <script src="assets/js/shared/auth-ui.js?v=20260409-authentrygate"></script>
-    <script src="assets/js/shared/page-shell.js?v=20260403-space-root-nav"></script>
+    <script src="assets/js/shared/auth-ui.js?v=20260512-auth-register-autofill-fix"></script>
+    <script src="assets/js/shared/page-shell.js?v=20260416-streak-dock"></script>
     <script>
         const API_BASE = window.ApiUtils.getApiBase();
         const MAX_CHAT_SESSIONS = 20;
         const DRAW_CONCEPT_STORE_KEY = 'fangzhigong_home_draw_concept_v1';
-        const { parseApiResponse, withSuggestion } = window.ApiUtils;
+        const {
+            parseApiResponse,
+            withSuggestion,
+            hasAudioInputDevice,
+            withRecorderSuggestion
+        } = window.ApiUtils;
 
         let chatSessions = [];
         let activeSessionId = null;
@@ -3142,6 +3409,7 @@
         let activeEntrySpaceId = null;
         let activeEntrySpaceMenuId = null;
         let isEntrySpaceSortMenuOpen = false;
+        let isEntryActionSpaceMenuOpen = false;
         let entrySpaceSortMode = 'latest';
         let editingEntrySpaceId = null;
         let editingEntrySpaceDraft = '';
@@ -3570,7 +3838,39 @@
             const select = document.getElementById('entryActionSpaceSelect');
             const newInput = document.getElementById('entryActionNewSpaceInput');
             const hint = document.getElementById('entryActionSpaceHint');
-            return { select, newInput, hint };
+            const wrap = document.getElementById('entryActionSpaceSelectWrap');
+            const trigger = document.getElementById('entryActionSpaceTrigger');
+            const triggerLabel = document.getElementById('entryActionSpaceTriggerLabel');
+            const triggerMeta = document.getElementById('entryActionSpaceTriggerMeta');
+            const menu = document.getElementById('entryActionSpaceMenu');
+            return { select, newInput, hint, wrap, trigger, triggerLabel, triggerMeta, menu };
+        }
+
+        function getEntryActionSpaceDisplayState(value) {
+            if (value === ENTRY_ACTION_CREATE_SPACE_VALUE) {
+                return {
+                    label: '+ 新建空间',
+                    meta: '输入名称后，会在本次提交时自动创建。'
+                };
+            }
+            const space = getEntrySpaceById(value);
+            if (space) {
+                return {
+                    label: space.name || '新空间',
+                    meta: '内容会保存到这个空间里。'
+                };
+            }
+            return {
+                label: '请选择空间',
+                meta: '可直接保存到已有空间，或新建一个空间。'
+            };
+        }
+
+        function closeEntryActionSpaceMenu() {
+            if (!isEntryActionSpaceMenuOpen) return;
+            isEntryActionSpaceMenuOpen = false;
+            const { select } = getEntryActionSpaceInputState();
+            renderEntryActionSpaceOptions(select ? select.value : activeEntrySpaceId);
         }
 
         function toggleEntryActionNewSpaceInput(shouldShow) {
@@ -3699,12 +3999,14 @@
         }
 
         function renderEntryActionSpaceOptions(selectedSpaceId) {
-            const { select } = getEntryActionSpaceInputState();
+            const { select, wrap, trigger, triggerLabel, triggerMeta, menu } = getEntryActionSpaceInputState();
             if (!select) return;
 
-            const activeId = String(selectedSpaceId || activeEntrySpaceId || '');
-            const options = entrySpaces.slice()
-                .sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0))
+            const fallbackId = String(select.value || activeEntrySpaceId || '');
+            const activeId = String(selectedSpaceId === undefined || selectedSpaceId === null ? fallbackId : selectedSpaceId);
+            const sortedSpaces = entrySpaces.slice()
+                .sort((a, b) => Number(b.createdAt || 0) - Number(a.createdAt || 0));
+            const options = sortedSpaces
                 .map(space => `<option value="${escapeHtml(space.id)}">${escapeHtml(space.name || '新空间')}</option>`);
 
             options.push(`<option value="${ENTRY_ACTION_CREATE_SPACE_VALUE}">+ 新建空间</option>`);
@@ -3712,6 +4014,59 @@
             select.value = entrySpaces.find(space => space.id === activeId)
                 ? activeId
                 : (entrySpaces[0] ? entrySpaces[0].id : ENTRY_ACTION_CREATE_SPACE_VALUE);
+
+            if (menu) {
+                const optionItems = sortedSpaces.map(space => {
+                    const isSelected = String(space.id) === String(select.value);
+                    return `
+                        <button
+                            type="button"
+                            class="entry-action-space-option${isSelected ? ' is-selected' : ''}"
+                            data-entry-action-space-value="${escapeHtml(space.id)}"
+                            role="option"
+                            aria-selected="${isSelected ? 'true' : 'false'}"
+                        >
+                            <span class="entry-action-space-option-copy">
+                                <span class="entry-action-space-option-label">${escapeHtml(space.name || '新空间')}</span>
+                                <span class="entry-action-space-option-meta">保存到已有空间</span>
+                            </span>
+                            <span class="entry-action-space-option-indicator" aria-hidden="true">已选</span>
+                        </button>
+                    `;
+                });
+
+                const isCreateSelected = String(select.value) === ENTRY_ACTION_CREATE_SPACE_VALUE;
+                optionItems.push(`
+                    <button
+                        type="button"
+                        class="entry-action-space-option is-create${isCreateSelected ? ' is-selected' : ''}"
+                        data-entry-action-space-value="${ENTRY_ACTION_CREATE_SPACE_VALUE}"
+                        role="option"
+                        aria-selected="${isCreateSelected ? 'true' : 'false'}"
+                    >
+                        <span class="entry-action-space-option-copy">
+                            <span class="entry-action-space-option-label">+ 新建空间</span>
+                            <span class="entry-action-space-option-meta">提交时自动创建，并直接保存到新空间</span>
+                        </span>
+                        <span class="entry-action-space-option-indicator" aria-hidden="true">${isCreateSelected ? '待创建' : '创建'}</span>
+                    </button>
+                `);
+                menu.innerHTML = optionItems.join('');
+            }
+
+            const displayState = getEntryActionSpaceDisplayState(String(select.value || ''));
+            if (wrap) {
+                wrap.classList.toggle('is-open', isEntryActionSpaceMenuOpen);
+            }
+            if (trigger) {
+                trigger.setAttribute('aria-expanded', isEntryActionSpaceMenuOpen ? 'true' : 'false');
+            }
+            if (triggerLabel) {
+                triggerLabel.textContent = displayState.label;
+            }
+            if (triggerMeta) {
+                triggerMeta.textContent = displayState.meta;
+            }
             toggleEntryActionNewSpaceInput(select.value === ENTRY_ACTION_CREATE_SPACE_VALUE);
         }
 
@@ -4309,7 +4664,7 @@
             const section = document.getElementById('entrySpacesSection');
             const sortTrigger = document.getElementById('entrySpaceSortTrigger');
             const sortMenu = document.getElementById('entrySpaceSortMenu');
-            const { select } = getEntryActionSpaceInputState();
+            const { select, trigger, menu } = getEntryActionSpaceInputState();
             if (!section) return;
 
             await refreshEntrySpacesUI();
@@ -4337,6 +4692,30 @@
                 sortMenu.dataset.bound = '1';
             }
 
+            if (trigger && !trigger.dataset.bound) {
+                trigger.addEventListener('click', function (event) {
+                    event.stopPropagation();
+                    isEntryActionSpaceMenuOpen = !isEntryActionSpaceMenuOpen;
+                    renderEntryActionSpaceOptions(select ? select.value : activeEntrySpaceId);
+                });
+                trigger.dataset.bound = '1';
+            }
+
+            if (menu && !menu.dataset.bound) {
+                menu.addEventListener('click', function (event) {
+                    const option = event.target.closest('[data-entry-action-space-value]');
+                    if (!option) return;
+                    event.stopPropagation();
+                    const value = String(option.getAttribute('data-entry-action-space-value') || '');
+                    if (select) {
+                        select.value = value;
+                    }
+                    isEntryActionSpaceMenuOpen = false;
+                    renderEntryActionSpaceOptions(value);
+                });
+                menu.dataset.bound = '1';
+            }
+
             if (select && !select.dataset.bound) {
                 select.addEventListener('change', function () {
                     toggleEntryActionNewSpaceInput(this.value === ENTRY_ACTION_CREATE_SPACE_VALUE);
@@ -4349,6 +4728,9 @@
                     if (isEntrySpaceSortMenuOpen && !event.target.closest('#entrySpaceSortWrap')) {
                         closeEntrySpaceSortMenu();
                     }
+                    if (isEntryActionSpaceMenuOpen && !event.target.closest('#entryActionSpaceSelectWrap')) {
+                        closeEntryActionSpaceMenu();
+                    }
                     if (!activeEntrySpaceMenuId) return;
                     if (event.target.closest('#entrySpaceGrid')) return;
                     closeEntrySpaceMenu(true);
@@ -4356,6 +4738,9 @@
                 document.addEventListener('keydown', function (event) {
                     if (event.key === 'Escape' && isEntrySpaceSortMenuOpen) {
                         closeEntrySpaceSortMenu();
+                    }
+                    if (event.key === 'Escape' && isEntryActionSpaceMenuOpen) {
+                        closeEntryActionSpaceMenu();
                     }
                     if (event.key === 'Escape' && editingEntrySpaceId) {
                         cancelEntrySpaceRename();
@@ -4441,8 +4826,17 @@
             }
 
             try {
-                resetEntryRecordState();
+                const hasAudioInput = typeof hasAudioInputDevice === 'function'
+                    ? await hasAudioInputDevice()
+                    : null;
+
+                if (hasAudioInput === false) {
+                    statusEl.textContent = '未检测到可用麦克风，可直接输入文字记录，或改用上传音频文件。';
+                    return;
+                }
+
                 const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                resetEntryRecordState();
                 entryMediaStream = stream;
 
                 entryMediaRecorder = new MediaRecorder(stream);
@@ -4474,7 +4868,10 @@
                 toggleBtn.textContent = '停止录音';
                 statusEl.textContent = '录音中...';
             } catch (error) {
-                statusEl.textContent = withSuggestion('无法开始录音', error, '请检查麦克风权限');
+                console.warn('toggleEntryRecording failed:', error);
+                statusEl.textContent = typeof withRecorderSuggestion === 'function'
+                    ? withRecorderSuggestion('无法开始录音', error, '请检查浏览器麦克风权限，或改用文字记录/上传音频文件')
+                    : '无法开始录音，请检查浏览器麦克风权限';
                 stopEntryRecordStreamTracks();
             }
         }
@@ -4510,6 +4907,7 @@
                 newInput.value = '';
                 newInput.style.display = 'none';
             }
+            isEntryActionSpaceMenuOpen = false;
             toggleEntryActionNewSpaceInput(false);
             entryActionMode = '';
         }
@@ -4536,21 +4934,22 @@
             result.textContent = '';
             submitBtn.disabled = false;
             submitBtn.textContent = '提交';
+            isEntryActionSpaceMenuOpen = false;
             renderEntryActionSpaceOptions(activeEntrySpaceId);
 
             if (mode === 'upload') {
                 titleEl.textContent = '上传学习资料';
-                descEl.textContent = '支持图片、文本、文档、PDF、音频、视频。文本会尽量保留正文，音视频会保留可预览文件。';
+                descEl.textContent = '支持图片、文本、文档、PDF、视频、音频';
                 subject.style.display = 'none';
                 content.style.display = 'none';
                 fileInput.style.display = 'block';
-                fileHint.style.display = 'block';
+                fileHint.style.display = 'none';
                 submitBtn.textContent = '开始上传';
             } else if (mode === 'link') {
                 titleEl.textContent = '添加学习链接';
                 descEl.textContent = '输入课程页面、视频或文章链接，系统会纳入学习资料。';
                 subject.style.display = 'block';
-                subject.placeholder = '标题（可选，如：线性代数公开课）';
+                subject.placeholder = '标题';
                 content.style.display = 'block';
                 content.placeholder = '粘贴链接地址（支持多个，换行分隔）';
                 fileInput.style.display = 'none';
@@ -4559,7 +4958,7 @@
                 titleEl.textContent = '粘贴学习文本';
                 descEl.textContent = '粘贴章节内容、资料摘要或习题，系统会抽取知识点。';
                 subject.style.display = 'block';
-                subject.placeholder = '标题（可选，如：导数基础笔记）';
+                subject.placeholder = '标题';
                 content.style.display = 'block';
                 content.placeholder = '请输入或粘贴文本内容';
                 fileInput.style.display = 'none';
@@ -4568,7 +4967,7 @@
                 titleEl.textContent = '记录讲座内容';
                 descEl.textContent = '可直接录音，或补充课堂记录文本，便于后续复习与问答。';
                 subject.style.display = 'block';
-                subject.placeholder = '标题（可选，如：概率论第3讲）';
+                subject.placeholder = '标题';
                 content.style.display = 'block';
                 content.placeholder = '请输入讲座记录';
                 fileInput.style.display = 'none';
@@ -5501,7 +5900,7 @@
                 concept: '纤维材料基础',
                 title: '纤维材料基础',
                 reason: '先建立纤维分类、性能与典型应用的整体认知',
-                resource_type: '基础导读',
+                resource_type: '概念梳理',
                 recommend_time: '约 18 分钟',
                 strategy_tags: ['style:visual']
             },
@@ -5509,7 +5908,7 @@
                 concept: '织物组织与结构',
                 title: '织物组织与结构',
                 reason: '从平纹、斜纹到缎纹，快速建立织物组织图谱',
-                resource_type: '图解卡片',
+                resource_type: '概念梳理',
                 recommend_time: '约 15 分钟',
                 strategy_tags: ['style:visual']
             },
@@ -5517,7 +5916,7 @@
                 concept: '染整工艺路线图',
                 title: '染整工艺路线图',
                 reason: '把前处理、染色、整理的关键步骤串成完整流程',
-                resource_type: '流程速览',
+                resource_type: '流程拆解',
                 recommend_time: '约 22 分钟',
                 strategy_tags: ['style:auditory']
             },
@@ -5525,7 +5924,7 @@
                 concept: '纺纱流程总览',
                 title: '纺纱流程总览',
                 reason: '按清花、梳棉、并条、粗纱、细纱建立工序认知',
-                resource_type: '工艺全景',
+                resource_type: '流程拆解',
                 recommend_time: '约 20 分钟',
                 strategy_tags: ['style:kinesthetic']
             },
@@ -5533,7 +5932,7 @@
                 concept: '纺织测试与质量控制',
                 title: '纺织测试与质量控制',
                 reason: '了解强力、色牢度和尺寸稳定性的核心检测指标',
-                resource_type: '案例拆解',
+                resource_type: '复盘巩固',
                 recommend_time: '约 16 分钟',
                 strategy_tags: ['style:visual']
             },
@@ -5541,7 +5940,7 @@
                 concept: '经编与纬编入门',
                 title: '经编与纬编入门',
                 reason: '用结构对比的方式快速分清针织的两大主线',
-                resource_type: '结构对照',
+                resource_type: '概念梳理',
                 recommend_time: '约 14 分钟',
                 strategy_tags: ['style:visual']
             },
@@ -5549,7 +5948,7 @@
                 concept: 'AI 在纺织中的应用',
                 title: 'AI 在纺织中的应用',
                 reason: '从缺陷检测到智能排产，梳理 AI 的实际落地方向',
-                resource_type: '拓展专题',
+                resource_type: '拓展应用',
                 recommend_time: '约 24 分钟',
                 strategy_tags: ['style:auditory']
             },
@@ -5557,7 +5956,7 @@
                 concept: '功能性面料设计',
                 title: '功能性面料设计',
                 reason: '把防水、透湿、抗菌等功能整理路线串起来看',
-                resource_type: '专题精选',
+                resource_type: '拓展应用',
                 recommend_time: '约 19 分钟',
                 strategy_tags: ['style:kinesthetic']
             }
@@ -5645,6 +6044,14 @@
             return `${raw.slice(0, Math.max(0, maxLength - 1))}…`;
         }
 
+        function getExploreResourceLabel(item) {
+            const raw = item && item.resource_type ? item.resource_type : '';
+            if (window.ApiUtils && typeof window.ApiUtils.normalizeRecommendationResourceType === 'function') {
+                return window.ApiUtils.normalizeRecommendationResourceType(raw);
+            }
+            return raw || '概念梳理';
+        }
+
         function splitExploreTitle(text) {
             const chars = Array.from(clampText(text, 22));
             if (chars.length <= 10) {
@@ -5726,7 +6133,7 @@
             const palette = getExplorePalette(item || {});
             const title = String((item && (item.concept || item.title)) || '探索主题').replace(/\s*-\s*.+$/, '');
             const titleLines = splitExploreTitle(title);
-            const badge = clampText((item && item.resource_type) || '探索推荐', 10);
+            const badge = clampText(getExploreResourceLabel(item), 10);
             const svg = `
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 405" role="img" aria-label="${escapeHtml(title)}">
                     <defs>
@@ -5813,7 +6220,7 @@
                 const preset = getExploreItemPreset(item);
                 const externalUrl = resolveExploreExternalUrl(item, preset);
                 const metaParts = [
-                    clampText(item.resource_type || '个性化推荐', 12),
+                    clampText(getExploreResourceLabel(item), 12),
                     clampText(item.recommend_time || (externalUrl ? '点击查看资源' : '点击填入输入框'), 18)
                 ].filter(Boolean);
                 const artwork = getExploreArtwork(item, index);

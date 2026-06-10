@@ -82,6 +82,62 @@ class TestApiContractIntegration(unittest.TestCase):
         self.assertEqual(data.get("knowledge_extract", {}).get("detected_concepts"), ["导数"])
         self.assertEqual(data.get("diagnosis", {}).get("error_type"), "知识性错误")
 
+    def test_ask_stream_contract_sse(self):
+        fake_post = {
+            "knowledge_extract": {
+                "detected_concepts": ["导数"],
+                "graph_sync": {"enabled": True, "mode": "sync", "synced": True},
+            },
+            "diagnosis": {
+                "error_type": "知识性错误",
+                "recommendation": "先复习导数定义",
+            },
+            "learning_advice": {
+                "建议": "先看定义视频，再做2道基础题",
+            },
+        }
+
+        with patch.object(backend_app, "USE_REAL_AI", False), \
+             patch.object(backend_app, "LOCAL_DEMO_FALLBACK_ENABLED", True), \
+             patch.object(backend_app, "build_rule_based_tutor_response", return_value={
+                 "answer": "先理解导数定义，再做例题。",
+                 "steps_log": [],
+                 "evidence": {"tool_calls": [], "trace_count": 0},
+                 "plan_items": [],
+                 "focus_topic": "导数",
+                 "kb_result": {},
+                 "mastery_info": {},
+             }), \
+             patch.object(backend_app, "post_process_qa_interaction", return_value=fake_post):
+            resp = self.client.post("/api/ask", json={
+                "user_id": "u_api",
+                "question": "我不会导数",
+                "stream": True,
+            })
+
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("text/event-stream", resp.content_type)
+        self.assertEqual(resp.headers.get("X-Accel-Buffering"), "no")
+        self.assertIn("no-cache", str(resp.headers.get("Cache-Control") or ""))
+
+        body = resp.get_data(as_text=True)
+        events = []
+        for line in body.splitlines():
+            if not line.startswith("data:"):
+                continue
+            try:
+                events.append(json.loads(line[5:].strip()))
+            except Exception:
+                continue
+
+        self.assertTrue(any(evt.get("type") == "token" for evt in events))
+        final_event = next((evt for evt in events if evt.get("type") == "final"), {})
+        payload = final_event.get("payload", {})
+        self.assertTrue(payload.get("success"))
+        self.assertEqual(payload.get("source"), "local_rule_fallback")
+        self.assertEqual(payload.get("answer"), "先理解导数定义，再做例题。")
+        self.assertEqual(payload.get("knowledge_extract", {}).get("detected_concepts"), ["导数"])
+
     def test_extract_learning_advice_from_answer(self):
         text = """分析\n先判断概念。\n建议：先复习电流定义，再做2道基础题。\n练习\n完成课后题。"""
         advice = backend_app.extract_learning_advice_from_answer(text)
@@ -643,6 +699,43 @@ class TestApiContractIntegration(unittest.TestCase):
         self.assertIn("practice_count", concept_item)
         self.assertIn("recent_accuracy", concept_item)
         self.assertIn("standard_answer_seconds", concept_item)
+
+    def test_diagnosis_analyze_reuses_question_answer_fact_without_content_duplication(self):
+        appended_suffixes = []
+
+        def fake_append(_, suffix, item):
+            appended_suffixes.append(suffix)
+
+        with patch.object(backend_app, "find_primary_question_answer_fact", return_value={
+            "fact_source": {
+                "primary_source": "question_answer",
+                "fact_id": "qa_fact_001",
+                "question_id": "qb-test-1",
+            }
+        }), \
+             patch.object(backend_app, "append_user_event", side_effect=fake_append), \
+             patch.object(backend_app, "load_user_event_list", return_value=[]), \
+             patch.object(backend_app, "refresh_learning_runtime_cache", return_value={"profile": {}, "recommendations": []}), \
+             patch.object(backend_app, "collect_concept_question_history", return_value=[]):
+            resp = self.client.post(
+                "/api/diagnosis/analyze",
+                json={
+                    "user_id": "u_api",
+                    "question_id": "qb-test-1",
+                    "question": "导数的几何意义是？",
+                    "correct_answer": "切线斜率",
+                    "user_answer": "切线率",
+                    "concept": "导数",
+                },
+            )
+
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertTrue(data.get("success"))
+        self.assertEqual(data.get("fact_source", {}).get("primary_source"), "question_answer")
+        self.assertNotIn("content", appended_suffixes)
+        self.assertIn("diagnosis", appended_suffixes)
+        self.assertEqual(data.get("graph_sync", {}).get("mode"), "explanation_only")
 
     def test_question_bank_import_contract(self):
         import_body = {

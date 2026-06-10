@@ -1,0 +1,22 @@
+[
+  {
+    "id": "6d7551cc-701c-41d3-8435-627bd18d8b55",
+    "task_id": "task_001",
+    "task_type": "quiz",
+    "concept": "导数基础",
+    "accuracy": 0.8,
+    "correct_count": 8,
+    "total_count": 10,
+    "duration_seconds": 300,
+    "timestamp": "2026-05-11T22:04:54.037145",
+    "fact_source": {
+      "primary_source": "learning_feedback",
+      "fact_id": "6d7551cc-701c-41d3-8435-627bd18d8b55",
+      "source_key": "",
+      "question_id": "",
+      "task_id": "task_001",
+      "concept": "导数基础",
+      "timestamp": "2026-05-11T22:04:54.037145"
+    }
+  }
+]

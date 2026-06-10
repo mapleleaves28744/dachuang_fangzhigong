@@ -1,32 +1,36 @@
 {
   "user_id": "default_student",
-  "updated_at": "2026-04-11T03:20:43.765169",
+  "updated_at": "2026-04-15T17:47:00.160742",
   "learning_style": "visual",
   "style_scores": {
-    "visual": 0.352,
-    "auditory": 0.4,
-    "kinesthetic": 0.4
+    "visual": 0.313,
+    "auditory": 0.406,
+    "kinesthetic": 0.406
   },
   "style_method": "kmeans",
   "style_features": {
     "image_count": 0,
     "link_count": 0,
-    "qa_content_count": 3,
+    "qa_content_count": 11,
     "note_count": 0,
     "other_count": 0,
-    "qa_log_count": 3,
-    "concept_count": 1
+    "qa_log_count": 11,
+    "concept_count": 9
   },
   "interests": [
-    "链式法则"
+    "链式法则",
+    "导数",
+    "极限",
+    "切线斜率",
+    "变化率"
   ],
-  "best_time_range": "02:00-04:00",
+  "best_time_range": "21:00-23:00",
   "focus_minutes": 45,
   "content_type_counter": {
     "note": 0,
     "link": 0,
     "image": 0,
-    "qa": 3,
+    "qa": 11,
     "other": 0
   }
 }

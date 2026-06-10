@@ -1,0 +1,34 @@
+[
+  {
+    "id": "243fc4f6-23e1-491d-9f49-d1676943e837",
+    "user_id": "guest_4735805fe744f6db6d7253b6",
+    "timestamp": "2026-05-27T08:18:45.176902",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "question-bank",
+    "target": "",
+    "label": "page_view",
+    "title": "题库练习 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "8620a0fc-bf1e-4dd7-9ba3-302d6b2b51a6",
+    "user_id": "guest_4735805fe744f6db6d7253b6",
+    "timestamp": "2026-05-27T08:18:50.560923",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "question-bank",
+    "target": "",
+    "label": "pagehide",
+    "title": "题库练习 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 5.369,
+    "meta": {
+      "referrer": ""
+    }
+  }
+]

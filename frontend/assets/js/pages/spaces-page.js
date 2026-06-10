@@ -1119,8 +1119,17 @@
     }
 
     try {
-      resetRecordState();
+      const hasAudioInput = (window.ApiUtils && typeof window.ApiUtils.hasAudioInputDevice === 'function')
+        ? await window.ApiUtils.hasAudioInputDevice()
+        : null;
+
+      if (hasAudioInput === false) {
+        statusEl.textContent = '未检测到可用麦克风，可直接输入文字记录，或改用上传音频文件。';
+        return;
+      }
+
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      resetRecordState();
       entryMediaStream = stream;
       entryMediaRecorder = new MediaRecorder(stream);
       entryRecordChunks = [];
@@ -1151,9 +1160,10 @@
       toggleBtn.textContent = '停止录音';
       statusEl.textContent = '录音中...';
     } catch (error) {
-      statusEl.textContent = (window.ApiUtils && window.ApiUtils.withSuggestion)
-        ? window.ApiUtils.withSuggestion('无法开始录音', error, '请检查麦克风权限')
-        : '无法开始录音，请检查麦克风权限';
+      console.warn('toggleRecording failed:', error);
+      statusEl.textContent = (window.ApiUtils && typeof window.ApiUtils.withRecorderSuggestion === 'function')
+        ? window.ApiUtils.withRecorderSuggestion('无法开始录音', error, '请检查浏览器麦克风权限，或改用文字记录/上传音频文件')
+        : '无法开始录音，请检查浏览器麦克风权限';
       stopRecordStreamTracks();
     }
   }

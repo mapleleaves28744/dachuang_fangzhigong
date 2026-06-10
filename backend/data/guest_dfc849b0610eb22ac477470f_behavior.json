@@ -1,0 +1,34 @@
+[
+  {
+    "id": "b6816d4d-6560-4867-b2df-ed94a253615d",
+    "user_id": "guest_dfc849b0610eb22ac477470f",
+    "timestamp": "2026-05-23T01:33:56.225191",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "spaces",
+    "target": "",
+    "label": "page_view",
+    "title": "我的空间",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "c3fa7cf2-dca2-4607-9289-33d8ee1c49c8",
+    "user_id": "guest_dfc849b0610eb22ac477470f",
+    "timestamp": "2026-05-23T01:34:00.180210",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "spaces",
+    "target": "",
+    "label": "pagehide",
+    "title": "我的空间",
+    "source": "page_shell",
+    "duration_seconds": 10.979,
+    "meta": {
+      "referrer": ""
+    }
+  }
+]

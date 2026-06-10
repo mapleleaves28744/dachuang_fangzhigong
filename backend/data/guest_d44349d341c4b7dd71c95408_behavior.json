@@ -1,0 +1,82 @@
+[
+  {
+    "id": "a8d5eabc-1faa-49ed-aaea-7d5491f225d4",
+    "user_id": "guest_d44349d341c4b7dd71c95408",
+    "timestamp": "2026-04-19T17:35:25.401316",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 18.835,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "df72078a-e8db-44b8-ad82-31f876ea1443",
+    "user_id": "guest_d44349d341c4b7dd71c95408",
+    "timestamp": "2026-04-19T17:40:29.009501",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "chat",
+    "target": "",
+    "label": "pagehide",
+    "title": "智能问答 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 303.506,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/index.html"
+    }
+  },
+  {
+    "id": "67d26bd2-6769-4900-a678-ccccf5aff531",
+    "user_id": "guest_d44349d341c4b7dd71c95408",
+    "timestamp": "2026-04-19T17:40:33.871726",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "question-bank",
+    "target": "",
+    "label": "pagehide",
+    "title": "题库练习 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 1.615,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/index.html"
+    }
+  },
+  {
+    "id": "c4acdf6b-3173-4d40-89a3-d22bc38f4519",
+    "user_id": "guest_d44349d341c4b7dd71c95408",
+    "timestamp": "2026-04-19T17:41:20.144284",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "dashboard",
+    "target": "",
+    "label": "pagehide",
+    "title": "学习仪表盘 - 智能学习伴侣",
+    "source": "page_shell",
+    "duration_seconds": 44.915,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/question-bank.html"
+    }
+  },
+  {
+    "id": "aac47354-3416-4a16-a960-2483ede32143",
+    "user_id": "guest_d44349d341c4b7dd71c95408",
+    "timestamp": "2026-04-19T18:04:41.026973",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "chat",
+    "target": "",
+    "label": "pagehide",
+    "title": "智能问答 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 1401.848,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/dashboard.html"
+    }
+  }
+]

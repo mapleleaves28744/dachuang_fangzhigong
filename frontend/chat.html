@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>智能问答 - 坊知工</title>
-    <link rel="stylesheet" href="assets/css/shared/auth-ui.css?v=20260403-space-root-nav">
+    <link rel="stylesheet" href="assets/css/shared/auth-ui.css?v=20260512-auth-modal-scrollbarhide-v3">
     <link rel="stylesheet" href="assets/css/pages/chat-page.css?v=20260403-chatupload">
     <link rel="preload" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css" as="style" onload="this.onload=null;this.rel='stylesheet'">
     <noscript><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css"></noscript>
@@ -41,7 +41,7 @@
         <header class="chat-topbar">
             <div class="chat-topbar-main">
                 <div class="chat-title">智能问答</div>
-                <div class="chat-subtitle">独立问答页与主界面共用同一套 AI 问答能力和会话记录，你可以直接继续之前的讨论。</div>
+                <div class="chat-subtitle">独立问答页与主界面共用同一套 AI 问答能力和会话记录；文本问题会自动走智能体与知识库协同，无需手动切换模式。</div>
                 <div class="chat-user-badge" id="chatUserBadge">当前身份：访客</div>
             </div>
         </header>
@@ -58,18 +58,6 @@
                                     <span class="status-dot" id="aiStatusDot"></span>
                                     <span id="aiStatusText">检测中...</span>
                                 </div>
-                                <label class="chat-action-btn" for="agentModeToggle" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;">
-                                    <input id="agentModeToggle" type="checkbox" style="margin:0;">
-                                    <span>智能体模式</span>
-                                </label>
-                                <label class="kb-mode-select-wrap" for="kbSearchModeSelect">
-                                    <span>检索模式</span>
-                                    <select id="kbSearchModeSelect" class="kb-mode-select">
-                                        <option value="hybrid">混合</option>
-                                        <option value="dense_vector">向量</option>
-                                        <option value="lexical">词法</option>
-                                    </select>
-                                </label>
                                 <button class="chat-action-btn" id="kbSearchBtn" type="button">检索知识库</button>
                                 <button class="chat-action-btn" id="kbSaveBtn" type="button">存入知识库</button>
                                 <button class="chat-action-btn primary" id="newChatBtn" type="button">+ 新对话</button>
@@ -109,11 +97,11 @@
     </div>
 
     <script src="assets/js/shared/user-context.js?v=20260330-authfix"></script>
-    <script src="assets/js/shared/api-utils.js?v=20260409-authmsgfix"></script>
+    <script src="assets/js/shared/api-utils.js?v=20260511-auth-dup-check"></script>
     <script src="assets/js/shared/project-local-data.js?v=20260330-authfix"></script>
     <script src="assets/js/shared/space-cloud-store.js?v=20260403-sidebarspaces"></script>
-    <script src="assets/js/shared/auth-ui.js?v=20260409-authentrygate"></script>
-    <script src="assets/js/shared/page-shell.js?v=20260403-space-root-nav"></script>
-    <script src="assets/js/pages/chat-page.js?v=20260411-md-render-v3"></script>
+    <script src="assets/js/shared/auth-ui.js?v=20260512-auth-register-autofill-fix"></script>
+    <script src="assets/js/shared/page-shell.js?v=20260416-global-streak"></script>
+    <script src="assets/js/pages/chat-page.js?v=20260416-hide-internal"></script>
 </body>
 </html>

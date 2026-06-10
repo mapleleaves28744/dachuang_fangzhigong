@@ -98,6 +98,7 @@
       AUTH_REQUIRED: '登录状态已失效，请重新登录',
       AUTH_INVALID_CREDENTIALS: '账号或密码错误，请重新输入',
       AUTH_USER_EXISTS: '该账号已存在，请直接登录',
+      AUTH_DISPLAY_NAME_EXISTS: '该昵称已被使用，请更换一个昵称',
       AUTH_DELETE_FAILED: '删除账户失败，请稍后重试',
       AI_DISABLED: '智能问答未启用，请联系管理员开启 USE_REAL_AI',
       AI_KEY_MISSING: 'AI服务未配置密钥，请联系管理员',
@@ -150,9 +151,116 @@
     return `${prefix}：${reason}。建议：${next}`;
   }
 
+  function hasAudioInputDevice() {
+    if (
+      !navigator.mediaDevices ||
+      typeof navigator.mediaDevices.enumerateDevices !== 'function'
+    ) {
+      return Promise.resolve(null);
+    }
+
+    return navigator.mediaDevices.enumerateDevices()
+      .then(function (devices) {
+        if (!Array.isArray(devices) || devices.length === 0) {
+          return null;
+        }
+        return devices.some(function (device) {
+          return device && device.kind === 'audioinput';
+        });
+      })
+      .catch(function () {
+        return null;
+      });
+  }
+
+  function withRecorderSuggestion(prefix, error, suggestion) {
+    const fallbackSuggestion = suggestion || '请稍后重试';
+    const errorName = String((error && error.name) || '').trim().toLowerCase();
+    const rawMessage = String((error && error.message) || '').trim();
+    const lowerMessage = rawMessage.toLowerCase();
+    let reason = '录音初始化失败';
+    let next = fallbackSuggestion;
+
+    if (
+      errorName === 'notallowederror' ||
+      errorName === 'permissiondeniederror' ||
+      errorName === 'securityerror'
+    ) {
+      reason = '麦克风权限未开启';
+      next = '请在浏览器地址栏允许麦克风访问后重试';
+    } else if (
+      errorName === 'notfounderror' ||
+      errorName === 'devicesnotfounderror' ||
+      lowerMessage.indexOf('requested device not found') >= 0 ||
+      lowerMessage.indexOf('device not found') >= 0 ||
+      lowerMessage.indexOf('no audio input device') >= 0
+    ) {
+      reason = '未检测到可用麦克风设备';
+      next = '请连接麦克风，或改用文字记录/上传音频文件';
+    } else if (
+      errorName === 'notreadableerror' ||
+      errorName === 'trackstarterror' ||
+      lowerMessage.indexOf('could not start audio source') >= 0 ||
+      lowerMessage.indexOf('device in use') >= 0
+    ) {
+      reason = '麦克风当前不可用，可能被其他应用占用';
+      next = '请关闭占用麦克风的应用后重试';
+    } else if (
+      errorName === 'overconstrainederror' ||
+      errorName === 'constraintnotsatisfiederror'
+    ) {
+      reason = '当前麦克风不满足录音条件';
+      next = '请切换默认输入设备或刷新页面后重试';
+    } else if (errorName === 'aborterror') {
+      reason = '录音被浏览器中断';
+      next = '请重新点击开始录音，或刷新页面后再试';
+    } else if (/[\u3400-\u9fff]/.test(rawMessage)) {
+      reason = rawMessage;
+    }
+
+    return `${prefix}：${reason}。建议：${next}`;
+  }
+
   function requestToUrl(resource) {
     if (resource instanceof Request) return resource.url || '';
     return String(resource || '');
+  }
+
+  function normalizeRecommendationResourceType(resource) {
+    const raw = String(resource || '').trim();
+    if (!raw) return '概念梳理';
+
+    const compact = raw.replace(/\s+/g, '');
+    if (
+      compact.indexOf('复盘') >= 0 ||
+      compact.indexOf('巩固') >= 0 ||
+      compact.indexOf('审题') >= 0 ||
+      compact.indexOf('核对') >= 0
+    ) {
+      return '复盘巩固';
+    }
+    if (
+      compact.indexOf('流程') >= 0 ||
+      compact.indexOf('步骤') >= 0 ||
+      compact.indexOf('练习') >= 0 ||
+      compact.indexOf('演练') >= 0 ||
+      compact.indexOf('工艺') >= 0 ||
+      compact.indexOf('修复') >= 0 ||
+      compact.indexOf('迁移') >= 0
+    ) {
+      return '流程拆解';
+    }
+    if (
+      compact.indexOf('拓展') >= 0 ||
+      compact.indexOf('专题') >= 0 ||
+      compact.indexOf('应用') >= 0 ||
+      compact.indexOf('功能性') >= 0 ||
+      compact.indexOf('综合提升') >= 0 ||
+      compact.indexOf('策略优化') >= 0
+    ) {
+      return '拓展应用';
+    }
+    return '概念梳理';
   }
 
   function isApiRequest(resource) {
@@ -187,13 +295,24 @@
           if (!headers.has('Authorization')) {
             headers.set('Authorization', authHeader);
           }
-          nextResource = new Request(resource, { headers });
+          nextResource = new Request(resource, {
+            headers,
+            credentials: (init && init.credentials) || resource.credentials || 'include'
+          });
         } else {
           const headers = new Headers((init && init.headers) || {});
           if (!headers.has('Authorization')) {
             headers.set('Authorization', authHeader);
           }
-          nextInit = { ...(init || {}), headers };
+          nextInit = { ...(init || {}), headers, credentials: (init && init.credentials) || 'include' };
+        }
+      } else if (apiRequest) {
+        if (resource instanceof Request) {
+          nextResource = new Request(resource, {
+            credentials: (init && init.credentials) || resource.credentials || 'include'
+          });
+        } else {
+          nextInit = { ...(init || {}), credentials: (init && init.credentials) || 'include' };
         }
       }
 
@@ -226,6 +345,9 @@
     mapApiErrorMessage,
     parseApiResponse,
     withSuggestion,
+    normalizeRecommendationResourceType,
+    hasAudioInputDevice,
+    withRecorderSuggestion,
     installAuthFetch
   };
 })();

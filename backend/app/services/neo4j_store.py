@@ -319,7 +319,7 @@ class Neo4jGraphStore:
             self._handle_runtime_error(exc)
             return False
 
-    def fetch_graph(self, user_id):
+    def fetch_graph(self, user_id, include_documents=False):
         if not self.ensure_connected():
             return None
 
@@ -336,17 +336,24 @@ class Neo4jGraphStore:
                 )
 
                 nodes = []
+                concept_ids = set()
                 for row in node_rows:
+                    concept_name = row["name"]
+                    if not concept_name:
+                        continue
                     nodes.append(
                         {
-                            "id": row["name"],
-                            "name": row["name"],
+                            "id": concept_name,
+                            "name": concept_name,
                             "description": "",
                             "difficulty": 0.5,
                             "mastery": round(float(row["mastery"]), 3),
                             "confidence": 0.85,
+                            "review_count": int(row.get("review_count", 0) or 0),
+                            "node_type": "concept",
                         }
                     )
+                    concept_ids.add(concept_name)
 
                 link_rows = session.run(
                     """
@@ -358,13 +365,95 @@ class Neo4jGraphStore:
 
                 links = []
                 for row in link_rows:
+                    source = row["source"]
+                    target = row["target"]
+                    if not source or not target:
+                        continue
                     links.append(
                         {
-                            "source": row["source"],
-                            "target": row["target"],
+                            "source": source,
+                            "target": target,
                             "label": row["type"] or "相关",
+                            "edge_type": "concept_relation",
+                            "score": 0.7,
+                            "source_label": source,
+                            "target_label": target,
                         }
                     )
+
+                if include_documents:
+                    doc_rows = session.run(
+                        """
+                        MATCH (:User {id:$user_id})-[:OWNS_DOC]->(d:Document)
+                        OPTIONAL MATCH (d)-[:MENTIONS]->(c:Concept)
+                        WITH d, collect(DISTINCT c.name) AS mentions
+                        ORDER BY coalesce(d.updated_at, d.created_at, '') DESC
+                        RETURN d.id AS doc_id,
+                               coalesce(d.title, '知识文档') AS title,
+                               coalesce(d.content, '') AS content,
+                               coalesce(d.source, 'agent_kb') AS source,
+                               coalesce(d.tags, []) AS tags,
+                               mentions
+                        """,
+                        user_id=user_id,
+                    )
+
+                    for row in doc_rows:
+                        doc_id = str(row.get("doc_id") or "").strip()
+                        if not doc_id:
+                            continue
+
+                        title = str(row.get("title") or "知识文档").strip() or "知识文档"
+                        content = str(row.get("content") or "").strip()
+                        tags = [str(x).strip() for x in (row.get("tags") or []) if str(x).strip()]
+                        mentions = [str(x).strip() for x in (row.get("mentions") or []) if str(x).strip()]
+                        doc_node_id = f"doc::{doc_id}"
+
+                        nodes.append(
+                            {
+                                "id": doc_node_id,
+                                "name": title,
+                                "description": content[:180] if content else "已同步到图谱的知识文档",
+                                "difficulty": 0.0,
+                                "mastery": 0.0,
+                                "confidence": 0.72,
+                                "node_type": "document",
+                                "doc_id": doc_id,
+                                "source": str(row.get("source") or "agent_kb").strip() or "agent_kb",
+                                "tags": tags,
+                                "mentions": mentions,
+                                "mention_count": len(mentions),
+                            }
+                        )
+
+                        for concept in mentions:
+                            if concept not in concept_ids:
+                                nodes.append(
+                                    {
+                                        "id": concept,
+                                        "name": concept,
+                                        "description": "由文档关联补充到图谱的概念节点",
+                                        "difficulty": 0.35,
+                                        "mastery": 0.2,
+                                        "confidence": 0.6,
+                                        "review_count": 0,
+                                        "node_type": "concept",
+                                        "derived_from": "document_mention",
+                                    }
+                                )
+                                concept_ids.add(concept)
+
+                            links.append(
+                                {
+                                    "source": doc_node_id,
+                                    "target": concept,
+                                    "label": "MENTIONS",
+                                    "edge_type": "mention",
+                                    "score": 1.0,
+                                    "source_label": title,
+                                    "target_label": concept,
+                                }
+                            )
 
                 return {
                     "nodes": nodes,

@@ -1,0 +1,32 @@
+{
+  "user_id": "guest_c14e174a606c0490938d41e2",
+  "updated_at": "2026-05-11T22:04:55.074140",
+  "learning_style": "visual",
+  "style_scores": {
+    "visual": 0.356,
+    "auditory": 0.37,
+    "kinesthetic": 0.37
+  },
+  "style_method": "kmeans",
+  "style_features": {
+    "image_count": 0,
+    "link_count": 0,
+    "qa_content_count": 1,
+    "note_count": 0,
+    "other_count": 0,
+    "qa_log_count": 1,
+    "concept_count": 1
+  },
+  "interests": [
+    "链式法则"
+  ],
+  "best_time_range": "22:00-00:00",
+  "focus_minutes": 45,
+  "content_type_counter": {
+    "note": 0,
+    "link": 0,
+    "image": 0,
+    "qa": 1,
+    "other": 0
+  }
+}

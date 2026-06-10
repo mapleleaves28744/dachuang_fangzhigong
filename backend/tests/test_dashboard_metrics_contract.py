@@ -1,11 +1,16 @@
 import unittest
 
 try:
-    from app.services.dashboard_summary import build_data_pool_summary, build_intervention_summary
+    from app.services.dashboard_summary import (
+        build_data_pool_summary,
+        build_intervention_summary,
+        build_streak_widget_summary,
+    )
     _SUMMARY_IMPORT_ERROR = ""
 except Exception as e:
     build_data_pool_summary = None
     build_intervention_summary = None
+    build_streak_widget_summary = None
     _SUMMARY_IMPORT_ERROR = str(e)
 
 try:
@@ -192,6 +197,102 @@ class TestDashboardDataPoolContract(unittest.TestCase):
         self.assertEqual(summary.get("active_days"), 0)
         self.assertEqual(summary.get("study_windows"), [])
         self.assertEqual(summary.get("top_topics"), [])
+
+    def test_streak_widget_summary_tracks_login_days_and_current_streak(self):
+        summary = build_streak_widget_summary(
+            content_logs=[
+                {
+                    "timestamp": "2026-04-14T09:00:00",
+                    "title": "周一笔记",
+                },
+                {
+                    "timestamp": "2026-04-15T09:00:00",
+                    "title": "周二笔记",
+                },
+            ],
+            qa_logs=[],
+            behavior_logs=[
+                {
+                    "timestamp": "2026-04-14T18:00:00",
+                    "behavior_type": "auth_login",
+                    "page": "auth",
+                },
+                {
+                    "timestamp": "2026-04-15T18:00:00",
+                    "behavior_type": "auth_session_active",
+                    "page": "dashboard",
+                },
+                {
+                    "timestamp": "2026-04-16T18:00:00",
+                    "behavior_type": "auth_session_active",
+                    "page": "question-bank",
+                },
+                {
+                    "timestamp": "2026-04-16T18:05:00",
+                    "behavior_type": "page_view",
+                    "page": "dashboard",
+                },
+            ],
+            question_draw_logs=[],
+            question_answer_logs=[],
+            diagnosis_logs=[],
+            now="2026-04-16T20:00:00",
+        )
+
+        self.assertEqual(summary.get("progress_label"), "2/2")
+        self.assertEqual(summary.get("week_active_days"), 3)
+        self.assertEqual(summary.get("current_streak"), 3)
+        self.assertEqual(summary.get("message"), "连续登录已开始，继续保持这个节奏。")
+        self.assertEqual(len(summary.get("week_days", [])), 7)
+        self.assertTrue(any(item.get("today") and item.get("active") for item in summary.get("week_days", [])))
+
+    def test_streak_widget_summary_ignores_non_login_activity(self):
+        summary = build_streak_widget_summary(
+            content_logs=[
+                {
+                    "timestamp": "2026-04-14T09:00:00",
+                    "title": "周一笔记",
+                },
+            ],
+            qa_logs=[
+                {
+                    "timestamp": "2026-04-15T10:00:00",
+                    "question": "纺织材料是什么？",
+                }
+            ],
+            behavior_logs=[
+                {
+                    "timestamp": "2026-04-16T18:00:00",
+                    "behavior_type": "page_view",
+                    "page": "dashboard",
+                }
+            ],
+            question_draw_logs=[],
+            question_answer_logs=[],
+            diagnosis_logs=[],
+            now="2026-04-16T12:00:00",
+        )
+
+        self.assertEqual(summary.get("progress_label"), "0/2")
+        self.assertEqual(summary.get("week_active_days"), 0)
+        self.assertEqual(summary.get("current_streak"), 0)
+        self.assertEqual(summary.get("message"), "本周登录 2 天以开始你的连续登录。")
+
+    def test_streak_widget_summary_defaults_to_zero_state(self):
+        summary = build_streak_widget_summary(
+            content_logs=[],
+            qa_logs=[],
+            behavior_logs=[],
+            question_draw_logs=[],
+            question_answer_logs=[],
+            diagnosis_logs=[],
+            now="2026-04-16T12:00:00",
+        )
+
+        self.assertEqual(summary.get("progress_label"), "0/2")
+        self.assertEqual(summary.get("week_active_days"), 0)
+        self.assertEqual(summary.get("current_streak"), 0)
+        self.assertEqual(summary.get("status"), "warming")
 
     def test_intervention_summary_uses_learning_advice_fallback(self):
         summary = build_intervention_summary(

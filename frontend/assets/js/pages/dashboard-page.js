@@ -4,6 +4,7 @@
   const withSuggestion = window.ApiUtils.withSuggestion;
   const SUMMARY_POLL_INTERVAL_MS = 15000;
   const LIVE_STAY_TICK_INTERVAL_MS = 10000;
+  const KNOWLEDGE_UPDATED_AT_STORAGE_KEY = 'fangzhigong_knowledge_updated_at';
 
   const dashboardState = {
     summary: null,
@@ -696,6 +697,9 @@
 
     container.innerHTML = filterMeta + filtered.map(function (item) {
       const tags = Array.isArray(item && item.strategy_tags) ? item.strategy_tags.slice(0, 3) : [];
+      const resourceLabel = window.ApiUtils && typeof window.ApiUtils.normalizeRecommendationResourceType === 'function'
+        ? window.ApiUtils.normalizeRecommendationResourceType(item.resource_type || item.resource || '')
+        : (item.resource_type || item.resource || '个性化学习包');
       const tagMarkup = tags.length
         ? `<div class="pill-list">${tags.map(function (tag) {
             return createPillMarkup(formatStrategyTag(tag), false);
@@ -708,7 +712,7 @@
             ${createPillMarkup(item.recommend_time || item.time || '--', false)}
           </div>
           <div class="mini-item-desc">${escapeHtml(item.reason || '结合当前学习状态生成的补救建议')}</div>
-          <div class="mini-item-meta">资源类型 ${escapeHtml(item.resource_type || item.resource || '个性化学习包')} · ${escapeHtml(item.evidence_brief || item.evidence || '暂无补充证据')}</div>
+          <div class="mini-item-meta">资源类型 ${escapeHtml(resourceLabel)} · ${escapeHtml(item.evidence_brief || item.evidence || '暂无补充证据')}</div>
           ${tagMarkup}
         </div>
       `;
@@ -1277,6 +1281,12 @@
     }
 
     window.addEventListener('knowledge:updated', function () {
+      loadDashboardTodayTasks();
+      loadDashboardSummary();
+    });
+
+    window.addEventListener('storage', function (event) {
+      if (!event || event.key !== KNOWLEDGE_UPDATED_AT_STORAGE_KEY) return;
       loadDashboardTodayTasks();
       loadDashboardSummary();
     });

@@ -23,10 +23,24 @@ class TestAuthContract(unittest.TestCase):
         self.event_store = {}
         self.space_store = {}
 
+    def _set_guest_cookie(self, client, guest_user_id):
+        signed = backend_app.sign_guest_session_cookie_value(guest_user_id)
+        client.set_cookie(backend_app.GUEST_SESSION_COOKIE_NAME, signed, domain="localhost")
+
     def _patch_auth_storage(self):
         def get_auth_user(username):
             item = self.users.get(username)
             return copy.deepcopy(item) if item else None
+
+        def get_auth_user_by_display_name(display_name):
+            lookup = str(display_name or "").strip().casefold()
+            if not lookup:
+                return None
+            for item in self.users.values():
+                item_display_name = str((item or {}).get("display_name") or "").strip().casefold()
+                if item_display_name == lookup:
+                    return copy.deepcopy(item)
+            return None
 
         def upsert_auth_user(user):
             payload = copy.deepcopy(user)
@@ -61,6 +75,10 @@ class TestAuthContract(unittest.TestCase):
             event_list = self.event_store.get(key, [])
             event_list.append(copy.deepcopy(item))
             self.event_store[key] = event_list
+
+        def load_user_event_list(user_id, suffix):
+            item = self.event_store.get((user_id, suffix), [])
+            return copy.deepcopy(item)
 
         def delete_auth_user_account(username):
             payload = {
@@ -112,12 +130,14 @@ class TestAuthContract(unittest.TestCase):
             backend_app,
             delete_auth_user_account=delete_auth_user_account,
             get_auth_user=get_auth_user,
+            get_auth_user_by_display_name=get_auth_user_by_display_name,
             upsert_auth_user=upsert_auth_user,
             get_auth_session_by_token_hash=get_auth_session_by_token_hash,
             upsert_auth_session=upsert_auth_session,
             revoke_auth_session=revoke_auth_session,
             touch_auth_session=touch_auth_session,
             append_user_event=append_user_event,
+            load_user_event_list=load_user_event_list,
         )
 
     def _patch_plan_storage(self):
@@ -253,6 +273,54 @@ class TestAuthContract(unittest.TestCase):
             self.assertEqual(ok_data.get("auth", {}).get("user", {}).get("locale"), "EN")
             self.assertTrue(ok_data.get("auth", {}).get("token"))
             self.assertEqual(ok_data.get("binding", {}).get("message"), "登录后默认使用账号自己的学习数据")
+            behavior_logs = self.event_store.get(("student_002", "behavior"), [])
+            self.assertTrue(any(item.get("behavior_type") == "auth_login" for item in behavior_logs))
+
+    def test_register_rejects_duplicate_username(self):
+        with self._patch_auth_storage():
+            self.users["student_dup"] = {
+                "username": "student_dup",
+                "display_name": "已有账号",
+                "password_hash": backend_app.generate_password_hash("secret456"),
+                "locale": "CN",
+                "created_at": "2026-03-29T10:00:00",
+                "updated_at": "2026-03-29T10:00:00",
+                "last_login_at": None,
+            }
+
+            resp = self.client.post("/api/auth/register", json={
+                "username": "student_dup",
+                "password": "secret123",
+                "display_name": "新昵称",
+            })
+
+            self.assertEqual(resp.status_code, 409)
+            data = resp.get_json()
+            self.assertFalse(data.get("success"))
+            self.assertEqual(data.get("error_code"), "AUTH_USER_EXISTS")
+
+    def test_register_rejects_duplicate_display_name(self):
+        with self._patch_auth_storage():
+            self.users["student_old"] = {
+                "username": "student_old",
+                "display_name": "小杭",
+                "password_hash": backend_app.generate_password_hash("secret456"),
+                "locale": "CN",
+                "created_at": "2026-03-29T10:00:00",
+                "updated_at": "2026-03-29T10:00:00",
+                "last_login_at": None,
+            }
+
+            resp = self.client.post("/api/auth/register", json={
+                "username": "student_new",
+                "password": "secret123",
+                "display_name": "小杭",
+            })
+
+            self.assertEqual(resp.status_code, 409)
+            data = resp.get_json()
+            self.assertFalse(data.get("success"))
+            self.assertEqual(data.get("error_code"), "AUTH_DISPLAY_NAME_EXISTS")
 
     def test_login_keeps_account_data_isolated_from_guest_state(self):
         with self._patch_auth_storage(), self._patch_learning_state_storage():
@@ -323,6 +391,108 @@ class TestAuthContract(unittest.TestCase):
             self.assertTrue(list_data.get("success"))
             self.assertEqual(list_data.get("count"), 1)
             self.assertEqual(list_data.get("plans", [])[0].get("task"), "复习导数")
+
+    def test_streak_endpoint_records_authenticated_daily_presence_once(self):
+        with self._patch_auth_storage(), self._patch_learning_state_storage():
+            self.users["student_005"] = {
+                "username": "student_005",
+                "display_name": "连续登录用户",
+                "password_hash": backend_app.generate_password_hash("secret123"),
+                "locale": "CN",
+                "created_at": "2026-03-29T10:00:00",
+                "updated_at": "2026-03-29T10:00:00",
+                "last_login_at": None,
+            }
+
+            login_resp = self.client.post("/api/auth/login", json={
+                "username": "student_005",
+                "password": "secret123",
+            })
+
+            self.assertEqual(login_resp.status_code, 200)
+            token = login_resp.get_json().get("auth", {}).get("token")
+            headers = {"Authorization": f"Bearer {token}"}
+            self.event_store.clear()
+
+            first_resp = self.client.get("/api/dashboard/streak?user_id=other_user", headers=headers)
+            second_resp = self.client.get("/api/dashboard/streak?user_id=other_user", headers=headers)
+
+            self.assertEqual(first_resp.status_code, 200)
+            self.assertEqual(second_resp.status_code, 200)
+
+            first_data = first_resp.get_json()
+            self.assertTrue(first_data.get("success"))
+            self.assertEqual(first_data.get("user_id"), "student_005")
+            self.assertEqual(first_data.get("streak", {}).get("progress_label"), "1/2")
+            self.assertEqual(first_data.get("streak", {}).get("week_active_days"), 1)
+            self.assertEqual(first_data.get("streak", {}).get("current_streak"), 1)
+
+            behavior_logs = self.event_store.get(("student_005", "behavior"), [])
+            auth_session_active_count = sum(
+                1
+                for item in behavior_logs
+                if item.get("behavior_type") == "auth_session_active"
+            )
+            self.assertEqual(auth_session_active_count, 1)
+
+    def test_anonymous_business_request_uses_signed_guest_instead_of_query_user_id(self):
+        with self._patch_learning_state_storage():
+            guest_user_id = "guest_authcase1234"
+            self._set_guest_cookie(self.client, guest_user_id)
+            self.profile_store[guest_user_id] = {"user_id": guest_user_id, "interests": ["纺织材料"]}
+            self.profile_store["victim_user"] = {"user_id": "victim_user", "interests": ["他人的画像"]}
+
+            resp = self.client.get("/api/profile?user_id=victim_user")
+
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+            self.assertTrue(data.get("success"))
+            self.assertEqual(data.get("profile", {}).get("user_id"), guest_user_id)
+            self.assertNotEqual(data.get("profile", {}).get("user_id"), "victim_user")
+
+    def test_first_anonymous_profile_request_issues_guest_scope_instead_of_query_user_id(self):
+        with self._patch_learning_state_storage():
+            self.profile_store["victim_user"] = {"user_id": "victim_user", "interests": ["他人的画像"]}
+
+            resp = self.client.get("/api/profile?user_id=victim_user")
+
+            self.assertEqual(resp.status_code, 200)
+            data = resp.get_json()
+            self.assertTrue(data.get("success"))
+            self.assertNotEqual(data.get("profile", {}).get("user_id"), "victim_user")
+            self.assertTrue(str(data.get("profile", {}).get("user_id") or "").startswith("guest_"))
+            self.assertIn(backend_app.GUEST_SESSION_COOKIE_NAME, resp.headers.get("Set-Cookie", ""))
+
+    def test_anonymous_dashboard_summary_uses_signed_guest_instead_of_query_user_id(self):
+        guest_user_id = "guest_dashcase1234"
+        self._set_guest_cookie(self.client, guest_user_id)
+
+        with patch.object(backend_app, "build_graph_response", return_value={"graph": {"nodes": [], "edges": []}, "node_count": 0, "edge_count": 0}), \
+             patch.object(backend_app, "build_review_reminders_response", return_value={"due_count": 0, "upcoming_count": 0, "due_items": [], "upcoming_items": []}), \
+             patch.object(backend_app, "build_learning_profile", side_effect=lambda user_id: {"user_id": user_id, "updated_at": "2026-03-30T12:00:00"}), \
+             patch.object(backend_app, "build_diagnosis_report_response", return_value={"success": True, "total": 0, "latest": []}), \
+             patch.object(backend_app, "build_recommendations", return_value=[]), \
+             patch.object(backend_app, "get_user_knowledge", return_value={"concepts": [], "relations": [], "deleted_concepts": []}), \
+             patch.object(backend_app, "load_user_event_list", return_value=[]), \
+             patch.object(backend_app, "sync_wrong_question_bank_from_logs", return_value=[]), \
+             patch.object(backend_app, "get_user_space_payload", return_value={"activeEntrySpaceId": "", "spaces": []}), \
+             patch.object(backend_app, "sync_dashboard_hidden_metrics", side_effect=lambda **kwargs: (kwargs.get("profile"), {})), \
+             patch.object(backend_app, "get_storage_info", return_value={"storage_backend": "json", "database_scheme": "memory"}), \
+             patch.object(backend_app, "get_ai_runtime_config", return_value={"provider": "mock"}), \
+             patch.object(backend_app, "build_dashboard_sections", return_value={
+                 "data_pool": {},
+                 "graph_insights": {},
+                 "profile_insights": {},
+                 "intervention_summary": {},
+             }), \
+             patch.object(backend_app.neo4j_store, "ensure_connected", return_value=False):
+            resp = self.client.get("/api/dashboard/summary?user_id=victim_user")
+
+        self.assertEqual(resp.status_code, 200)
+        data = resp.get_json()
+        self.assertTrue(data.get("success"))
+        self.assertEqual(data.get("user_id"), guest_user_id)
+        self.assertEqual(data.get("profile", {}).get("user_id"), guest_user_id)
 
     def test_invalid_auth_token_blocks_business_request(self):
         with self._patch_auth_storage():

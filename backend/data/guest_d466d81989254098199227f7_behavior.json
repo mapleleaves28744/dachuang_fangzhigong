@@ -1,0 +1,466 @@
+[
+  {
+    "id": "ed8b77b0-da78-40b2-9a80-db693b62b294",
+    "user_id": "guest_d466d81989254098199227f7",
+    "timestamp": "2026-04-15T18:11:37.349472",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "chat",
+    "target": "",
+    "label": "pagehide",
+    "title": "智能问答 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 2229.999,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/index.html"
+    }
+  },
+  {
+    "id": "7a21bf84-e904-4ffd-9202-0f234dd87b0b",
+    "user_id": "guest_d466d81989254098199227f7",
+    "timestamp": "2026-04-15T18:18:14.307079",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 396.773,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/chat.html"
+    }
+  },
+  {
+    "id": "8e9e8ecf-c4af-449b-b49c-ef4ceb40cc0a",
+    "user_id": "guest_d466d81989254098199227f7",
+    "timestamp": "2026-04-15T18:18:16.177601",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "spaces",
+    "target": "",
+    "label": "pagehide",
+    "title": "新空间 2 - 空间",
+    "source": "page_shell",
+    "duration_seconds": 1.711,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/index.html"
+    }
+  },
+  {
+    "id": "e5539ca4-54d3-402a-ac84-ed442fb3297e",
+    "user_id": "guest_d466d81989254098199227f7",
+    "timestamp": "2026-04-15T18:18:17.368420",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "spaces",
+    "target": "",
+    "label": "pagehide",
+    "title": "新 - 空间",
+    "source": "page_shell",
+    "duration_seconds": 1.084,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/spaces.html?space_id=space_1775151535293_713e9b"
+    }
+  },
+  {
+    "id": "56afa1af-0e47-4ee1-9b40-151acac6f758",
+    "user_id": "guest_d466d81989254098199227f7",
+    "timestamp": "2026-04-15T18:18:18.885718",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "spaces",
+    "target": "",
+    "label": "pagehide",
+    "title": "入口粘贴 - 新",
+    "source": "page_shell",
+    "duration_seconds": 1.356,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/spaces.html?space_id=space_1774896432790_c64266"
+    }
+  },
+  {
+    "id": "09487701-94cd-472c-946d-1ee2d34d955b",
+    "user_id": "guest_d466d81989254098199227f7",
+    "timestamp": "2026-04-15T18:18:28.468241",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "spaces",
+    "target": "",
+    "label": "pagehide",
+    "title": "新 - 空间",
+    "source": "page_shell",
+    "duration_seconds": 9.412,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/spaces.html?space_id=space_1774896432790_c64266&item_id=item_1774902334844_b7a389"
+    }
+  },
+  {
+    "id": "4cd96ece-393b-4213-adca-dec1d329ca6e",
+    "user_id": "guest_d466d81989254098199227f7",
+    "timestamp": "2026-04-15T18:18:31.449243",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "spaces",
+    "target": "",
+    "label": "pagehide",
+    "title": "屏幕截图 2026-04-15 181148.png - 新",
+    "source": "page_shell",
+    "duration_seconds": 2.811,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/spaces.html?space_id=space_1774896432790_c64266"
+    }
+  },
+  {
+    "id": "9d4f20c5-06f9-4805-9b97-733a74353c92",
+    "user_id": "guest_d466d81989254098199227f7",
+    "timestamp": "2026-04-15T18:18:38.128578",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "spaces",
+    "target": "",
+    "label": "pagehide",
+    "title": "新 - 空间",
+    "source": "page_shell",
+    "duration_seconds": 6.466,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/spaces.html?space_id=space_1774896432790_c64266&item_id=item_1776219506983_d50f9b"
+    }
+  },
+  {
+    "id": "be1bc490-6463-4434-8763-b53ddbc9a530",
+    "user_id": "guest_d466d81989254098199227f7",
+    "timestamp": "2026-04-15T18:18:39.850801",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "spaces",
+    "target": "",
+    "label": "pagehide",
+    "title": "新建文件夹 - 新",
+    "source": "page_shell",
+    "duration_seconds": 1.553,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/spaces.html?space_id=space_1774896432790_c64266"
+    }
+  },
+  {
+    "id": "f2c95077-175f-4729-8cfa-0cb8bb79408e",
+    "user_id": "guest_d466d81989254098199227f7",
+    "timestamp": "2026-04-15T18:18:43.566102",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "spaces",
+    "target": "",
+    "label": "pagehide",
+    "title": "新 - 空间",
+    "source": "page_shell",
+    "duration_seconds": 3.525,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/spaces.html?space_id=space_1774896432790_c64266&item_id=item_1776219517368_d75f25"
+    }
+  },
+  {
+    "id": "9d88747f-57be-4da2-a701-46c13ca965b0",
+    "user_id": "guest_d466d81989254098199227f7",
+    "timestamp": "2026-04-15T18:31:15.074718",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 751.41,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/spaces.html?space_id=space_1774896432790_c64266"
+    }
+  },
+  {
+    "id": "a338eff1-035f-4a90-99ff-e91c51a852b8",
+    "user_id": "guest_d466d81989254098199227f7",
+    "timestamp": "2026-04-15T18:32:39.750968",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 84.292,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/spaces.html?space_id=space_1774896432790_c64266"
+    }
+  },
+  {
+    "id": "5835ea62-823f-436b-89b6-fd6e0d923cce",
+    "user_id": "guest_d466d81989254098199227f7",
+    "timestamp": "2026-04-15T18:34:29.289395",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 109.36,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/spaces.html?space_id=space_1774896432790_c64266"
+    }
+  },
+  {
+    "id": "84c7f195-e2f8-4be7-8ee5-a49358713d42",
+    "user_id": "guest_d466d81989254098199227f7",
+    "timestamp": "2026-04-15T18:37:05.128509",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 155.664,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/spaces.html?space_id=space_1774896432790_c64266"
+    }
+  },
+  {
+    "id": "0aa78f97-f727-423f-8782-87b136b868fc",
+    "user_id": "guest_d466d81989254098199227f7",
+    "timestamp": "2026-04-15T18:37:15.060302",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 9.762,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/spaces.html?space_id=space_1774896432790_c64266"
+    }
+  },
+  {
+    "id": "a9e31a02-5d25-4aae-b530-0210fd97bb34",
+    "user_id": "guest_d466d81989254098199227f7",
+    "timestamp": "2026-04-15T18:38:13.620025",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 58.393,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/spaces.html?space_id=space_1774896432790_c64266"
+    }
+  },
+  {
+    "id": "c1c8ed05-79e1-4f03-8f73-2dda6df13dec",
+    "user_id": "guest_d466d81989254098199227f7",
+    "timestamp": "2026-04-15T18:42:20.404241",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 246.616,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/spaces.html?space_id=space_1774896432790_c64266"
+    }
+  },
+  {
+    "id": "31585f7d-270b-4fab-bd9e-b1d0de07cdb9",
+    "user_id": "guest_d466d81989254098199227f7",
+    "timestamp": "2026-04-15T18:52:50.716599",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 630.066,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/spaces.html?space_id=space_1774896432790_c64266"
+    }
+  },
+  {
+    "id": "9a26ebb7-6a74-4003-80ef-6f956392fe68",
+    "user_id": "guest_d466d81989254098199227f7",
+    "timestamp": "2026-04-15T18:54:48.080742",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 117.067,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/spaces.html?space_id=space_1774896432790_c64266"
+    }
+  },
+  {
+    "id": "c171fc90-8735-4de6-ab54-bfc53fe68bf6",
+    "user_id": "guest_d466d81989254098199227f7",
+    "timestamp": "2026-04-15T19:09:10.062075",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 861.689,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/spaces.html?space_id=space_1774896432790_c64266"
+    }
+  },
+  {
+    "id": "fec10649-92ec-48e8-b660-3f11d36420fe",
+    "user_id": "guest_d466d81989254098199227f7",
+    "timestamp": "2026-04-15T19:09:20.564117",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 10.11,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/spaces.html?space_id=space_1774896432790_c64266"
+    }
+  },
+  {
+    "id": "0b25ec73-164e-4cfa-a60a-136b716fd812",
+    "user_id": "guest_d466d81989254098199227f7",
+    "timestamp": "2026-04-15T19:26:37.168753",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 1036.391,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/spaces.html?space_id=space_1774896432790_c64266"
+    }
+  },
+  {
+    "id": "b7ca0caf-36d8-4a7a-bd9f-6071729b8d62",
+    "user_id": "guest_d466d81989254098199227f7",
+    "timestamp": "2026-04-15T19:31:46.697771",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 307.244,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/spaces.html?space_id=space_1774896432790_c64266"
+    }
+  },
+  {
+    "id": "5999f702-02bb-438e-a066-3b77c1d11316",
+    "user_id": "guest_d466d81989254098199227f7",
+    "timestamp": "2026-04-15T19:41:24.270422",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 577.267,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/spaces.html?space_id=space_1774896432790_c64266"
+    }
+  },
+  {
+    "id": "61c31047-ba81-4c18-8c6e-5cbeb9e8b0cd",
+    "user_id": "guest_d466d81989254098199227f7",
+    "timestamp": "2026-04-15T19:47:03.653113",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 339.019,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/spaces.html?space_id=space_1774896432790_c64266"
+    }
+  },
+  {
+    "id": "e0b1e736-b67a-4069-ad40-8dddfc18606e",
+    "user_id": "guest_d466d81989254098199227f7",
+    "timestamp": "2026-04-15T19:53:28.065788",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 384.175,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/spaces.html?space_id=space_1774896432790_c64266"
+    }
+  },
+  {
+    "id": "f15e898c-aea6-4ae8-8397-4ddacbf941a7",
+    "user_id": "guest_d466d81989254098199227f7",
+    "timestamp": "2026-04-15T19:58:25.819569",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 297.492,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/spaces.html?space_id=space_1774896432790_c64266"
+    }
+  },
+  {
+    "id": "9f3527a1-8cca-42de-9be0-00dbf0f4874e",
+    "user_id": "guest_d466d81989254098199227f7",
+    "timestamp": "2026-04-15T19:58:46.470067",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 20.367,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/spaces.html?space_id=space_1774896432790_c64266"
+    }
+  },
+  {
+    "id": "b33e1809-df4f-4554-82dc-47664409ce80",
+    "user_id": "guest_d466d81989254098199227f7",
+    "timestamp": "2026-04-15T19:58:58.547942",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 11.908,
+    "meta": {
+      "referrer": "http://127.0.0.1:5000/spaces.html?space_id=space_1774896432790_c64266"
+    }
+  }
+]

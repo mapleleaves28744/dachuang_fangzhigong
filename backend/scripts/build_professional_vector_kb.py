@@ -15,6 +15,10 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
 
 
+BACKEND_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+DEFAULT_OUT_DIR = os.path.join(BACKEND_DIR, "data", "pro_kb")
+
+
 @dataclass
 class ChapterSpec:
     discipline: str
@@ -679,7 +683,7 @@ def main():
     parser.add_argument("--vectorizer-mode", type=str, default="char", choices=["word", "char"], help="向量化模式，char对中文召回更稳")
     parser.add_argument("--max-features", type=int, default=24000, help="TF-IDF特征上限，数据量大时建议24000~60000")
     parser.add_argument("--seed", type=int, default=20260410, help="随机种子")
-    parser.add_argument("--out", type=str, default=os.path.join("data", "pro_kb"), help="输出目录")
+    parser.add_argument("--out", type=str, default=DEFAULT_OUT_DIR, help="输出目录")
     args = parser.parse_args()
 
     random.seed(args.seed)

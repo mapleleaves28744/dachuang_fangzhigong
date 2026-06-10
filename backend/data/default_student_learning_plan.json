@@ -1,0 +1,106 @@
+[
+  {
+    "id": "6092b95a-5020-4cfe-a208-74a2f278ad2c",
+    "timestamp": "2026-04-15T17:37:14.460875",
+    "student_id": "default_student",
+    "topic": "导数",
+    "style": "visual",
+    "mastery": 0.5,
+    "best_time_range": "21:00-23:00",
+    "focus_minutes": 45,
+    "plan_items": [
+      {
+        "id": "2a6ae9d3-a135-4f5c-87ca-fa6753764b44",
+        "time": "2026-04-15",
+        "task": "D1(2026-04-15)：夯实基础 - 回顾 导数 的易错点并做针对性修正，配思维导图和图例",
+        "completed": false,
+        "topic": "导数",
+        "mastery": 0.5,
+        "style": "visual",
+        "focus_minutes": 45,
+        "source": "agent_learning_plan",
+        "generated_at": "2026-04-15T17:37:14.459713",
+        "priority": 5
+      },
+      {
+        "id": "9184cca5-e82c-4611-9287-7d9f5f20be30",
+        "time": "2026-04-16",
+        "task": "D2(2026-04-16)：强化训练 - 完成 导数 变式训练 4 题，用 15 分钟口头/书面复述关键步骤",
+        "completed": false,
+        "topic": "导数",
+        "mastery": 0.5,
+        "style": "visual",
+        "focus_minutes": 45,
+        "source": "agent_learning_plan",
+        "generated_at": "2026-04-15T17:37:14.459713",
+        "priority": 4
+      },
+      {
+        "id": "ad76adba-2752-42c4-8b19-d1d5f7e4debe",
+        "time": "2026-04-17",
+        "task": "D3(2026-04-17)：验收复盘 - 限时整理 导数 的解题模板与检查清单，最后用 1 次自测检验掌握情况",
+        "completed": false,
+        "topic": "导数",
+        "mastery": 0.5,
+        "style": "visual",
+        "focus_minutes": 45,
+        "source": "agent_learning_plan",
+        "generated_at": "2026-04-15T17:37:14.459713",
+        "priority": 3
+      }
+    ],
+    "source": "agent"
+  },
+  {
+    "id": "2dd63b6c-6fb5-44be-a2b1-bb8160303313",
+    "timestamp": "2026-04-15T17:46:22.100070",
+    "student_id": "default_student",
+    "topic": "导数",
+    "style": "visual",
+    "mastery": 0.35,
+    "best_time_range": "21:00-23:00",
+    "focus_minutes": 45,
+    "plan_items": [
+      {
+        "id": "2bc022f8-a2c7-40b6-a121-3fca6991b462",
+        "time": "2026-04-15",
+        "task": "D1(2026-04-15)：夯实基础 - 重建 导数 的基础定义与关键词，配思维导图和图例",
+        "completed": false,
+        "topic": "导数",
+        "mastery": 0.35,
+        "style": "visual",
+        "focus_minutes": 45,
+        "source": "agent_learning_plan",
+        "generated_at": "2026-04-15T17:46:22.099256",
+        "priority": 5
+      },
+      {
+        "id": "08010d8a-19a3-46eb-b7c8-33c31ce6ec63",
+        "time": "2026-04-16",
+        "task": "D2(2026-04-16)：强化训练 - 用 1 道例题拆解 导数 的关键步骤，用 15 分钟口头/书面复述关键步骤",
+        "completed": false,
+        "topic": "导数",
+        "mastery": 0.35,
+        "style": "visual",
+        "focus_minutes": 45,
+        "source": "agent_learning_plan",
+        "generated_at": "2026-04-15T17:46:22.099256",
+        "priority": 4
+      },
+      {
+        "id": "2a8f0c26-06e7-4f8c-b5cd-31768d955175",
+        "time": "2026-04-17",
+        "task": "D3(2026-04-17)：验收复盘 - 完成 导数 同类题 5 题并复盘错因，最后用 1 次自测检验掌握情况",
+        "completed": false,
+        "topic": "导数",
+        "mastery": 0.35,
+        "style": "visual",
+        "focus_minutes": 45,
+        "source": "agent_learning_plan",
+        "generated_at": "2026-04-15T17:46:22.099256",
+        "priority": 3
+      }
+    ],
+    "source": "agent"
+  }
+]

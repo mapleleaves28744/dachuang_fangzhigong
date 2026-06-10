@@ -1,0 +1,19 @@
+[
+  {
+    "id": "54a5714b-23e6-4be6-8d2b-2f87146099bb",
+    "timestamp": "2026-05-11T22:04:55.080195",
+    "content_type": "qa",
+    "title": "智能体问答记录",
+    "content": "问题：OCR文本\n回答：图像题已解答",
+    "content_preview": "问题：OCR文本 回答：图像题已解答",
+    "content_length": 18,
+    "source": "agent_ocr_tutor",
+    "topics": [
+      "文本",
+      "回答",
+      "图像题已解答"
+    ],
+    "question_text": "OCR文本",
+    "answer_text": "图像题已解答"
+  }
+]

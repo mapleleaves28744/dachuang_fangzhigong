@@ -1,0 +1,18 @@
+[
+  {
+    "id": "07b6b5c4-67f2-45fa-b658-23e6d74ac683",
+    "user_id": "guest_a5a193c68aa2f5a7c4f45a35",
+    "timestamp": "2026-05-04T12:48:17.475942",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "chat",
+    "target": "",
+    "label": "pagehide",
+    "title": "智能问答 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 5.17,
+    "meta": {
+      "referrer": ""
+    }
+  }
+]

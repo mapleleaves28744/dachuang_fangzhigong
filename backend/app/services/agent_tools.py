@@ -4,7 +4,51 @@ import time
 import uuid
 from datetime import datetime, timedelta
 
-from langchain_core.tools import tool
+try:
+    from langchain_core.tools import tool as _langchain_tool
+except Exception:
+    _langchain_tool = None
+
+
+def tool(fn=None, **_kwargs):
+    """Fall back to a no-op decorator so non-agent startup paths still work."""
+
+    if _langchain_tool is not None:
+        if fn is None:
+            return lambda inner: _langchain_tool(inner, **_kwargs)
+        return _langchain_tool(fn, **_kwargs)
+
+    def _decorate(inner):
+        inner.name = getattr(inner, "name", getattr(inner, "__name__", "tool"))
+        inner.description = getattr(inner, "description", (inner.__doc__ or "").strip())
+
+        def _invoke(tool_input=None, config=None, **kwargs):
+            if isinstance(tool_input, dict):
+                call_kwargs = dict(tool_input)
+            elif tool_input is None:
+                call_kwargs = {}
+            else:
+                call_kwargs = {"input": tool_input}
+
+            if kwargs:
+                call_kwargs.update(kwargs)
+
+            if not call_kwargs:
+                return inner()
+
+            try:
+                return inner(**call_kwargs)
+            except TypeError:
+                if "input" in call_kwargs and len(call_kwargs) == 1:
+                    return inner(call_kwargs["input"])
+                raise
+
+        inner.invoke = _invoke
+        return inner
+
+    if fn is None:
+        return _decorate
+    return _decorate(fn)
 
 from .cognitive_diagnosis import CognitiveDiagnosis
 from .database import append_user_event, get_user_knowledge, get_user_plans, get_user_profile, set_user_plans
@@ -199,6 +243,10 @@ def _normalize_learning_style(profile):
     return "visual"
 
 
+def _normalize_student_id(student_id):
+    return str(student_id or "").strip()
+
+
 def _build_plan_variant(style, mastery, day_index, base_topic):
     weak = mastery < 0.4
     mid = mastery < 0.7
@@ -236,7 +284,9 @@ def _build_plan_variant(style, mastery, day_index, base_topic):
 
 
 def _build_learning_plan_payload(student_id, topic):
-    sid = str(student_id or "").strip() or "default_user"
+    sid = _normalize_student_id(student_id)
+    if not sid:
+        raise ValueError("student_id 不能为空")
     profile = get_user_profile(sid) or {}
     knowledge = get_user_knowledge(sid) or {}
     style = _normalize_learning_style(profile)
@@ -301,7 +351,9 @@ def _mastery_level(score):
 @tool
 def tool_get_student_mastery(student_id: str, topic: str) -> str:
     """当需要知道学生对某个具体知识点掌握程度时调用此工具。"""
-    sid = str(student_id or "").strip() or "default_user"
+    sid = _normalize_student_id(student_id)
+    if not sid:
+        return "【学生掌握度】缺少 student_id，无法查询。"
     tp = str(topic or "").strip()
     cache_key = ("mastery", sid, tp)
     cached = _cache_get(cache_key)
@@ -429,7 +481,9 @@ def tool_diagnose_mistake(question: str, student_answer: str, correct_answer: st
     ua = str(student_answer or "").strip()
     ca = str(correct_answer or "").strip()
     tp = str(topic or "").strip()
-    sid = str(student_id or "").strip() or "default_user"
+    sid = _normalize_student_id(student_id)
+    if not sid:
+        return "【错题归因】缺少 student_id，无法写入共享默认账号。"
 
     try:
         result = diagnosis_engine.analyze_error(
@@ -470,7 +524,9 @@ def tool_diagnose_mistake(question: str, student_answer: str, correct_answer: st
 @tool
 def tool_search_learning_kb(student_id: str, query: str, top_k: int = 3) -> str:
     """当需要从学生个人学习资料中检索可引用证据时调用此工具。"""
-    sid = str(student_id or "").strip() or "default_user"
+    sid = _normalize_student_id(student_id)
+    if not sid:
+        return "【知识库检索】缺少 student_id，无法查询个人资料。"
     q = str(query or "").strip()
     cache_key = ("kb", sid, q, int(top_k or 3))
     cached = _cache_get(cache_key)
@@ -517,7 +573,9 @@ def tool_search_learning_kb(student_id: str, query: str, top_k: int = 3) -> str:
 @tool
 def tool_graph_rag_search(student_id: str, query: str, top_k: int = 3) -> str:
     """综合了文本检索和知识图谱节点的增强版检索。返回知识点内容及相关的图谱关联路径。"""
-    sid = str(student_id or "").strip() or "default_user"
+    sid = _normalize_student_id(student_id)
+    if not sid:
+        return "【RAG-Graph检索】缺少 student_id，无法查询个人资料。"
     q = str(query or "").strip()
     if not q:
         return "【RAG-Graph检索】query 不能为空。"

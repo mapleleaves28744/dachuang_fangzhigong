@@ -1,0 +1,54 @@
+[
+  {
+    "id": "45f7c7a0-f605-4572-83c7-e05c9216346d",
+    "timestamp": "2026-04-15T17:48:34.740051",
+    "student_id": "guest_b86986d6b43f7417dd537f75",
+    "topic": "导数的概念",
+    "style": "visual",
+    "mastery": 0.5,
+    "best_time_range": "今晚",
+    "focus_minutes": 40,
+    "plan_items": [
+      {
+        "id": "24476fb6-48ee-43c8-bd9c-fcd233d08752",
+        "time": "2026-04-15",
+        "task": "D1(2026-04-15)：夯实基础 - 回顾 导数的概念 的易错点并做针对性修正，配思维导图和图例",
+        "completed": false,
+        "topic": "导数的概念",
+        "mastery": 0.5,
+        "style": "visual",
+        "focus_minutes": 40,
+        "source": "agent_learning_plan",
+        "generated_at": "2026-04-15T17:48:34.738694",
+        "priority": 5
+      },
+      {
+        "id": "236d5219-2457-4bec-b8ef-a094ef21dbe8",
+        "time": "2026-04-16",
+        "task": "D2(2026-04-16)：强化训练 - 完成 导数的概念 变式训练 4 题，用 15 分钟口头/书面复述关键步骤",
+        "completed": false,
+        "topic": "导数的概念",
+        "mastery": 0.5,
+        "style": "visual",
+        "focus_minutes": 40,
+        "source": "agent_learning_plan",
+        "generated_at": "2026-04-15T17:48:34.738694",
+        "priority": 4
+      },
+      {
+        "id": "9c22a015-5885-4922-9838-9dff9849f126",
+        "time": "2026-04-17",
+        "task": "D3(2026-04-17)：验收复盘 - 限时整理 导数的概念 的解题模板与检查清单，最后用 1 次自测检验掌握情况",
+        "completed": false,
+        "topic": "导数的概念",
+        "mastery": 0.5,
+        "style": "visual",
+        "focus_minutes": 40,
+        "source": "agent_learning_plan",
+        "generated_at": "2026-04-15T17:48:34.738694",
+        "priority": 3
+      }
+    ],
+    "source": "agent"
+  }
+]

@@ -1,0 +1,218 @@
+[
+  {
+    "id": "86a0226c-bfbc-4167-b8c5-0ac98bee53cd",
+    "timestamp": "2026-04-28T22:50:28.478230",
+    "question": "什么是导数",
+    "correct_answer": "导数是函数在某一点处的瞬时变化率，即当自变量增量趋于0时，函数增量与自变量增量之比的极限。形式化定义为：f'(x₀) = lim_{Δx→0} [f(x₀+Δx)−f(x₀)]/Δx（若极限存在）",
+    "user_answer": "",
+    "concept": "导数",
+    "diagnosis": {
+      "error_type": "知识性错误",
+      "category": "knowledge",
+      "severity": "high",
+      "recommendation": "先不要追求做多题，先把“导数”的关键概念讲给自己听，再做 2 道同类型入门题确认是否真正理解。",
+      "confidence": 0.92,
+      "signals": [
+        "答案为空，说明当前缺少稳定思路",
+        "出现不会/不懂类表达",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低",
+        "答案为空，说明当前缺少稳定思路",
+        "出现不会/不懂类表达",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低"
+      ],
+      "score_detail": {
+        "knowledge_rule_hits": 4,
+        "skill_rule_hits": 0,
+        "habit_rule_hits": 0,
+        "recent_accuracy": 0.0,
+        "time_ratio": null,
+        "standard_time_seconds": 60.0,
+        "response_time_seconds": null,
+        "near_miss": false,
+        "mastery_reference": null
+      },
+      "reason": "导数的定义、公式或判断条件还没有真正建立，看到题目时不知道该从哪里开始。",
+      "recommended_actions": [
+        "看该知识点5-8分钟讲解视频",
+        "整理1张公式/概念卡片",
+        "做2道基础例题并对照答案",
+        "当天再复做原题1次"
+      ],
+      "recent_accuracy": 0.0,
+      "time_ratio": null,
+      "near_miss": false
+    },
+    "learning_advice": {
+      "建议": "先不要追求做多题，先把“导数”的关键概念讲给自己听，再做 2 道同类型入门题确认是否真正理解。"
+    },
+    "mastery_assessment": {
+      "知识点": "导数",
+      "掌握度": 0.0
+    },
+    "source": "agent_tool"
+  },
+  {
+    "id": "9cf3323b-e558-4e1d-a94a-e15f35d0c940",
+    "timestamp": "2026-05-19T00:36:04.925043",
+    "question": "推导一个具体函数的导数（比如 f(x) = 3x² + 2x - 1）",
+    "correct_answer": "f'(x) = 6x + 2",
+    "user_answer": "",
+    "concept": "导数的定义与基本求导法则",
+    "diagnosis": {
+      "error_type": "知识性错误",
+      "category": "knowledge",
+      "severity": "high",
+      "recommendation": "先暂停刷题，先把“导数的定义与基本求导法则”补清楚。先看 1 个 5-8 分钟讲解视频，再整理 1 张概念/公式卡片，然后做 2 道基础例题，最后当天重做这道题。",
+      "confidence": 0.92,
+      "signals": [
+        "答案为空，说明当前缺少稳定思路",
+        "出现不会/不懂类表达",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低",
+        "答案为空，说明当前缺少稳定思路",
+        "出现不会/不懂类表达",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低"
+      ],
+      "score_detail": {
+        "knowledge_rule_hits": 4,
+        "skill_rule_hits": 0,
+        "habit_rule_hits": 0,
+        "recent_accuracy": 0.0,
+        "time_ratio": null,
+        "standard_time_seconds": 60.0,
+        "response_time_seconds": null,
+        "near_miss": false,
+        "mastery_reference": null
+      },
+      "reason": "导数的定义与基本求导法则的定义、公式或判断条件还没有真正建立，看到题目时不知道该从哪里开始。",
+      "recommended_actions": [
+        "看该知识点5-8分钟讲解视频",
+        "整理1张公式/概念卡片",
+        "做2道基础例题并对照答案",
+        "当天再复做原题1次"
+      ],
+      "recent_accuracy": 0.0,
+      "time_ratio": null,
+      "near_miss": false
+    },
+    "learning_advice": {
+      "建议": "先暂停刷题，先把“导数的定义与基本求导法则”补清楚。先看 1 个 5-8 分钟讲解视频，再整理 1 张概念/公式卡片，然后做 2 道基础例题，最后当天重做这道题。"
+    },
+    "mastery_assessment": {
+      "知识点": "导数的定义与基本求导法则",
+      "掌握度": 0.0
+    },
+    "source": "agent_tool"
+  },
+  {
+    "id": "40d56d15-0119-44df-a75d-bebb5aee3c6d",
+    "timestamp": "2026-05-20T11:50:00.939078",
+    "question": "请你给我解释构建智能体的步骤，什么是搭建知识库",
+    "correct_answer": "需分两部分回答：①智能体构建四步法（目标定义→认知架构设计→知识/能力注入→测试迭代）；②知识库搭建是‘知识注入’环节的核心动作，指将结构化/非结构化领域知识经清洗、向量化、索引后存入检索系统的过程。",
+    "user_answer": "",
+    "concept": "智能体构建与知识库搭建",
+    "diagnosis": {
+      "error_type": "知识性错误",
+      "category": "knowledge",
+      "severity": "high",
+      "recommendation": "建议先用 10 分钟补“智能体构建与知识库搭建”核心定义，再做 2 道最基础题校准，再回到原题复盘错因。",
+      "confidence": 0.92,
+      "signals": [
+        "答案为空，说明当前缺少稳定思路",
+        "出现不会/不懂类表达",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低",
+        "答案为空，说明当前缺少稳定思路",
+        "出现不会/不懂类表达",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低"
+      ],
+      "score_detail": {
+        "knowledge_rule_hits": 4,
+        "skill_rule_hits": 0,
+        "habit_rule_hits": 0,
+        "recent_accuracy": 0.0,
+        "time_ratio": null,
+        "standard_time_seconds": 60.0,
+        "response_time_seconds": null,
+        "near_miss": false,
+        "mastery_reference": null
+      },
+      "reason": "智能体构建与知识库搭建的定义、公式或判断条件还没有真正建立，看到题目时不知道该从哪里开始。",
+      "recommended_actions": [
+        "看该知识点5-8分钟讲解视频",
+        "整理1张公式/概念卡片",
+        "做2道基础例题并对照答案",
+        "当天再复做原题1次"
+      ],
+      "recent_accuracy": 0.0,
+      "time_ratio": null,
+      "near_miss": false
+    },
+    "learning_advice": {
+      "建议": "建议先用 10 分钟补“智能体构建与知识库搭建”核心定义，再做 2 道最基础题校准，再回到原题复盘错因。"
+    },
+    "mastery_assessment": {
+      "知识点": "智能体构建与知识库搭建",
+      "掌握度": 0.0
+    },
+    "source": "agent_tool"
+  },
+  {
+    "id": "8379fcd4-a928-4f37-acb4-74598006c669",
+    "timestamp": "2026-05-20T11:50:50.639645",
+    "question": "请你给我解释构建智能体的步骤，什么是搭建知识库",
+    "correct_answer": "构建智能体包含四步：①目标与边界定义；②认知架构设计；③知识与能力注入（其中知识库搭建属于此步）；④测试与迭代。搭建知识库是为智能体注入领域知识的技术过程，含采集清洗、结构化分块、向量化索引、集成验证四环节。",
+    "user_answer": "",
+    "concept": "智能体构建与知识库搭建",
+    "diagnosis": {
+      "error_type": "知识性错误",
+      "category": "knowledge",
+      "severity": "high",
+      "recommendation": "建议先用 10 分钟补“智能体构建与知识库搭建”核心定义，再做 2 道最基础题校准，再回到原题复盘错因。",
+      "confidence": 0.92,
+      "signals": [
+        "答案为空，说明当前缺少稳定思路",
+        "出现不会/不懂类表达",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低",
+        "答案为空，说明当前缺少稳定思路",
+        "出现不会/不懂类表达",
+        "该知识点首次接触即答错",
+        "与标准答案关键点重合较低"
+      ],
+      "score_detail": {
+        "knowledge_rule_hits": 4,
+        "skill_rule_hits": 0,
+        "habit_rule_hits": 0,
+        "recent_accuracy": 0.0,
+        "time_ratio": null,
+        "standard_time_seconds": 60.0,
+        "response_time_seconds": null,
+        "near_miss": false,
+        "mastery_reference": null
+      },
+      "reason": "智能体构建与知识库搭建的定义、公式或判断条件还没有真正建立，看到题目时不知道该从哪里开始。",
+      "recommended_actions": [
+        "看该知识点5-8分钟讲解视频",
+        "整理1张公式/概念卡片",
+        "做2道基础例题并对照答案",
+        "当天再复做原题1次"
+      ],
+      "recent_accuracy": 0.0,
+      "time_ratio": null,
+      "near_miss": false
+    },
+    "learning_advice": {
+      "建议": "建议先用 10 分钟补“智能体构建与知识库搭建”核心定义，再做 2 道最基础题校准，再回到原题复盘错因。"
+    },
+    "mastery_assessment": {
+      "知识点": "智能体构建与知识库搭建",
+      "掌握度": 0.0
+    },
+    "source": "agent_tool"
+  }
+]

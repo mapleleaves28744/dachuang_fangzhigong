@@ -1,0 +1,18 @@
+[
+  {
+    "id": "73196eff-83a7-40be-9c49-2d10dddaf05e",
+    "user_id": "guest_cf10fa55d55d7663985598e5",
+    "timestamp": "2026-05-29T12:32:18.221671",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "index",
+    "target": "",
+    "label": "page_view",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": "https://fofa.info/"
+    }
+  }
+]

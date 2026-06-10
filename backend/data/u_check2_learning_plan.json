@@ -1,0 +1,54 @@
+[
+  {
+    "id": "e0b7c8db-3d04-4270-85cc-99ed75a6670c",
+    "timestamp": "2026-04-14T21:18:27.343821",
+    "student_id": "u_check2",
+    "topic": "链式法则",
+    "style": "visual",
+    "mastery": 0.5,
+    "best_time_range": "今晚",
+    "focus_minutes": 40,
+    "plan_items": [
+      {
+        "id": "cc388a2c-9f9f-4794-a54e-ccb86f135dbd",
+        "time": "2026-04-14",
+        "task": "D1(2026-04-14)：夯实基础 - 回顾 链式法则 的易错点并做针对性修正，配思维导图和图例",
+        "completed": false,
+        "topic": "链式法则",
+        "mastery": 0.5,
+        "style": "visual",
+        "focus_minutes": 40,
+        "source": "agent_learning_plan",
+        "generated_at": "2026-04-14T21:18:27.343108",
+        "priority": 5
+      },
+      {
+        "id": "8dc11036-a904-4daf-968a-210f8b798316",
+        "time": "2026-04-15",
+        "task": "D2(2026-04-15)：强化训练 - 完成 链式法则 变式训练 4 题，用 15 分钟口头/书面复述关键步骤",
+        "completed": false,
+        "topic": "链式法则",
+        "mastery": 0.5,
+        "style": "visual",
+        "focus_minutes": 40,
+        "source": "agent_learning_plan",
+        "generated_at": "2026-04-14T21:18:27.343108",
+        "priority": 4
+      },
+      {
+        "id": "aab8e936-18d5-4591-8db1-794d4b9d89c2",
+        "time": "2026-04-16",
+        "task": "D3(2026-04-16)：验收复盘 - 限时整理 链式法则 的解题模板与检查清单，最后用 1 次自测检验掌握情况",
+        "completed": false,
+        "topic": "链式法则",
+        "mastery": 0.5,
+        "style": "visual",
+        "focus_minutes": 40,
+        "source": "agent_learning_plan",
+        "generated_at": "2026-04-14T21:18:27.343108",
+        "priority": 3
+      }
+    ],
+    "source": "local_rule_fallback"
+  }
+]

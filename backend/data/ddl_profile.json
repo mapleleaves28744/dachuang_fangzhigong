@@ -1,30 +1,1210 @@
 {
   "user_id": "ddl",
-  "updated_at": "2026-04-14T15:56:30.716713",
-  "learning_style": "",
+  "updated_at": "2026-05-26T17:03:50.900039",
+  "learning_style": "visual",
   "style_scores": {
-    "visual": 0.0,
-    "auditory": 0.0,
-    "kinesthetic": 0.0
+    "visual": 0.306,
+    "auditory": 0.374,
+    "kinesthetic": 0.374
   },
-  "style_method": "",
+  "style_method": "kmeans",
   "style_features": {
     "image_count": 0,
     "link_count": 0,
-    "qa_content_count": 0,
+    "qa_content_count": 17,
     "note_count": 0,
-    "other_count": 0,
-    "qa_log_count": 0,
-    "concept_count": 0
+    "other_count": 5,
+    "qa_log_count": 17,
+    "concept_count": 47
   },
-  "interests": [],
-  "best_time_range": "",
-  "focus_minutes": null,
+  "interests": [
+    "导数",
+    "函数",
+    "切线斜率",
+    "极限",
+    "瞬时变化率"
+  ],
+  "best_time_range": "17:00-19:00",
+  "focus_minutes": 45,
   "content_type_counter": {
     "note": 0,
     "link": 0,
     "image": 0,
-    "qa": 0,
-    "other": 0
+    "qa": 17,
+    "other": 5
+  },
+  "dashboard_hidden": {
+    "updated_at": "2026-05-16T21:41:36.502013",
+    "topic_daily_table": [
+      {
+        "date": "2026-03-31",
+        "topics": [
+          {
+            "topic": "入口粘贴",
+            "count": 1
+          },
+          {
+            "topic": "入口链接",
+            "count": 1
+          },
+          {
+            "topic": "用户类",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "date": "2026-04-14",
+        "topics": [
+          {
+            "topic": "导数",
+            "count": 4
+          },
+          {
+            "topic": "函数",
+            "count": 2
+          },
+          {
+            "topic": "导数是函数的变化率 导数是函数的变化率",
+            "count": 1
+          },
+          {
+            "topic": "导数是函数的变化率",
+            "count": 1
+          },
+          {
+            "topic": "变化率",
+            "count": 1
+          },
+          {
+            "topic": "导数是函数的斜率 导数是函数的斜率",
+            "count": 1
+          },
+          {
+            "topic": "导数是函数的斜率",
+            "count": 1
+          },
+          {
+            "topic": "斜率",
+            "count": 1
+          },
+          {
+            "topic": "导数定义",
+            "count": 1
+          },
+          {
+            "topic": "差商极限",
+            "count": 1
+          },
+          {
+            "topic": "求导法则",
+            "count": 1
+          },
+          {
+            "topic": "链式法则",
+            "count": 1
+          },
+          {
+            "topic": "幂函数求导",
+            "count": 1
+          },
+          {
+            "topic": "连续不一定可导 连续不一定可导",
+            "count": 1
+          },
+          {
+            "topic": "连续不一定可导",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "date": "2026-04-15",
+        "topics": [
+          {
+            "topic": "导数",
+            "count": 9
+          },
+          {
+            "topic": "函数",
+            "count": 4
+          },
+          {
+            "topic": "极限",
+            "count": 3
+          },
+          {
+            "topic": "切线斜率",
+            "count": 3
+          },
+          {
+            "topic": "瞬时变化率",
+            "count": 3
+          },
+          {
+            "topic": "差商极限",
+            "count": 3
+          },
+          {
+            "topic": "导数定义",
+            "count": 1
+          },
+          {
+            "topic": "文件夹占位项",
+            "count": 1
+          },
+          {
+            "topic": "新建文件夹",
+            "count": 1
+          },
+          {
+            "topic": "屏幕截图",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "date": "2026-04-16",
+        "topics": [
+          {
+            "topic": "函数",
+            "count": 13
+          },
+          {
+            "topic": "提炼关键知识点",
+            "count": 9
+          },
+          {
+            "topic": "并给出下一步学习",
+            "count": 9
+          },
+          {
+            "topic": "导数",
+            "count": 8
+          },
+          {
+            "topic": "切线斜率",
+            "count": 3
+          },
+          {
+            "topic": "变化率",
+            "count": 3
+          },
+          {
+            "topic": "定义域",
+            "count": 2
+          },
+          {
+            "topic": "瞬时变化率",
+            "count": 2
+          },
+          {
+            "topic": "极限",
+            "count": 2
+          },
+          {
+            "topic": "函数变化率",
+            "count": 1
+          },
+          {
+            "topic": "数学函数",
+            "count": 1
+          },
+          {
+            "topic": "编程函数",
+            "count": 1
+          },
+          {
+            "topic": "参数传递",
+            "count": 1
+          },
+          {
+            "topic": "返回值",
+            "count": 1
+          },
+          {
+            "topic": "作用域隔离",
+            "count": 1
+          },
+          {
+            "topic": "函数定义",
+            "count": 1
+          },
+          {
+            "topic": "单值性",
+            "count": 1
+          },
+          {
+            "topic": "对应法则",
+            "count": 1
+          },
+          {
+            "topic": "值域",
+            "count": 1
+          },
+          {
+            "topic": "唯一确定",
+            "count": 1
+          },
+          {
+            "topic": "对应关系",
+            "count": 1
+          },
+          {
+            "topic": "垂直线检验",
+            "count": 1
+          },
+          {
+            "topic": "函数三要素",
+            "count": 1
+          },
+          {
+            "topic": "单调性",
+            "count": 1
+          },
+          {
+            "topic": "导数定义",
+            "count": 1
+          },
+          {
+            "topic": "思维导图",
+            "count": 1
+          },
+          {
+            "topic": "口头复述",
+            "count": 1
+          },
+          {
+            "topic": "布尔类型",
+            "count": 1
+          },
+          {
+            "topic": "存储",
+            "count": 1
+          },
+          {
+            "topic": "占用",
+            "count": 1
+          },
+          {
+            "topic": "个字节",
+            "count": 1
+          },
+          {
+            "topic": "主电路设计",
+            "count": 1
+          },
+          {
+            "topic": "李泽伟",
+            "count": 1
+          },
+          {
+            "topic": "时钟",
+            "count": 1
+          },
+          {
+            "topic": "朝向",
+            "count": 1
+          },
+          {
+            "topic": "根据电路图识别",
+            "count": 1
+          },
+          {
+            "topic": "等控制信号的功能",
+            "count": 1
+          },
+          {
+            "topic": "与触发条件",
+            "count": 1
+          },
+          {
+            "topic": "根据电路图",
+            "count": 1
+          },
+          {
+            "topic": "当执行",
+            "count": 1
+          },
+          {
+            "topic": "指令时",
+            "count": 1
+          },
+          {
+            "topic": "哪些控制信号必须",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "date": "2026-04-19",
+        "topics": [
+          {
+            "topic": "导数",
+            "count": 11
+          },
+          {
+            "topic": "导数定义",
+            "count": 4
+          },
+          {
+            "topic": "函数",
+            "count": 4
+          },
+          {
+            "topic": "极限",
+            "count": 3
+          },
+          {
+            "topic": "切线斜率",
+            "count": 3
+          },
+          {
+            "topic": "瞬时变化率",
+            "count": 3
+          },
+          {
+            "topic": "导数其实就是函数的斜率",
+            "count": 2
+          },
+          {
+            "topic": "导数其实就",
+            "count": 2
+          },
+          {
+            "topic": "斜率",
+            "count": 2
+          },
+          {
+            "topic": "差商极限",
+            "count": 1
+          },
+          {
+            "topic": "定义域",
+            "count": 1
+          },
+          {
+            "topic": "幂函数求导",
+            "count": 1
+          },
+          {
+            "topic": "单调性",
+            "count": 1
+          },
+          {
+            "topic": "瞬时速度",
+            "count": 1
+          },
+          {
+            "topic": "变化率",
+            "count": 1
+          }
+        ]
+      },
+      {
+        "date": "2026-05-16",
+        "topics": [
+          {
+            "topic": "连续",
+            "count": 1
+          },
+          {
+            "topic": "可导",
+            "count": 1
+          },
+          {
+            "topic": "左右导数",
+            "count": 1
+          },
+          {
+            "topic": "尖点",
+            "count": 1
+          },
+          {
+            "topic": "必要条件",
+            "count": 1
+          },
+          {
+            "topic": "反例",
+            "count": 1
+          }
+        ]
+      }
+    ],
+    "topic_total_table": [
+      {
+        "topic": "导数",
+        "count": 32
+      },
+      {
+        "topic": "函数",
+        "count": 23
+      },
+      {
+        "topic": "切线斜率",
+        "count": 9
+      },
+      {
+        "topic": "提炼关键知识点",
+        "count": 9
+      },
+      {
+        "topic": "并给出下一步学习",
+        "count": 9
+      },
+      {
+        "topic": "极限",
+        "count": 8
+      },
+      {
+        "topic": "瞬时变化率",
+        "count": 8
+      },
+      {
+        "topic": "导数定义",
+        "count": 7
+      },
+      {
+        "topic": "变化率",
+        "count": 5
+      },
+      {
+        "topic": "差商极限",
+        "count": 5
+      },
+      {
+        "topic": "斜率",
+        "count": 3
+      },
+      {
+        "topic": "定义域",
+        "count": 3
+      },
+      {
+        "topic": "幂函数求导",
+        "count": 2
+      },
+      {
+        "topic": "单调性",
+        "count": 2
+      },
+      {
+        "topic": "导数其实就是函数的斜率",
+        "count": 2
+      },
+      {
+        "topic": "导数其实就",
+        "count": 2
+      },
+      {
+        "topic": "入口粘贴",
+        "count": 1
+      },
+      {
+        "topic": "入口链接",
+        "count": 1
+      },
+      {
+        "topic": "用户类",
+        "count": 1
+      },
+      {
+        "topic": "导数是函数的变化率 导数是函数的变化率",
+        "count": 1
+      },
+      {
+        "topic": "导数是函数的变化率",
+        "count": 1
+      },
+      {
+        "topic": "导数是函数的斜率 导数是函数的斜率",
+        "count": 1
+      },
+      {
+        "topic": "导数是函数的斜率",
+        "count": 1
+      },
+      {
+        "topic": "求导法则",
+        "count": 1
+      },
+      {
+        "topic": "链式法则",
+        "count": 1
+      },
+      {
+        "topic": "连续不一定可导 连续不一定可导",
+        "count": 1
+      },
+      {
+        "topic": "连续不一定可导",
+        "count": 1
+      },
+      {
+        "topic": "文件夹占位项",
+        "count": 1
+      },
+      {
+        "topic": "新建文件夹",
+        "count": 1
+      },
+      {
+        "topic": "屏幕截图",
+        "count": 1
+      },
+      {
+        "topic": "函数变化率",
+        "count": 1
+      },
+      {
+        "topic": "数学函数",
+        "count": 1
+      },
+      {
+        "topic": "编程函数",
+        "count": 1
+      },
+      {
+        "topic": "参数传递",
+        "count": 1
+      },
+      {
+        "topic": "返回值",
+        "count": 1
+      },
+      {
+        "topic": "作用域隔离",
+        "count": 1
+      },
+      {
+        "topic": "函数定义",
+        "count": 1
+      },
+      {
+        "topic": "单值性",
+        "count": 1
+      },
+      {
+        "topic": "对应法则",
+        "count": 1
+      },
+      {
+        "topic": "值域",
+        "count": 1
+      },
+      {
+        "topic": "唯一确定",
+        "count": 1
+      },
+      {
+        "topic": "对应关系",
+        "count": 1
+      },
+      {
+        "topic": "垂直线检验",
+        "count": 1
+      },
+      {
+        "topic": "函数三要素",
+        "count": 1
+      },
+      {
+        "topic": "思维导图",
+        "count": 1
+      },
+      {
+        "topic": "口头复述",
+        "count": 1
+      },
+      {
+        "topic": "布尔类型",
+        "count": 1
+      },
+      {
+        "topic": "存储",
+        "count": 1
+      },
+      {
+        "topic": "占用",
+        "count": 1
+      },
+      {
+        "topic": "个字节",
+        "count": 1
+      },
+      {
+        "topic": "主电路设计",
+        "count": 1
+      },
+      {
+        "topic": "李泽伟",
+        "count": 1
+      },
+      {
+        "topic": "时钟",
+        "count": 1
+      },
+      {
+        "topic": "朝向",
+        "count": 1
+      },
+      {
+        "topic": "根据电路图识别",
+        "count": 1
+      },
+      {
+        "topic": "等控制信号的功能",
+        "count": 1
+      },
+      {
+        "topic": "与触发条件",
+        "count": 1
+      },
+      {
+        "topic": "根据电路图",
+        "count": 1
+      },
+      {
+        "topic": "当执行",
+        "count": 1
+      },
+      {
+        "topic": "指令时",
+        "count": 1
+      },
+      {
+        "topic": "哪些控制信号必须",
+        "count": 1
+      },
+      {
+        "topic": "瞬时速度",
+        "count": 1
+      },
+      {
+        "topic": "连续",
+        "count": 1
+      },
+      {
+        "topic": "可导",
+        "count": 1
+      },
+      {
+        "topic": "左右导数",
+        "count": 1
+      },
+      {
+        "topic": "尖点",
+        "count": 1
+      },
+      {
+        "topic": "必要条件",
+        "count": 1
+      },
+      {
+        "topic": "反例",
+        "count": 1
+      }
+    ],
+    "study_window_daily_table": [
+      {
+        "date": "2026-03-31",
+        "label": "04:00-06:00",
+        "count": 1,
+        "duration_seconds": 0.0
+      },
+      {
+        "date": "2026-04-03",
+        "label": "02:00-04:00",
+        "count": 1,
+        "duration_seconds": 0.0
+      },
+      {
+        "date": "2026-04-14",
+        "label": "19:00-21:00",
+        "count": 42,
+        "duration_seconds": 675.646
+      },
+      {
+        "date": "2026-04-15",
+        "label": "18:00-20:00",
+        "count": 24,
+        "duration_seconds": 0.0
+      },
+      {
+        "date": "2026-04-16",
+        "label": "12:00-14:00",
+        "count": 20,
+        "duration_seconds": 0.0
+      },
+      {
+        "date": "2026-04-18",
+        "label": "22:00-00:00",
+        "count": 13,
+        "duration_seconds": 0.0
+      },
+      {
+        "date": "2026-04-19",
+        "label": "17:00-19:00",
+        "count": 23,
+        "duration_seconds": 0.0
+      },
+      {
+        "date": "2026-04-22",
+        "label": "19:00-21:00",
+        "count": 5,
+        "duration_seconds": 0.0
+      },
+      {
+        "date": "2026-05-12",
+        "label": "10:00-12:00",
+        "count": 26,
+        "duration_seconds": 0.0
+      },
+      {
+        "date": "2026-05-16",
+        "label": "21:00-23:00",
+        "count": 30,
+        "duration_seconds": 0.0
+      }
+    ],
+    "study_window_total_table": [
+      {
+        "label": "21:00-23:00",
+        "count": 114,
+        "duration_seconds": 606.81
+      },
+      {
+        "label": "19:00-21:00",
+        "count": 68,
+        "duration_seconds": 675.646
+      },
+      {
+        "label": "10:00-12:00",
+        "count": 42,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "17:00-19:00",
+        "count": 33,
+        "duration_seconds": 2371.65
+      },
+      {
+        "label": "18:00-20:00",
+        "count": 24,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "20:00-22:00",
+        "count": 20,
+        "duration_seconds": 753.044
+      },
+      {
+        "label": "12:00-14:00",
+        "count": 20,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "11:00-13:00",
+        "count": 19,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "15:00-17:00",
+        "count": 16,
+        "duration_seconds": 65901.478
+      },
+      {
+        "label": "16:00-18:00",
+        "count": 13,
+        "duration_seconds": 3947.406
+      },
+      {
+        "label": "22:00-00:00",
+        "count": 13,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "14:00-16:00",
+        "count": 11,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "13:00-15:00",
+        "count": 9,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "09:00-11:00",
+        "count": 5,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "02:00-04:00",
+        "count": 2,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "04:00-06:00",
+        "count": 1,
+        "duration_seconds": 0.0
+      },
+      {
+        "label": "03:00-05:00",
+        "count": 1,
+        "duration_seconds": 0.0
+      }
+    ],
+    "top_topic": {
+      "topic": "导数",
+      "count": 32
+    },
+    "top_study_window": {
+      "label": "21:00-23:00",
+      "count": 114,
+      "duration_seconds": 606.81
+    }
+  },
+  "recommendation_cache": {
+    "updated_at": "2026-04-15T18:11:37.554481",
+    "reason": "recommendations_api",
+    "focus_concept": "",
+    "items": [
+      {
+        "concept": "导数定义",
+        "mastery": 0.35,
+        "resource_type": "图解示例+互动练习",
+        "title": "导数定义 - 结构修复(图解示例+互动练习)",
+        "reason": "基于视觉型偏好与最近诊断信号，建议把 导数定义 放到今日高效时段做结构修复，目标是分层练习+错因复盘。",
+        "priority": 54.62,
+        "recommend_time": "20:00-22:00",
+        "strategy_tags": [
+          "style:visual",
+          "channel:kinesthetic",
+          "method:kmeans",
+          "focus:knowledge",
+          "mode:结构修复"
+        ],
+        "evidence_brief": "画像:视觉型(kmeans) | 图谱:掌握度35%",
+        "source_evidence": {
+          "profile": {
+            "learning_style": "visual",
+            "style_method": "kmeans",
+            "style_confidence": 0.366,
+            "behavior_channel": "kinesthetic"
+          },
+          "knowledge_graph": {
+            "concept": "导数定义",
+            "mastery": 0.35,
+            "weak_threshold": 0.6
+          },
+          "diagnosis": {
+            "matched_count": 0,
+            "recent_category_count": {
+              "knowledge": 2,
+              "skill": 0,
+              "habit": 0,
+              "unknown": 0
+            },
+            "dominant_category": "knowledge",
+            "dominant_count": 2,
+            "examples": []
+          }
+        }
+      },
+      {
+        "concept": "差商极限",
+        "mastery": 0.35,
+        "resource_type": "图解示例+互动练习",
+        "title": "差商极限 - 结构修复(图解示例+互动练习)",
+        "reason": "结合你在知识建模维度的近期表现，差商极限 需要优先安排一轮结构修复，先做小步快跑练习再回看概念。",
+        "priority": 54.62,
+        "recommend_time": "20:00-22:00",
+        "strategy_tags": [
+          "style:visual",
+          "channel:kinesthetic",
+          "method:kmeans",
+          "focus:knowledge",
+          "mode:结构修复"
+        ],
+        "evidence_brief": "画像:视觉型(kmeans) | 图谱:掌握度35%",
+        "source_evidence": {
+          "profile": {
+            "learning_style": "visual",
+            "style_method": "kmeans",
+            "style_confidence": 0.366,
+            "behavior_channel": "kinesthetic"
+          },
+          "knowledge_graph": {
+            "concept": "差商极限",
+            "mastery": 0.35,
+            "weak_threshold": 0.6
+          },
+          "diagnosis": {
+            "matched_count": 0,
+            "recent_category_count": {
+              "knowledge": 2,
+              "skill": 0,
+              "habit": 0,
+              "unknown": 0
+            },
+            "dominant_category": "knowledge",
+            "dominant_count": 2,
+            "examples": []
+          }
+        }
+      },
+      {
+        "concept": "求导法则",
+        "mastery": 0.35,
+        "resource_type": "图解示例+互动练习",
+        "title": "求导法则 - 结构修复(图解示例+互动练习)",
+        "reason": "结合你在知识建模维度的近期表现，求导法则 需要优先安排一轮结构修复，先做小步快跑练习再回看概念。",
+        "priority": 54.62,
+        "recommend_time": "20:00-22:00",
+        "strategy_tags": [
+          "style:visual",
+          "channel:kinesthetic",
+          "method:kmeans",
+          "focus:knowledge",
+          "mode:结构修复"
+        ],
+        "evidence_brief": "画像:视觉型(kmeans) | 图谱:掌握度35%",
+        "source_evidence": {
+          "profile": {
+            "learning_style": "visual",
+            "style_method": "kmeans",
+            "style_confidence": 0.366,
+            "behavior_channel": "kinesthetic"
+          },
+          "knowledge_graph": {
+            "concept": "求导法则",
+            "mastery": 0.35,
+            "weak_threshold": 0.6
+          },
+          "diagnosis": {
+            "matched_count": 0,
+            "recent_category_count": {
+              "knowledge": 2,
+              "skill": 0,
+              "habit": 0,
+              "unknown": 0
+            },
+            "dominant_category": "knowledge",
+            "dominant_count": 2,
+            "examples": []
+          }
+        }
+      },
+      {
+        "concept": "链式法则",
+        "mastery": 0.35,
+        "resource_type": "图解示例+互动练习",
+        "title": "链式法则 - 结构修复(图解示例+互动练习)",
+        "reason": "基于视觉型偏好与最近诊断信号，建议把 链式法则 放到今日高效时段做结构修复，目标是分层练习+错因复盘。",
+        "priority": 54.62,
+        "recommend_time": "20:00-22:00",
+        "strategy_tags": [
+          "style:visual",
+          "channel:kinesthetic",
+          "method:kmeans",
+          "focus:knowledge",
+          "mode:结构修复"
+        ],
+        "evidence_brief": "画像:视觉型(kmeans) | 图谱:掌握度35%",
+        "source_evidence": {
+          "profile": {
+            "learning_style": "visual",
+            "style_method": "kmeans",
+            "style_confidence": 0.366,
+            "behavior_channel": "kinesthetic"
+          },
+          "knowledge_graph": {
+            "concept": "链式法则",
+            "mastery": 0.35,
+            "weak_threshold": 0.6
+          },
+          "diagnosis": {
+            "matched_count": 0,
+            "recent_category_count": {
+              "knowledge": 2,
+              "skill": 0,
+              "habit": 0,
+              "unknown": 0
+            },
+            "dominant_category": "knowledge",
+            "dominant_count": 2,
+            "examples": []
+          }
+        }
+      },
+      {
+        "concept": "幂函数求导",
+        "mastery": 0.35,
+        "resource_type": "图解示例+互动练习",
+        "title": "幂函数求导 - 结构修复(图解示例+互动练习)",
+        "reason": "结合你在知识建模维度的近期表现，幂函数求导 需要优先安排一轮结构修复，先做小步快跑练习再回看概念。",
+        "priority": 54.62,
+        "recommend_time": "20:00-22:00",
+        "strategy_tags": [
+          "style:visual",
+          "channel:kinesthetic",
+          "method:kmeans",
+          "focus:knowledge",
+          "mode:结构修复"
+        ],
+        "evidence_brief": "画像:视觉型(kmeans) | 图谱:掌握度35%",
+        "source_evidence": {
+          "profile": {
+            "learning_style": "visual",
+            "style_method": "kmeans",
+            "style_confidence": 0.366,
+            "behavior_channel": "kinesthetic"
+          },
+          "knowledge_graph": {
+            "concept": "幂函数求导",
+            "mastery": 0.35,
+            "weak_threshold": 0.6
+          },
+          "diagnosis": {
+            "matched_count": 0,
+            "recent_category_count": {
+              "knowledge": 2,
+              "skill": 0,
+              "habit": 0,
+              "unknown": 0
+            },
+            "dominant_category": "knowledge",
+            "dominant_count": 2,
+            "examples": []
+          }
+        }
+      },
+      {
+        "concept": "三角函数求导",
+        "mastery": 0.35,
+        "resource_type": "图解示例+互动练习",
+        "title": "三角函数求导 - 结构修复(图解示例+互动练习)",
+        "reason": "基于视觉型偏好与最近诊断信号，建议把 三角函数求导 放到今日高效时段做结构修复，目标是分层练习+错因复盘。",
+        "priority": 54.62,
+        "recommend_time": "20:00-22:00",
+        "strategy_tags": [
+          "style:visual",
+          "channel:kinesthetic",
+          "method:kmeans",
+          "focus:knowledge",
+          "mode:结构修复"
+        ],
+        "evidence_brief": "画像:视觉型(kmeans) | 图谱:掌握度35%",
+        "source_evidence": {
+          "profile": {
+            "learning_style": "visual",
+            "style_method": "kmeans",
+            "style_confidence": 0.366,
+            "behavior_channel": "kinesthetic"
+          },
+          "knowledge_graph": {
+            "concept": "三角函数求导",
+            "mastery": 0.35,
+            "weak_threshold": 0.6
+          },
+          "diagnosis": {
+            "matched_count": 0,
+            "recent_category_count": {
+              "knowledge": 2,
+              "skill": 0,
+              "habit": 0,
+              "unknown": 0
+            },
+            "dominant_category": "knowledge",
+            "dominant_count": 2,
+            "examples": []
+          }
+        }
+      },
+      {
+        "concept": "极限",
+        "mastery": 0.35,
+        "resource_type": "图解示例+互动练习",
+        "title": "极限 - 结构修复(图解示例+互动练习)",
+        "reason": "结合你在知识建模维度的近期表现，极限 需要优先安排一轮结构修复，先做小步快跑练习再回看概念。",
+        "priority": 54.62,
+        "recommend_time": "20:00-22:00",
+        "strategy_tags": [
+          "style:visual",
+          "channel:kinesthetic",
+          "method:kmeans",
+          "focus:knowledge",
+          "mode:结构修复"
+        ],
+        "evidence_brief": "画像:视觉型(kmeans) | 图谱:掌握度35%",
+        "source_evidence": {
+          "profile": {
+            "learning_style": "visual",
+            "style_method": "kmeans",
+            "style_confidence": 0.366,
+            "behavior_channel": "kinesthetic"
+          },
+          "knowledge_graph": {
+            "concept": "极限",
+            "mastery": 0.35,
+            "weak_threshold": 0.6
+          },
+          "diagnosis": {
+            "matched_count": 0,
+            "recent_category_count": {
+              "knowledge": 2,
+              "skill": 0,
+              "habit": 0,
+              "unknown": 0
+            },
+            "dominant_category": "knowledge",
+            "dominant_count": 2,
+            "examples": []
+          }
+        }
+      },
+      {
+        "concept": "切线斜率",
+        "mastery": 0.35,
+        "resource_type": "图解示例+互动练习",
+        "title": "切线斜率 - 结构修复(图解示例+互动练习)",
+        "reason": "基于视觉型偏好与最近诊断信号，建议把 切线斜率 放到今日高效时段做结构修复，目标是分层练习+错因复盘。",
+        "priority": 54.62,
+        "recommend_time": "20:00-22:00",
+        "strategy_tags": [
+          "style:visual",
+          "channel:kinesthetic",
+          "method:kmeans",
+          "focus:knowledge",
+          "mode:结构修复"
+        ],
+        "evidence_brief": "画像:视觉型(kmeans) | 图谱:掌握度35%",
+        "source_evidence": {
+          "profile": {
+            "learning_style": "visual",
+            "style_method": "kmeans",
+            "style_confidence": 0.366,
+            "behavior_channel": "kinesthetic"
+          },
+          "knowledge_graph": {
+            "concept": "切线斜率",
+            "mastery": 0.35,
+            "weak_threshold": 0.6
+          },
+          "diagnosis": {
+            "matched_count": 0,
+            "recent_category_count": {
+              "knowledge": 2,
+              "skill": 0,
+              "habit": 0,
+              "unknown": 0
+            },
+            "dominant_category": "knowledge",
+            "dominant_count": 2,
+            "examples": []
+          }
+        }
+      }
+    ]
   }
 }

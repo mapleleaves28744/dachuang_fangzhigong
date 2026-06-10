@@ -7,13 +7,58 @@ RUN_DIR="$BACKEND_DIR/run"
 BACKEND_LOG_DIR="$BACKEND_DIR/logs"
 FRONTEND_LOG_DIR="$ROOT_DIR/frontend/logs"
 START_FRONTEND_5501="${START_FRONTEND_5501:-false}"
-PYTHON_BIN="${PYTHON_BIN:-/usr/bin/python3}"
+PYTHON_BIN="${PYTHON_BIN:-}"
 
-if [[ ! -x "$PYTHON_BIN" ]]; then
-  PYTHON_BIN="$(command -v python3)"
-fi
+python_candidate_is_ready() {
+  local candidate="$1"
+  "$candidate" -c "import flask, flask_cors, requests, celery, redis, sqlalchemy, pymysql" >/dev/null 2>&1
+}
+
+resolve_python_bin() {
+  local candidates=()
+  local candidate
+
+  if [[ -n "$PYTHON_BIN" ]]; then
+    candidates+=("$PYTHON_BIN")
+  fi
+
+  if [[ -n "${VIRTUAL_ENV:-}" ]]; then
+    candidates+=("$VIRTUAL_ENV/bin/python3")
+  fi
+
+  candidates+=(
+    "$ROOT_DIR/.venv/bin/python3"
+    "$BACKEND_DIR/.venv/bin/python3"
+    "/usr/bin/python3"
+  )
+
+  for candidate in "${candidates[@]}"; do
+    if [[ -n "$candidate" && -x "$candidate" ]] && python_candidate_is_ready "$candidate"; then
+      echo "$candidate"
+      return 0
+    fi
+  done
+
+  command -v python3
+}
+
+PYTHON_BIN="$(resolve_python_bin)"
 
 mkdir -p "$RUN_DIR" "$BACKEND_LOG_DIR" "$FRONTEND_LOG_DIR"
+
+start_detached() {
+  local log_file="$1"
+  local pid_file="$2"
+  shift 2
+
+  if command -v setsid >/dev/null 2>&1; then
+    nohup setsid "$@" </dev/null >"$log_file" 2>&1 &
+  else
+    nohup "$@" </dev/null >"$log_file" 2>&1 &
+  fi
+
+  echo $! > "$pid_file"
+}
 
 is_port_listening() {
   local port="$1"
@@ -54,8 +99,7 @@ ensure_redis() {
   fi
 
   echo "[start] Redis"
-  nohup redis-server --bind 127.0.0.1 --port 6379 > "$BACKEND_LOG_DIR/redis.log" 2>&1 &
-  echo $! > "$RUN_DIR/redis.pid"
+  start_detached "$BACKEND_LOG_DIR/redis.log" "$RUN_DIR/redis.pid" redis-server --bind 127.0.0.1 --port 6379
   sleep 1
 
   if is_port_listening 6379; then
@@ -79,12 +123,10 @@ ensure_celery() {
   echo "[start] Celery worker"
   (
     cd "$BACKEND_DIR"
-    nohup env \
+    start_detached "$BACKEND_LOG_DIR/celery.log" "$RUN_DIR/celery.pid" env \
       CELERY_BROKER_URL="redis://127.0.0.1:6379/0" \
       CELERY_RESULT_BACKEND="redis://127.0.0.1:6379/1" \
       "$PYTHON_BIN" -m celery -A app.server:celery_client worker -l info -P solo \
-      > "$BACKEND_LOG_DIR/celery.log" 2>&1 &
-    echo $! > "$RUN_DIR/celery.pid"
   )
   sleep 1
 
@@ -104,8 +146,7 @@ ensure_backend() {
   echo "[start] Backend API"
   (
     cd "$BACKEND_DIR"
-    nohup "$PYTHON_BIN" -m app.server > "$BACKEND_LOG_DIR/backend.log" 2>&1 &
-    echo $! > "$RUN_DIR/backend.pid"
+    start_detached "$BACKEND_LOG_DIR/backend.log" "$RUN_DIR/backend.pid" "$PYTHON_BIN" -m app.server
   )
   if wait_for_port 5000 40 0.5; then
     echo "[ok] Backend started"
@@ -124,8 +165,7 @@ ensure_frontend() {
   echo "[start] Frontend static server"
   (
     cd "$ROOT_DIR"
-    nohup "$PYTHON_BIN" -m http.server 5501 --directory frontend > "$FRONTEND_LOG_DIR/frontend.log" 2>&1 &
-    echo $! > "$RUN_DIR/frontend.pid"
+    start_detached "$FRONTEND_LOG_DIR/frontend.log" "$RUN_DIR/frontend.pid" "$PYTHON_BIN" -m http.server 5501 --directory frontend
   )
   if wait_for_port 5501 20 0.5; then
     echo "[ok] Frontend started"
@@ -155,6 +195,7 @@ print_status() {
 }
 
 echo "[info] Starting dev stack under $ROOT_DIR"
+echo "[info] Using Python: $PYTHON_BIN"
 ensure_redis
 ensure_celery
 ensure_backend

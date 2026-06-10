@@ -1,0 +1,178 @@
+[
+  {
+    "id": "30308751-45fb-4d48-9807-c0c1a73102bc",
+    "user_id": "guest_8a05cee70a5c47814b4bdb43",
+    "timestamp": "2026-06-10T12:57:18.488661",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 34.183,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "110c5d98-9205-4b0f-ac2c-4fdaa11956df",
+    "user_id": "guest_8a05cee70a5c47814b4bdb43",
+    "timestamp": "2026-06-10T12:57:21.870272",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "chat",
+    "target": "",
+    "label": "pagehide",
+    "title": "智能问答 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 3.115,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/index.html"
+    }
+  },
+  {
+    "id": "b86d91da-75e7-4b61-b07c-8ef6323c4751",
+    "user_id": "guest_8a05cee70a5c47814b4bdb43",
+    "timestamp": "2026-06-10T12:57:25.560345",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "question-bank",
+    "target": "",
+    "label": "pagehide",
+    "title": "题库练习 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 3.496,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/chat.html"
+    }
+  },
+  {
+    "id": "7b2b94ea-78c5-416c-a1f5-47b570182a2f",
+    "user_id": "guest_8a05cee70a5c47814b4bdb43",
+    "timestamp": "2026-06-10T12:57:38.485495",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "dashboard",
+    "target": "",
+    "label": "pagehide",
+    "title": "学习仪表盘 - 智能学习伴侣",
+    "source": "page_shell",
+    "duration_seconds": 12.75,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/question-bank.html"
+    }
+  },
+  {
+    "id": "59761d27-df95-4259-96de-39105265244d",
+    "user_id": "guest_8a05cee70a5c47814b4bdb43",
+    "timestamp": "2026-06-10T12:58:36.451329",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "knowledge-map",
+    "target": "",
+    "label": "pagehide",
+    "title": "知识图谱 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 57.642,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/dashboard.html"
+    }
+  },
+  {
+    "id": "42450a84-ba9c-4e2b-9fe0-95c26ec5f14c",
+    "user_id": "guest_8a05cee70a5c47814b4bdb43",
+    "timestamp": "2026-06-10T13:00:04.100514",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 87.44,
+    "meta": {
+      "referrer": ""
+    }
+  },
+  {
+    "id": "27464898-b3f3-4755-8829-e6803e81e965",
+    "user_id": "guest_8a05cee70a5c47814b4bdb43",
+    "timestamp": "2026-06-10T13:01:30.289886",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "index",
+    "target": "",
+    "label": "pagehide",
+    "title": "坊知工",
+    "source": "page_shell",
+    "duration_seconds": 86.034,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/"
+    }
+  },
+  {
+    "id": "10c6e883-9d6e-461e-af76-3c6e420cbb0c",
+    "user_id": "guest_8a05cee70a5c47814b4bdb43",
+    "timestamp": "2026-06-10T13:02:18.009321",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "chat",
+    "target": "",
+    "label": "pagehide",
+    "title": "智能问答 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 47.601,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/index.html"
+    }
+  },
+  {
+    "id": "a9a7fead-7848-40d5-8efc-24de9b42344c",
+    "user_id": "guest_8a05cee70a5c47814b4bdb43",
+    "timestamp": "2026-06-10T13:02:36.140157",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "question-bank",
+    "target": "",
+    "label": "pagehide",
+    "title": "题库练习 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 17.93,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/chat.html"
+    }
+  },
+  {
+    "id": "53e4ccc2-72db-46c2-bd31-0e715f5b2594",
+    "user_id": "guest_8a05cee70a5c47814b4bdb43",
+    "timestamp": "2026-06-10T13:02:51.031365",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "dashboard",
+    "target": "",
+    "label": "pagehide",
+    "title": "学习仪表盘 - 智能学习伴侣",
+    "source": "page_shell",
+    "duration_seconds": 14.747,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/question-bank.html"
+    }
+  },
+  {
+    "id": "938cb29a-28c3-40f4-9b21-07409219241e",
+    "user_id": "guest_8a05cee70a5c47814b4bdb43",
+    "timestamp": "2026-06-10T13:24:08.965349",
+    "type": "page_stay",
+    "behavior_type": "page_stay",
+    "page": "knowledge-map",
+    "target": "",
+    "label": "pagehide",
+    "title": "知识图谱 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 1277.803,
+    "meta": {
+      "referrer": "http://129.204.192.69:5000/dashboard.html"
+    }
+  }
+]

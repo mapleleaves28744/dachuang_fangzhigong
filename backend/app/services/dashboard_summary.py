@@ -32,6 +32,10 @@ PAGE_LABELS = {
     "spaces": "我的空间",
 }
 
+WEEKDAY_LABELS_CN = ["一", "二", "三", "四", "五", "六", "日"]
+DEFAULT_STREAK_START_GOAL_DAYS = 2
+LOGIN_STREAK_BEHAVIOR_TYPES = {"auth_login", "auth_register", "auth_session_active"}
+
 CONTENT_TYPE_LABELS = {
     "image": "截图识别",
     "link": "链接内容",
@@ -135,6 +139,94 @@ def compute_current_streak(active_dates, today):
         streak += 1
         cursor -= timedelta(days=1)
     return streak
+
+
+def mark_active_date(active_dates, value):
+    dt = parse_datetime_safe(value)
+    if not dt:
+        return None
+    active_dates.add(dt.date().isoformat())
+    return dt
+
+
+def is_login_streak_behavior(item):
+    if not isinstance(item, dict):
+        return False
+
+    behavior_type = str(item.get("behavior_type") or item.get("type") or "").strip().lower()
+    source = str(item.get("source") or "").strip().lower()
+    return behavior_type in LOGIN_STREAK_BEHAVIOR_TYPES or source in LOGIN_STREAK_BEHAVIOR_TYPES
+
+
+def collect_streak_active_dates(behavior_logs):
+    active_days = set()
+    for item in (behavior_logs if isinstance(behavior_logs, list) else []):
+        if not is_login_streak_behavior(item):
+            continue
+        mark_active_date(active_days, item.get("timestamp") or item.get("updated_at") or item.get("created_at"))
+    return active_days
+
+
+def build_streak_widget_summary(
+    content_logs,
+    qa_logs,
+    behavior_logs,
+    question_draw_logs,
+    question_answer_logs,
+    diagnosis_logs,
+    now=None,
+    week_goal_days=DEFAULT_STREAK_START_GOAL_DAYS,
+):
+    current_time = parse_datetime_safe(now) or datetime.now()
+    today = current_time.date()
+    goal = max(1, int(week_goal_days or DEFAULT_STREAK_START_GOAL_DAYS))
+    active_days = collect_streak_active_dates(behavior_logs=behavior_logs)
+
+    week_start = today - timedelta(days=today.weekday())
+    week_days = []
+    week_active_days = 0
+    for offset, label in enumerate(WEEKDAY_LABELS_CN):
+        day = week_start + timedelta(days=offset)
+        iso_day = day.isoformat()
+        is_active = iso_day in active_days
+        if is_active:
+            week_active_days += 1
+        week_days.append({
+            "date": iso_day,
+            "label": label,
+            "active": is_active,
+            "today": day == today,
+        })
+
+    current_streak = compute_current_streak(active_days, today)
+    progress_current = min(week_active_days, goal)
+    progress_label = f"{progress_current}/{goal}"
+
+    if progress_current >= goal:
+        status = "started"
+        message = "连续登录已开始，继续保持这个节奏。"
+        if current_streak > 0:
+            helper = f"已连续登录 {current_streak} 天"
+        else:
+            helper = f"本周已登录 {week_active_days} 天"
+    else:
+        status = "warming"
+        message = f"本周登录 {goal} 天以开始你的连续登录。"
+        helper = f"还差 {max(0, goal - week_active_days)} 天即可点亮连续登录"
+
+    return {
+        "week_label": "本周",
+        "week_goal_days": goal,
+        "week_active_days": week_active_days,
+        "progress_current": progress_current,
+        "progress_label": progress_label,
+        "current_streak": current_streak,
+        "status": status,
+        "message": message,
+        "helper": helper,
+        "week_days": week_days,
+        "last_active_date": max(active_days) if active_days else "",
+    }
 
 
 def to_percent(value, total):

@@ -1,0 +1,18 @@
+[
+  {
+    "id": "d68737d8-8495-4d21-bedf-dc967dcb9a18",
+    "user_id": "guest_7c775bf665bd16d8ca714d60",
+    "timestamp": "2026-04-16T21:36:47.699671",
+    "type": "page_view",
+    "behavior_type": "page_view",
+    "page": "knowledge-map",
+    "target": "",
+    "label": "page_view",
+    "title": "知识图谱 - 坊知工",
+    "source": "page_shell",
+    "duration_seconds": 0.0,
+    "meta": {
+      "referrer": ""
+    }
+  }
+]

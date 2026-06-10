@@ -168,6 +168,8 @@ class LearningProfileService:
 
         content_logs = load_user_event_list(user_id, "content")
         qa_logs = load_user_event_list(user_id, "qa")
+        question_answer_logs = load_user_event_list(user_id, "question_answer")
+        feedback_logs = load_user_event_list(user_id, "feedback")
         normalize_fn = normalize_user_knowledge or self._normalize_user_knowledge_fallback
         knowledge = normalize_fn(get_user_knowledge(user_id))
         concept_items = knowledge.get("concepts", []) if isinstance(knowledge, dict) else []
@@ -176,7 +178,7 @@ class LearningProfileService:
             for item in (knowledge.get("deleted_concepts", []) if isinstance(knowledge, dict) else [])
             if str(item or "").strip()
         }
-        has_learning_signal = bool(content_logs or qa_logs or concept_items)
+        has_learning_signal = bool(content_logs or qa_logs or question_answer_logs or feedback_logs or concept_items)
 
         if not has_learning_signal:
             profile.update({
@@ -211,6 +213,27 @@ class LearningProfileService:
             for topic in filter_learning_topics(item.get("topics"), blocked_topics=blocked_topics):
                 interest_counter[topic] = interest_counter.get(topic, 0) + 1
 
+        for item in question_answer_logs:
+            content_type_counter["qa"] += 1
+            ts = self.parse_datetime_safe(item.get("timestamp"))
+            if ts:
+                hour_counter[ts.hour] = hour_counter.get(ts.hour, 0) + 1
+
+            concept = str(item.get("concept") or "").strip()
+            if concept and concept not in blocked_topics and is_learning_topic(concept):
+                interest_counter[concept] = interest_counter.get(concept, 0) + 1
+
+        for item in feedback_logs:
+            content_type_counter["qa"] += 1
+            ts = self.parse_datetime_safe(item.get("timestamp"))
+            if ts:
+                hour_counter[ts.hour] = hour_counter.get(ts.hour, 0) + 1
+
+            concept = str(item.get("concept") or "").strip()
+            if concept and concept not in blocked_topics and is_learning_topic(concept):
+                boost = max(1, int(item.get("total_count", 1) or 1))
+                interest_counter[concept] = interest_counter.get(concept, 0) + boost
+
         for item in concept_items:
             concept = str(item.get("concept") or "").strip()
             if concept and concept not in blocked_topics and is_learning_topic(concept):
@@ -218,7 +241,7 @@ class LearningProfileService:
 
         learning_style, style_scores, profile_method, feature_vector = self._infer_learning_style(
             content_type_counter=content_type_counter,
-            qa_logs=qa_logs,
+            qa_logs=(qa_logs if isinstance(qa_logs, list) else []) + question_answer_logs + feedback_logs,
             concept_count=len(concept_items),
         )
 
@@ -340,6 +363,21 @@ def build_recommendation_runtime(profile):
     }
 
 
+def normalize_recommendation_resource_type(resource_type, dominant_category="unknown", action_mode=""):
+    """将细粒度资源类型归并为少量稳定的大类，降低前端分类噪音。"""
+    normalized_category = str(dominant_category or "unknown").strip()
+    normalized_action = str(action_mode or "").strip()
+    raw_text = f"{resource_type or ''}|{normalized_category}|{normalized_action}".replace(" ", "")
+
+    if normalized_category == "habit" or any(keyword in raw_text for keyword in ("复盘", "巩固", "审题", "核对", "稳定强化")):
+        return "复盘巩固"
+    if normalized_category == "skill" or any(keyword in raw_text for keyword in ("流程", "步骤", "练习", "演练", "修复", "迁移")):
+        return "流程拆解"
+    if any(keyword in raw_text for keyword in ("拓展", "应用", "专题", "综合提升", "策略优化")):
+        return "拓展应用"
+    return "概念梳理"
+
+
 def collect_concept_diagnosis_evidence(concept_name, recent_diagnosis, max_examples=2):
     """从最近诊断中提取与概念命中的证据样本。"""
     concept = (concept_name or "").strip().lower()
@@ -423,11 +461,12 @@ def build_weak_recommendation_item(concept_name, mastery, runtime, diagnosis_exa
     base_priority = (1.0 - mastery) * 100
     personalized_priority = base_priority * (0.65 + style_conf * 0.35) * style_method_weight * diagnosis_weight
     personalized_priority = round(personalized_priority, 2)
-    resource_type = resource_matrix.get((style, behavior_channel), "图解微课")
-    if dominant_category == "skill":
-        resource_type = f"{resource_type}+步骤清单"
-    elif dominant_category == "habit":
-        resource_type = f"{resource_type}+审题核对卡"
+    resource_hint = resource_matrix.get((style, behavior_channel), "图解微课")
+    resource_type = normalize_recommendation_resource_type(
+        resource_hint,
+        dominant_category=dominant_category,
+        action_mode=action_mode,
+    )
 
     evidence_brief_parts = [
         f"画像:{style_label.get(style, '综合')}({style_method})",
@@ -450,7 +489,7 @@ def build_weak_recommendation_item(concept_name, mastery, runtime, diagnosis_exa
         "concept": concept_name,
         "mastery": mastery,
         "resource_type": resource_type,
-        "title": f"{concept_name} - {action_mode}({resource_type})",
+        "title": f"{concept_name} · {action_mode}",
         "reason": reason,
         "priority": personalized_priority,
         "recommend_time": best_time_range,
@@ -496,7 +535,6 @@ def build_interest_recommendation_item(topic, runtime, recent_category_count):
     resource_matrix = runtime["resource_matrix"]
     best_time_range = runtime["best_time_range"]
 
-    resource_type = resource_matrix.get((style, behavior_channel), "图解微课")
     dominant_category, _ = _dominant_recent_category(recent_category_count)
     if dominant_category == "knowledge":
         interest_mode = "概念拓展"
@@ -506,6 +544,12 @@ def build_interest_recommendation_item(topic, runtime, recent_category_count):
         interest_mode = "策略优化"
     else:
         interest_mode = "综合提升"
+    resource_hint = resource_matrix.get((style, behavior_channel), "图解微课")
+    resource_type = normalize_recommendation_resource_type(
+        resource_hint,
+        dominant_category=dominant_category,
+        action_mode=interest_mode,
+    )
 
     interest_reason_templates = [
         f"你在该阶段暂无明显薄弱点，建议围绕 {topic} 做{interest_mode}，保持知识网络的广度与连通性。",
@@ -521,7 +565,7 @@ def build_interest_recommendation_item(topic, runtime, recent_category_count):
         "concept": topic,
         "mastery": 0.75,
         "resource_type": resource_type,
-        "title": f"{topic} - {interest_mode}学习包",
+        "title": f"{topic} · {interest_mode}",
         "reason": reason,
         "priority": round(20 * style_method_weight, 2),
         "recommend_time": best_time_range,
